@@ -59,8 +59,6 @@ typedef struct
   size_t rank;               /* rank of J */
   gsl_vector *residual;      /* residual of LS problem [ J; sqrt(mu) D ] p = - [ f; 0 ] */
   gsl_vector *qtf;           /* Q^T f */
-  gsl_vector *S;             /* balancing scale factors */
-  gsl_vector *diag;          /* diag = D * S */
   gsl_vector *workn;         /* workspace, length n */
   gsl_vector *workp;         /* workspace, length p */
   double mu;                 /* LM parameter */
@@ -124,20 +122,6 @@ qr_alloc (const size_t n, const size_t p)
                       GSL_ENOMEM);
     }
 
-  state->S = gsl_vector_alloc(p);
-  if (state->S == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for S",
-                      GSL_ENOMEM);
-    }
-
-  state->diag = gsl_vector_alloc(p);
-  if (state->diag == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for diag",
-                      GSL_ENOMEM);
-    }
-
   state->workn = gsl_vector_alloc(n);
   if (state->workn == NULL)
     {
@@ -182,12 +166,6 @@ qr_free(void *vstate)
   if (state->perm)
     gsl_permutation_free(state->perm);
 
-  if (state->S)
-    gsl_vector_free(state->S);
-
-  if (state->diag)
-    gsl_vector_free(state->diag);
-
   if (state->workn)
     gsl_vector_free(state->workn);
 
@@ -206,19 +184,8 @@ qr_init(const void * vtrust_state, void * vstate)
   qr_state_t *state = (qr_state_t *) vstate;
   int signum;
 
-  /* compute J~ = J S */
-#if 0 /* XXX */
-  balance_jacobian(trust_state->J, state->QR, state->S);
-#else
+  /* perform QR decomposition of J */
   gsl_matrix_memcpy(state->QR, trust_state->J);
-  gsl_vector_set_all(state->S, 1.0);
-#endif
-
-  /* compute D~ = D S */
-  gsl_vector_memcpy(state->diag, trust_state->diag);
-  gsl_vector_mul(state->diag, state->S);
-
-  /* perform QR decomposition of J~ */
   gsl_linalg_QRPT_decomp(state->QR, state->tau_Q, state->perm,
                          &signum, state->workp);
 
@@ -266,23 +233,20 @@ qr_solve(const gsl_vector * f, gsl_vector *x,
        * using QRPT factorization of J
        */
 
+      const gsl_multifit_nlinear_trust_state *trust_state =
+        (const gsl_multifit_nlinear_trust_state *) vtrust_state;
       double sqrt_mu = sqrt(state->mu);
 
       /* compute qtf = Q^T f */
       gsl_vector_memcpy(state->qtf, f);
       gsl_linalg_QR_QTvec(state->QR, state->tau_Q, state->qtf);
 
-      status = qrsolv(state->QR, state->perm, sqrt_mu, state->diag,
+      status = qrsolv(state->QR, state->perm, sqrt_mu, trust_state->diag,
                       state->qtf, state->T, x, state->workn);
     }
 
   /* reverse step to go downhill */
   gsl_vector_scale(x, -1.0);
-
-  /* undo balancing */
-  gsl_vector_mul(x, state->S);
-
-  (void)vtrust_state; /* avoid unused parameter warning */
 
   return status;
 }

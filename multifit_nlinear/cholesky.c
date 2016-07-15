@@ -51,8 +51,6 @@ typedef struct
 {
   gsl_matrix *JTJ;           /* J^T J */
   gsl_matrix *work_JTJ;      /* copy of J^T J */
-  gsl_matrix *scale_J;       /* scaled Jacobian, J*S, n-by-p */
-  gsl_vector *S;             /* scale factors, size p */
   gsl_vector *rhs;           /* -J^T f, size p */
   gsl_permutation *perm;     /* permutation matrix for modified Cholesky */
 } cholesky_state_t;
@@ -92,19 +90,6 @@ cholesky_alloc (const size_t n, const size_t p)
                       GSL_ENOMEM);
     }
 
-  state->scale_J = gsl_matrix_alloc(n, p);
-  if (state->scale_J == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for scale_J",
-                      GSL_ENOMEM);
-    }
-
-  state->S = gsl_vector_alloc(p);
-  if (state->S == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for S", GSL_ENOMEM);
-    }
-
   state->rhs = gsl_vector_alloc(p);
   if (state->rhs == NULL)
     {
@@ -131,12 +116,6 @@ cholesky_free(void *vstate)
   if (state->work_JTJ)
     gsl_matrix_free(state->work_JTJ);
 
-  if (state->scale_J)
-    gsl_matrix_free(state->scale_J);
-
-  if (state->S)
-    gsl_vector_free(state->S);
-
   if (state->rhs)
     gsl_vector_free(state->rhs);
 
@@ -153,10 +132,8 @@ cholesky_init(const void * vtrust_state, void * vstate)
     (const gsl_multifit_nlinear_trust_state *) vtrust_state;
   cholesky_state_t *state = (cholesky_state_t *) vstate;
 
-  balance_jacobian(trust_state->J, state->scale_J, state->S);
-
   /* compute J^T J */
-  gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, state->scale_J, 0.0, state->JTJ);
+  gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, trust_state->J, 0.0, state->JTJ);
 
   return GSL_SUCCESS;
 }
@@ -214,20 +191,17 @@ static int
 cholesky_solve(const gsl_vector * f, gsl_vector *x,
                const  void * vtrust_state, void *vstate)
 {
+  const gsl_multifit_nlinear_trust_state *trust_state =
+    (const gsl_multifit_nlinear_trust_state *) vtrust_state;
   cholesky_state_t *state = (cholesky_state_t *) vstate;
   int status;
 
   /* compute rhs = -J^T f */
-  gsl_blas_dgemv(CblasTrans, -1.0, state->scale_J, f, 0.0, state->rhs);
+  gsl_blas_dgemv(CblasTrans, -1.0, trust_state->J, f, 0.0, state->rhs);
 
   status = cholesky_solve_rhs(state->rhs, x, state);
   if (status)
     return status;
-
-  /* undo balancing transformation */
-  gsl_vector_mul(x, state->S);
-
-  (void) vtrust_state;
 
   return GSL_SUCCESS;
 }
@@ -246,7 +220,7 @@ cholesky_solve_rhs(const gsl_vector * b, gsl_vector *x, cholesky_state_t *state)
   return GSL_SUCCESS;
 }
 
-/* A <- A + mu D~^T D~, where D~ = D*S */
+/* A <- A + mu D^T D */
 static int
 cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
                     cholesky_state_t * state)
@@ -258,10 +232,8 @@ cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
       for (i = 0; i < diag->size; ++i)
         {
           double di = gsl_vector_get(diag, i);
-          double si = gsl_vector_get(state->S, i);
-          double yi = di * si;
           double *Aii = gsl_matrix_ptr(A, i, i);
-          *Aii += mu * yi * yi;
+          *Aii += mu * di * di;
         }
     }
 
