@@ -495,40 +495,43 @@ trust_iterate(void *vstate, const gsl_vector *swts,
 static int
 trust_rcond(const gsl_matrix *J, double *rcond, void *vstate)
 {
-  int status;
+  int status = GSL_SUCCESS;
   trust_state_t *state = (trust_state_t *) vstate;
-
-#if 0
   const gsl_multifit_nlinear_parameters *params = &(state->params);
-  status = (params->solver->rcond)(rcond, state->solver_state);
-  return status;
-#else
-  gsl_vector *eval = state->workp;
-  double eval_min, eval_max;
 
-  /* compute J^T J */
-  gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, J, 0.0, state->JTJ);
-
-  /* compute eigenvalues of J^T J */
-  status = gsl_eigen_symm(state->JTJ, eval, state->eigen_p);
-  if (status)
-    return status;
-
-  gsl_vector_minmax(eval, &eval_min, &eval_max);
-
-  if (eval_max > 0.0 && eval_min > 0.0)
+  if (params->solver->rcond != NULL)
     {
-      *rcond = sqrt(eval_min / eval_max);
+      status = (params->solver->rcond)(rcond, state->solver_state);
     }
   else
     {
-      /* compute eigenvalues are not accurate; possibly due
-       * to rounding errors in forming J^T J */
-      *rcond = 0.0;
+      /*XXX*/
+      gsl_vector *eval = state->workp;
+      double eval_min, eval_max;
+
+      /* compute J^T J */
+      gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, J, 0.0, state->JTJ);
+
+      /* compute eigenvalues of J^T J */
+      status = gsl_eigen_symm(state->JTJ, eval, state->eigen_p);
+      if (status)
+        return status;
+
+      gsl_vector_minmax(eval, &eval_min, &eval_max);
+
+      if (eval_max > 0.0 && eval_min > 0.0)
+        {
+          *rcond = sqrt(eval_min / eval_max);
+        }
+      else
+        {
+          /* compute eigenvalues are not accurate; possibly due
+           * to rounding errors in forming J^T J */
+          *rcond = 0.0;
+        }
     }
 
-  return GSL_SUCCESS;
-#endif
+  return status;
 }
 
 static double
