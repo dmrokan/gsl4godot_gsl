@@ -48,7 +48,6 @@
 
 #include "common.c"
 #include "qrsolv.c"
-#include "oct.c"
 
 typedef struct
 {
@@ -196,8 +195,6 @@ qr_init(const void * vtrust_state, void * vstate)
     (const gsl_multifit_nlinear_trust_state *) vtrust_state;
   qr_state_t *state = (qr_state_t *) vstate;
   int signum;
-
-  print_octave(trust_state->J, "J");
 
   /* perform QR decomposition of J */
   gsl_matrix_memcpy(state->QR, trust_state->J);

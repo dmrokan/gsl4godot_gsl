@@ -746,10 +746,10 @@ These functions factorize the symmetric, positive-definite square matrix
 @var{A} into the Cholesky decomposition @math{A = L L^T} (or
 @c{$A = L L^{\dagger}$}
 @math{A = L L^H}
-for the complex case). On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are used (the upper triangular part is ignored).  On output the diagonal and lower triangular part of the input
-matrix @var{A} contain the matrix @math{L}, while the upper triangular part
-of the input matrix is overwritten with @math{L^T} (the diagonal terms being
-identical for both @math{L} and @math{L^T}).  If the matrix is not
+for the complex case). On input, the values from the diagonal and lower-triangular
+part of the matrix @var{A} are used (the upper triangular part is ignored).  On output
+the diagonal and lower triangular part of the input matrix @var{A} contain the matrix
+@math{L}, while the upper triangular part is unmodified.  If the matrix is not
 positive-definite then the decomposition will fail, returning the
 error code @code{GSL_EDOM}.  
 
@@ -827,6 +827,13 @@ scale factors, given by @math{S_i = 1/\sqrt{A_{ii}}} and
 @var{A} contains the scaled matrix @math{S A S}. For any
 @math{A_{ii} \le 0}, the corresponding scale factor @math{S_i}
 is set to @math{1}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_rcond (const gsl_matrix * @var{cholesky}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the symmetric positive
+definite matrix @math{A}, using its Cholesky decomposition provided in @var{cholesky}.
+The reciprocal condition number estimate, defined as @math{1 / (||A||_1 \cdot ||A^{-1}||_1)}, is stored
+in @var{rcond}.  Additional workspace of size @math{3 N} is required in @var{work}.
 @end deftypefun
 
 @node Pivoted Cholesky Decomposition

@@ -35,9 +35,6 @@
  * ACM Trans. Math. Soft., vol. 14, no. 4, pp. 381-396, December 1988.
  */
 
-static int condest_invnorm1(const size_t N,
-                            int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
-                            void * params, double * Ainvnorm, gsl_vector * work);
 static double condest_tri_norm1(CBLAS_UPLO_t Uplo, const gsl_matrix * A);
 static int condest_tri_rcond(CBLAS_UPLO_t Uplo, const gsl_matrix * A,
                              double * rcond, gsl_vector * work);
@@ -81,141 +78,8 @@ gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
   return status;
 }
 
-static int
-condest_tri_rcond(CBLAS_UPLO_t Uplo, const gsl_matrix * A, double * rcond, gsl_vector * work)
-{
-  const size_t M = A->size1;
-  const size_t N = A->size2;
-
-  if (M != N)
-    {
-      GSL_ERROR ("matrix must be square", GSL_ENOTSQR);
-    }
-  else if (work->size != 3 * N)
-    {
-      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
-    }
-  else
-    {
-#if 1
-      int status;
-      double Anorm = condest_tri_norm1(Uplo, A);
-      double Ainvnorm;
-
-      *rcond = 0.0;
-
-      /* don't continue if matrix is singular */
-      if (Anorm == 0.0)
-        return GSL_SUCCESS;
-
-      if (Uplo == CblasUpper)
-        status = condest_invnorm1(N, condest_invtriu, (void *) A, &Ainvnorm, work);
-      else
-        status = condest_invnorm1(N, condest_invtril, (void *) A, &Ainvnorm, work);
-
-      if (status)
-        return status;
-
-      if (Ainvnorm != 0.0)
-        *rcond = (1.0 / Anorm) / Ainvnorm;
-
-      return GSL_SUCCESS;
-#else
-      const size_t maxit = 5;
-      gsl_vector_view x = gsl_vector_subvector(work, 0, N);
-      gsl_vector_view v = gsl_vector_subvector(work, N, N);
-      gsl_vector_view xi = gsl_vector_subvector(work, 2*N, N);
-      double gamma, gamma_old, temp;
-      double Anorm, Ainvnorm;
-      size_t i, k;
-
-      *rcond = 0.0;
-
-      Anorm = condest_tri_norm1(Uplo, A);
-
-      /* don't continue if matrix is singular */
-      if (Anorm == 0.0)
-        return GSL_SUCCESS;
-
-      for (i = 0; i < N; ++i)
-        gsl_vector_set(&x.vector, i, 1.0 / (double) N);
-
-      /* compute v = A^{-1} x */
-      gsl_vector_memcpy(&v.vector, &x.vector);
-      gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &v.vector);
-
-      /* gamma = ||v||_1 */
-      gamma = gsl_blas_dasum(&v.vector);
-
-      /* xi = sign(v) */
-      for (i = 0; i < N; ++i)
-        {
-          double vi = gsl_vector_get(&v.vector, i);
-          gsl_vector_set(&xi.vector, i, GSL_SIGN(vi));
-        }
-
-      /* x = A^{-t} xi */
-      gsl_vector_memcpy(&x.vector, &xi.vector);
-      gsl_blas_dtrsv(Uplo, CblasTrans, CblasNonUnit, A, &x.vector);
-
-      for (k = 0; k < maxit; ++k)
-        {
-          size_t j = (size_t) gsl_blas_idamax(&x.vector);
-
-          /* v := A^{-1} e_j */
-          gsl_vector_set_zero(&v.vector);
-          gsl_vector_set(&v.vector, j, 1.0);
-          gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &v.vector);
-
-          gamma_old = gamma;
-          gamma = gsl_blas_dasum(&v.vector);
-
-          /* check for repeated sign vector (algorithm has converged) */
-          if (condest_same_sign(&v.vector, &xi.vector) || (gamma < gamma_old))
-            break;
-
-          /* xi = sign(v) */
-          for (i = 0; i < N; ++i)
-            {
-              double vi = gsl_vector_get(&v.vector, i);
-              gsl_vector_set(&xi.vector, i, GSL_SIGN(vi));
-            }
-
-          /* x = A^{-t} sign(v) */
-          gsl_vector_memcpy(&x.vector, &xi.vector);
-          gsl_blas_dtrsv(Uplo, CblasTrans, CblasNonUnit, A, &x.vector);
-        }
-
-      temp = 1.0; /* (-1)^i */
-      for (i = 0; i < N; ++i)
-        {
-          double term = 1.0 + (double) i / (N - 1.0);
-          gsl_vector_set(&x.vector, i, temp * term);
-          temp = -temp;
-        }
-
-      /* x := A^{-1} x */
-      gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &x.vector);
-
-      temp = 2.0 * gsl_blas_dasum(&x.vector) / (3.0 * N);
-      if (temp > gamma)
-        {
-          gsl_vector_memcpy(&v.vector, &x.vector);
-          gamma = temp;
-        }
-
-      Ainvnorm = gamma;
-
-      if (Ainvnorm != 0.0)
-        *rcond = (1.0 / Anorm) / Ainvnorm;
-
-      return GSL_SUCCESS;
-#endif
-    }
-}
-
 /*
-condest_invnorm1()
+gsl_linalg_invnorm1()
   Estimate the 1-norm of ||A^{-1}||
 
 Inputs: N        - size of matrix
@@ -226,10 +90,10 @@ Inputs: N        - size of matrix
         work     - workspace, length 3*N
 */
 
-static int
-condest_invnorm1(const size_t N,
-                 int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
-                 void * params, double * Ainvnorm, gsl_vector * work)
+int
+gsl_linalg_invnorm1(const size_t N,
+                    int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
+                    void * params, double * Ainvnorm, gsl_vector * work)
 {
   if (work->size != 3 * N)
     {
@@ -250,7 +114,6 @@ condest_invnorm1(const size_t N,
       /* compute v = A^{-1} x */
       gsl_vector_memcpy(&v.vector, &x.vector);
       (*Ainvx)(CblasNoTrans, &v.vector, params);
-      /*gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &v.vector);*/
 
       /* gamma = ||v||_1 */
       gamma = gsl_blas_dasum(&v.vector);
@@ -265,7 +128,6 @@ condest_invnorm1(const size_t N,
       /* x = A^{-t} xi */
       gsl_vector_memcpy(&x.vector, &xi.vector);
       (*Ainvx)(CblasTrans, &x.vector, params);
-      /*gsl_blas_dtrsv(Uplo, CblasTrans, CblasNonUnit, A, &x.vector);*/
 
       for (k = 0; k < maxit; ++k)
         {
@@ -274,7 +136,6 @@ condest_invnorm1(const size_t N,
           /* v := A^{-1} e_j */
           gsl_vector_set_zero(&v.vector);
           gsl_vector_set(&v.vector, j, 1.0);
-          /*gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &v.vector);*/
           (*Ainvx)(CblasNoTrans, &v.vector, params);
 
           gamma_old = gamma;
@@ -293,7 +154,6 @@ condest_invnorm1(const size_t N,
 
           /* x = A^{-t} sign(v) */
           gsl_vector_memcpy(&x.vector, &xi.vector);
-          /*gsl_blas_dtrsv(Uplo, CblasTrans, CblasNonUnit, A, &x.vector);*/
           (*Ainvx)(CblasTrans, &x.vector, params);
         }
 
@@ -306,7 +166,6 @@ condest_invnorm1(const size_t N,
         }
 
       /* x := A^{-1} x */
-      /*gsl_blas_dtrsv(Uplo, CblasNoTrans, CblasNonUnit, A, &x.vector);*/
       (*Ainvx)(CblasNoTrans, &x.vector, params);
 
       temp = 2.0 * gsl_blas_dasum(&x.vector) / (3.0 * N);
@@ -317,6 +176,48 @@ condest_invnorm1(const size_t N,
         }
 
       *Ainvnorm = gamma;
+
+      return GSL_SUCCESS;
+    }
+}
+
+static int
+condest_tri_rcond(CBLAS_UPLO_t Uplo, const gsl_matrix * A, double * rcond, gsl_vector * work)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR ("matrix must be square", GSL_ENOTSQR);
+    }
+  else if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      double Anorm = condest_tri_norm1(Uplo, A); /* ||A||_1 */
+      double Ainvnorm;                           /* ||A^{-1}||_1 */
+
+      *rcond = 0.0;
+
+      /* don't continue if matrix is singular */
+      if (Anorm == 0.0)
+        return GSL_SUCCESS;
+
+      /* estimate ||A^{-1}||_1 */
+      if (Uplo == CblasUpper)
+        status = gsl_linalg_invnorm1(N, condest_invtriu, (void *) A, &Ainvnorm, work);
+      else
+        status = gsl_linalg_invnorm1(N, condest_invtril, (void *) A, &Ainvnorm, work);
+
+      if (status)
+        return status;
+
+      if (Ainvnorm != 0.0)
+        *rcond = (1.0 / Anorm) / Ainvnorm;
 
       return GSL_SUCCESS;
     }

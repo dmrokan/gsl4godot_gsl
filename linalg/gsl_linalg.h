@@ -27,6 +27,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_inline.h>
+#include <gsl/gsl_blas.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -694,6 +695,9 @@ int gsl_linalg_balance_columns (gsl_matrix * A, gsl_vector * D);
 
 int gsl_linalg_triu_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
 int gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
+int gsl_linalg_invnorm1(const size_t N,
+                        int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
+                        void * params, double * Ainvnorm, gsl_vector * work);
 
 INLINE_DECL void gsl_linalg_givens (const double a, const double b,
                                     double *c, double *s);

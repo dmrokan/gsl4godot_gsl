@@ -1,7 +1,9 @@
 * What is new in gsl-2.2:
 
-** added function gsl_linalg_QRPT_rcond to compute estimate
-   of condition number for R factor
+** added functions to estimate the 1-norm reciprocal condition
+   number for various matrix factorizations:
+     * gsl_linalg_cholesky_rcond
+     * gsl_linalg_QRPT_rcond
 
 ** added functions gsl_linalg_QRPT_{lssolve,lssolve2} to
    compute least squares solutions with the QRPT decomposition
