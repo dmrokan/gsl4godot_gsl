@@ -501,3 +501,30 @@ gsl_linalg_cholesky_solve2 (const gsl_matrix * LLT,
       return status;
     }
 }
+
+int
+gsl_linalg_cholesky_rcond (const gsl_matrix * LLT, double * rcond,
+                           gsl_vector * work)
+{
+  const size_t M = LLT->size1;
+  const size_t N = LLT->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      double rcond_L;
+      int status = gsl_linalg_tril_rcond(LLT, &rcond_L, work);
+
+      if (status == GSL_SUCCESS)
+        *rcond = rcond_L * rcond_L;
+
+      return status;
+    }
+}

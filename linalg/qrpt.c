@@ -30,9 +30,6 @@
 
 #include "apply_givens.c"
 
-static double qrpt_norm1(const gsl_matrix * QR);
-static int same_sign(const gsl_vector * x, const gsl_vector * y);
-
 /* Factorise a general M x N matrix A into
  *
  *   A P = Q R
@@ -636,136 +633,11 @@ gsl_linalg_QRPT_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work)
     }
   else
     {
-      const size_t maxit = 5;
       gsl_matrix_const_view R = gsl_matrix_const_submatrix (QR, 0, 0, N, N);
-      gsl_vector_view x = gsl_vector_subvector(work, 0, N);
-      gsl_vector_view v = gsl_vector_subvector(work, N, N);
-      gsl_vector_view xi = gsl_vector_subvector(work, 2*N, N);
-      double gamma, gamma_old, temp;
-      double Rnorm, Rinvnorm;
-      size_t i, k;
+      int status;
 
-      *rcond = 0.0;
+      status = gsl_linalg_triu_rcond(&R.matrix, rcond, work);
 
-      Rnorm = qrpt_norm1(&R.matrix);
-
-      /* don't continue if matrix is singular */
-      if (Rnorm == 0.0)
-        return GSL_SUCCESS;
-
-      for (i = 0; i < N; ++i)
-        gsl_vector_set(&x.vector, i, 1.0 / (double) N);
-
-      /* compute v = R^{-1} x */
-      gsl_vector_memcpy(&v.vector, &x.vector);
-      gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, &R.matrix, &v.vector);
-
-      /* gamma = ||v||_1 */
-      gamma = gsl_blas_dasum(&v.vector);
-
-      /* xi = sign(v) */
-      for (i = 0; i < N; ++i)
-        {
-          double vi = gsl_vector_get(&v.vector, i);
-          gsl_vector_set(&xi.vector, i, GSL_SIGN(vi));
-        }
-
-      /* x = R^{-t} xi */
-      gsl_vector_memcpy(&x.vector, &xi.vector);
-      gsl_blas_dtrsv(CblasUpper, CblasTrans, CblasNonUnit, &R.matrix, &x.vector);
-
-      for (k = 0; k < maxit; ++k)
-        {
-          size_t j = (size_t) gsl_blas_idamax(&x.vector);
-
-          /* v := R^{-1} e_j */
-          gsl_vector_set_zero(&v.vector);
-          gsl_vector_set(&v.vector, j, 1.0);
-          gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, &R.matrix, &v.vector);
-
-          gamma_old = gamma;
-          gamma = gsl_blas_dasum(&v.vector);
-
-          /* check for repeated sign vector (algorithm has converged) */
-          if (same_sign(&v.vector, &xi.vector) || (gamma < gamma_old))
-            break;
-
-          /* xi = sign(v) */
-          for (i = 0; i < N; ++i)
-            {
-              double vi = gsl_vector_get(&v.vector, i);
-              gsl_vector_set(&xi.vector, i, GSL_SIGN(vi));
-            }
-
-          /* x = R^{-t} sign(v) */
-          gsl_vector_memcpy(&x.vector, &xi.vector);
-          gsl_blas_dtrsv(CblasUpper, CblasTrans, CblasNonUnit, &R.matrix, &x.vector);
-        }
-
-      temp = 1.0; /* (-1)^i */
-      for (i = 0; i < N; ++i)
-        {
-          double term = 1.0 + (double) i / (N - 1.0);
-          gsl_vector_set(&x.vector, i, temp * term);
-          temp = -temp;
-        }
-
-      /* x := R^{-1} x */
-      gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, &R.matrix, &x.vector);
-
-      temp = 2.0 * gsl_blas_dasum(&x.vector) / (3.0 * N);
-      if (temp > gamma)
-        {
-          gsl_vector_memcpy(&v.vector, &x.vector);
-          gamma = temp;
-        }
-
-      Rinvnorm = gamma;
-
-      if (Rinvnorm != 0.0)
-        *rcond = (1.0 / Rnorm) / Rinvnorm;
-
-      return GSL_SUCCESS;
+      return status;
     }
-}
-
-/* calculate 1 norm of R factor */
-static double
-qrpt_norm1(const gsl_matrix * QR)
-{
-  const size_t p = QR->size2;
-  double max = 0.0;
-  size_t i, j;
-
-  for (j = 0; j < p; ++j)
-    {
-      double sum = 0.0;
-      for (i = 0; i <= j; ++i)
-        {
-          double Rij = gsl_matrix_get(QR, i, j);
-          sum += fabs(Rij);
-        }
-
-      max = GSL_MAX(max, sum);
-    }
-
-  return max;
-}
-
-/* return 1 if sign(x) = sign(y), 0 otherwise */
-static int
-same_sign(const gsl_vector * x, const gsl_vector * y)
-{
-  const size_t n = x->size;
-  size_t i;
-
-  for (i = 0; i < n; ++i)
-    {
-      double xi = gsl_vector_get(x, i);
-      double yi = gsl_vector_get(y, i);
-      if (GSL_SIGN(xi) != GSL_SIGN(yi))
-        return 0;
-    }
-
-  return 1;
 }

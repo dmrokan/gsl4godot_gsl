@@ -500,6 +500,9 @@ int gsl_linalg_cholesky_solve2 (const gsl_matrix * LLT,
                                 const gsl_vector * b,
                                 gsl_vector * x);
 
+int gsl_linalg_cholesky_rcond (const gsl_matrix * LLT, double * rcond,
+                               gsl_vector * work);
+
 /* Complex Cholesky Decomposition */
 
 int gsl_linalg_complex_cholesky_decomp (gsl_matrix_complex * A);
@@ -686,6 +689,11 @@ int gsl_linalg_bidiag_unpack_B (const gsl_matrix * A,
 int gsl_linalg_balance_matrix (gsl_matrix * A, gsl_vector * D);
 int gsl_linalg_balance_accum (gsl_matrix * A, gsl_vector * D);
 int gsl_linalg_balance_columns (gsl_matrix * A, gsl_vector * D);
+
+/* condition estimation */
+
+int gsl_linalg_triu_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
+int gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
 
 INLINE_DECL void gsl_linalg_givens (const double a, const double b,
                                     double *c, double *s);

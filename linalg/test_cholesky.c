@@ -33,13 +33,20 @@ static int create_posdef_matrix(gsl_matrix * m, gsl_rng * r);
 static int create_hilbert_matrix2(gsl_matrix * m);
 
 static int test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
-                                    const double eps, const char * desc);
+                                    const double expected_rcond, const double eps,
+                                    const char * desc);
 static int test_cholesky_decomp(gsl_rng * r);
 static int test_pcholesky_decomp(gsl_rng * r);
 int test_pcholesky_solve_eps(const int scale, const gsl_matrix * m, const gsl_vector * rhs,
                              const gsl_vector * sol, const double eps,
                              const char * desc);
 static int test_pcholesky_solve(gsl_rng * r);
+
+/* Hilbert matrix condition numbers, as calculated by LAPACK DTRCON */
+double hilb_rcond[] = { 1.000000000000e+00, 3.703703703704e-02, 1.652892561983e-03,
+                        2.676023854262e-05, 8.576204727651e-07, 3.150728408497e-08,
+                        7.975074266130e-10, 2.391011954737e-11, 7.946338160726e-13,
+                        2.345903992168e-14, 6.785413429703e-16, 2.113209458199e-17 };
 
 static int
 create_random_vector(gsl_vector * v, gsl_rng * r)
@@ -118,7 +125,8 @@ create_hilbert_matrix2(gsl_matrix * m)
 
 static int
 test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
-                         const double eps, const char * desc)
+                         const double expected_rcond, const double eps,
+                         const char * desc)
 {
   int s = 0;
   size_t i, j, M = m->size1, N = m->size2;
@@ -135,6 +143,8 @@ test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
     s += gsl_linalg_cholesky_decomp2(V, S);
   else
     s += gsl_linalg_cholesky_decomp(V);
+
+  print_octave(V, "LLT");
   
   /* compute L and LT */
   for (i = 0; i < N ; i++)
@@ -177,6 +187,20 @@ test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
         }
     }
 
+  if (expected_rcond > 0 && !scale)
+    {
+      gsl_vector *work = gsl_vector_alloc(3 * N);
+      double rcond;
+
+      gsl_linalg_cholesky_rcond(V, &rcond, work);
+
+      gsl_test_rel(rcond, expected_rcond, 1.0e-10,
+                   "%s rcond: (%3lu,%3lu): %22.18g   %22.18g\n",
+                   desc, M, N, rcond, expected_rcond);
+
+      gsl_vector_free(work);
+    }
+
   gsl_matrix_free(V);
   gsl_matrix_free(A);
   gsl_matrix_free(L);
@@ -198,14 +222,20 @@ test_cholesky_decomp(gsl_rng * r)
       gsl_matrix * m = gsl_matrix_alloc(N, N);
 
       create_posdef_matrix(m, r);
-      test_cholesky_decomp_eps(0, m, N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
-      test_cholesky_decomp_eps(1, m, 20.0 * N * GSL_DBL_EPSILON, "cholesky_decomp scaled random");
+      test_cholesky_decomp_eps(0, m, -1.0, N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
+      test_cholesky_decomp_eps(1, m, -1.0, 20.0 * N * GSL_DBL_EPSILON, "cholesky_decomp scaled random");
 
       if (N <= 12)
         {
+          double expected_rcond = -1.0;
+          
+          if (hilb_rcond[N - 1] > 1.0e-12)
+            expected_rcond = hilb_rcond[N - 1];
+
           create_hilbert_matrix2(m);
-          test_cholesky_decomp_eps(0, m, GSL_DBL_EPSILON, "cholesky_decomp unscaled hilbert");
-          test_cholesky_decomp_eps(1, m, N * GSL_DBL_EPSILON, "cholesky_decomp scaled hilbert");
+
+          test_cholesky_decomp_eps(0, m, expected_rcond, GSL_DBL_EPSILON, "cholesky_decomp unscaled hilbert");
+          test_cholesky_decomp_eps(1, m, expected_rcond, N * GSL_DBL_EPSILON, "cholesky_decomp scaled hilbert");
         }
 
       gsl_matrix_free(m);
