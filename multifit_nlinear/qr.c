@@ -48,6 +48,7 @@
 
 #include "common.c"
 #include "qrsolv.c"
+#include "oct.c"
 
 typedef struct
 {
@@ -61,6 +62,7 @@ typedef struct
   gsl_vector *qtf;           /* Q^T f */
   gsl_vector *workn;         /* workspace, length n */
   gsl_vector *workp;         /* workspace, length p */
+  gsl_vector *work3p;        /* workspace, length 3*p */
   double mu;                 /* LM parameter */
 } qr_state_t;
 
@@ -68,6 +70,7 @@ static int qr_init(const void * vtrust_state, void * vstate);
 static int qr_presolve(const double mu, const void * vtrust_state, void * vstate);
 static int qr_solve(const gsl_vector * f, gsl_vector *x,
                     const void * vtrust_state, void *vstate);
+static int qr_rcond(double * rcond, void * vstate);
 
 static void *
 qr_alloc (const size_t n, const size_t p)
@@ -136,6 +139,13 @@ qr_alloc (const size_t n, const size_t p)
                       GSL_ENOMEM);
     }
 
+  state->work3p = gsl_vector_alloc(3 * p);
+  if (state->work3p == NULL)
+    {
+      GSL_ERROR_NULL ("failed to allocate space for work3p",
+                      GSL_ENOMEM);
+    }
+
   state->p = p;
   state->mu = 0.0;
   state->rank = 0;
@@ -172,6 +182,9 @@ qr_free(void *vstate)
   if (state->workp)
     gsl_vector_free(state->workp);
 
+  if (state->work3p)
+    gsl_vector_free(state->work3p);
+
   free(state);
 }
 
@@ -183,6 +196,8 @@ qr_init(const void * vtrust_state, void * vstate)
     (const gsl_multifit_nlinear_trust_state *) vtrust_state;
   qr_state_t *state = (qr_state_t *) vstate;
   int signum;
+
+  print_octave(trust_state->J, "J");
 
   /* perform QR decomposition of J */
   gsl_matrix_memcpy(state->QR, trust_state->J);
@@ -251,6 +266,17 @@ qr_solve(const gsl_vector * f, gsl_vector *x,
   return status;
 }
 
+static int
+qr_rcond(double * rcond, void * vstate)
+{
+  int status;
+  qr_state_t *state = (qr_state_t *) vstate;
+
+  status = gsl_linalg_QRPT_rcond(state->QR, rcond, state->work3p);
+
+  return status;
+}
+
 static const gsl_multifit_nlinear_solver qr_type =
 {
   "qr",
@@ -258,7 +284,7 @@ static const gsl_multifit_nlinear_solver qr_type =
   qr_init,
   qr_presolve,
   qr_solve,
-  NULL, /* XXX */
+  qr_rcond,
   qr_free
 };
 

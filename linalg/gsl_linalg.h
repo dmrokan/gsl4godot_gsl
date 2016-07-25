@@ -367,6 +367,8 @@ int gsl_linalg_QRPT_update (gsl_matrix * Q,
 
 size_t gsl_linalg_QRPT_rank (const gsl_matrix * QR, const double tol);
 
+int gsl_linalg_QRPT_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work);
+
 /* COD decomposition */
 
 int gsl_linalg_COD_decomp(gsl_matrix * A, gsl_vector * tau_Q, gsl_vector * tau_Z,

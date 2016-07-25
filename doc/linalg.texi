@@ -302,8 +302,8 @@ replaced by the solution on output.
 @section QR Decomposition with Column Pivoting
 @cindex QR decomposition with column pivoting
 
-The @math{QR} decomposition can be extended to the rank deficient case
-by introducing a column permutation @math{P},
+The @math{QR} decomposition of an @math{M}-by-@math{N} matrix @math{A}
+can be extended to the rank deficient case by introducing a column permutation @math{P},
 @tex
 \beforedisplay
 $$
@@ -325,7 +325,7 @@ decomposition can also be used to convert the linear system @math{A x =
 b} into the triangular system @math{R y = Q^T b, x = P y}, which can be
 solved by back-substitution and permutation.  We denote the @math{QR}
 decomposition with column pivoting by @math{QRP^T} since @math{A = Q R
-P^T}. When @math{A} is rank deficient with @math{r = rank(A)}, the matrix
+P^T}. When @math{A} is rank deficient with @math{r = {\rm rank}(A)}, the matrix
 @math{R} can be partitioned as
 @tex
 \beforedisplay
@@ -477,6 +477,13 @@ is greater than the specified tolerance @var{tol}. If the input @var{tol} is neg
 a default value of @math{20 (M + N) eps(max(|diag(R)|))} is used.
 @end deftypefun
 
+@deftypefun int gsl_linalg_QRPT_rcond (const gsl_matrix * @var{QR}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the @math{R} factor,
+stored in the upper triangle of @var{QR}. The reciprocal condition number estimate, defined as
+@math{1 / (||A||_1 \cdot ||A^{-1}||_1)}, is stored in @var{rcond}.
+Additional workspace of size @math{3 N} is required in @var{work}.
+@end deftypefun
+
 @node Complete Orthogonal Decomposition
 @section Complete Orthogonal Decomposition
 
@@ -506,7 +513,7 @@ A P = Q [ R11 0 ] Z
 @noindent
 where @math{P} is a @math{N}-by-@math{N} permutation matrix,
 @math{Q} is @math{M}-by-@math{M} orthogonal, @math{R_{11}} is
-@math{r}-by-@math{r} upper triangular, with @math{r = rank(A)},
+@math{r}-by-@math{r} upper triangular, with @math{r = {\rm rank}(A)},
 and @math{Z} is @math{N}-by-@math{N} orthogonal. If @math{A}
 has full rank, then @math{R_{11} = R}, @math{Z = I} and this reduces to the
 QR decomposition with column pivoting. The advantage of using
