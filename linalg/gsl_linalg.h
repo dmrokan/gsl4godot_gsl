@@ -544,6 +544,9 @@ int gsl_linalg_pcholesky_svx2(const gsl_matrix * LDLT,
                               const gsl_vector * S,
                               gsl_vector * x);
 
+int gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
+                                double * rcond, gsl_vector * work);
+
 /* Modified Cholesky decomposition */
 
 int gsl_linalg_mcholesky_decomp (gsl_matrix * A, gsl_permutation * p,

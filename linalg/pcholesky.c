@@ -37,7 +37,15 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_permute_vector.h>
 
+static double pcholesky_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector * work);
+static int pcholesky_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 static int pcholesky_swap_rowcol(gsl_matrix * m, const size_t i, const size_t j);
+
+typedef struct
+{
+  const gsl_matrix * LDLT;
+  const gsl_permutation * perm;
+} pcholesky_params;
 
 /*
 gsl_linalg_pcholesky_decomp()
@@ -106,9 +114,6 @@ gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
             }
         }
 
-      /* copy the transposed (strictly) lower triangle to the upper triangle */
-      gsl_matrix_transpose_tricpy('L', 0, A, A);
-      
       return GSL_SUCCESS;
     }
 }
@@ -307,6 +312,122 @@ gsl_linalg_pcholesky_svx2(const gsl_matrix * LDLT,
 
       return GSL_SUCCESS;
     }
+}
+
+int
+gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
+                            double * rcond, gsl_vector * work)
+{
+  const size_t M = LDLT->size1;
+  const size_t N = LDLT->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      double Anorm = pcholesky_norm1(LDLT, p, work); /* ||A||_1 */
+      double Ainvnorm;                               /* ||A^{-1}||_1 */
+      pcholesky_params params;
+
+      *rcond = 0.0;
+
+      /* don't continue if matrix is singular */
+      if (Anorm == 0.0)
+        return GSL_SUCCESS;
+
+      params.LDLT = LDLT;
+      params.perm = p;
+
+      /* estimate ||A^{-1}||_1 */
+      status = gsl_linalg_invnorm1(N, pcholesky_Ainv, &params, &Ainvnorm, work);
+
+      if (status)
+        return status;
+
+      if (Ainvnorm != 0.0)
+        *rcond = (1.0 / Anorm) / Ainvnorm;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* compute 1-norm of original matrix, stored in upper triangle of LDLT;
+ * diagonal entries have to be reconstructed */
+static double
+pcholesky_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector * work)
+{
+  const size_t N = LDLT->size1;
+  gsl_vector_const_view D = gsl_matrix_const_diagonal(LDLT);
+  gsl_vector_view diagA = gsl_vector_subvector(work, N, N);
+  double max = 0.0;
+  size_t i, j;
+
+  /* reconstruct diagonal entries of original matrix A */
+  for (j = 0; j < N; ++j)
+    {
+      double Ajj;
+
+      /* compute diagonal (j,j) entry of A */
+      Ajj = gsl_vector_get(&D.vector, j);
+      for (i = 0; i < j; ++i)
+        {
+          double Di = gsl_vector_get(&D.vector, i);
+          double Lji = gsl_matrix_get(LDLT, j, i);
+
+          Ajj += Di * Lji * Lji;
+        }
+
+      gsl_vector_set(&diagA.vector, j, Ajj);
+    }
+
+  gsl_permute_vector_inverse(p, &diagA.vector);
+
+  for (j = 0; j < N; ++j)
+    {
+      double sum = 0.0;
+      double Ajj = gsl_vector_get(&diagA.vector, j);
+
+      for (i = 0; i < j; ++i)
+        {
+          double *wi = gsl_vector_ptr(work, i);
+          double Aij = gsl_matrix_get(LDLT, i, j);
+          double absAij = fabs(Aij);
+
+          sum += absAij;
+          *wi += absAij;
+        }
+
+      gsl_vector_set(work, j, sum + fabs(Ajj));
+    }
+
+  for (i = 0; i < N; ++i)
+    {
+      double wi = gsl_vector_get(work, i);
+      max = GSL_MAX(max, wi);
+    }
+
+  return max;
+}
+
+/* x := A^{-1} x = A^{-t} x, A = L D L^T */
+static int
+pcholesky_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
+{
+  int status;
+  pcholesky_params *par = (pcholesky_params *) params;
+
+  (void) TransA; /* unused parameter warning */
+
+  status = gsl_linalg_pcholesky_svx(par->LDLT, par->perm, x);
+
+  return status;
 }
 
 /*
