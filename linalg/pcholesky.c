@@ -37,9 +37,11 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_permute_vector.h>
 
-static double pcholesky_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector * work);
-static int pcholesky_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
-static int pcholesky_swap_rowcol(gsl_matrix * m, const size_t i, const size_t j);
+#include "cholesky_common.c"
+
+static double cholesky_LDLT_norm1(const gsl_matrix * LDLT, const gsl_permutation * p,
+                                  gsl_vector * work);
+static int cholesky_LDLT_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 
 typedef struct
 {
@@ -93,7 +95,7 @@ gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
           j = gsl_vector_max_index(&w.vector) + k;
           gsl_permutation_swap(p, k, j);
 
-          pcholesky_swap_rowcol(A, k, j);
+          cholesky_swap_rowcol(A, k, j);
 
           if (k < N - 1)
             {
@@ -332,8 +334,8 @@ gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
   else
     {
       int status;
-      double Anorm = pcholesky_norm1(LDLT, p, work); /* ||A||_1 */
-      double Ainvnorm;                               /* ||A^{-1}||_1 */
+      double Anorm = cholesky_LDLT_norm1(LDLT, p, work); /* ||A||_1 */
+      double Ainvnorm;                                   /* ||A^{-1}||_1 */
       pcholesky_params params;
 
       *rcond = 0.0;
@@ -346,7 +348,7 @@ gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
       params.perm = p;
 
       /* estimate ||A^{-1}||_1 */
-      status = gsl_linalg_invnorm1(N, pcholesky_Ainv, &params, &Ainvnorm, work);
+      status = gsl_linalg_invnorm1(N, cholesky_LDLT_Ainv, &params, &Ainvnorm, work);
 
       if (status)
         return status;
@@ -358,10 +360,19 @@ gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
     }
 }
 
-/* compute 1-norm of original matrix, stored in upper triangle of LDLT;
- * diagonal entries have to be reconstructed */
+/*
+cholesky_LDLT_norm1
+  Compute 1-norm of original matrix A, stored in upper triangle of LDLT;
+diagonal entries have to be reconstructed
+
+Inputs: LDLT - Cholesky L D L^T decomposition (lower triangle) with
+               original matrix in upper triangle
+        p    - permutation vector
+        work - workspace, length 2*N
+*/
+
 static double
-pcholesky_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector * work)
+cholesky_LDLT_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector * work)
 {
   const size_t N = LDLT->size1;
   gsl_vector_const_view D = gsl_matrix_const_diagonal(LDLT);
@@ -418,7 +429,7 @@ pcholesky_norm1(const gsl_matrix * LDLT, const gsl_permutation * p, gsl_vector *
 
 /* x := A^{-1} x = A^{-t} x, A = L D L^T */
 static int
-pcholesky_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
+cholesky_LDLT_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
 {
   int status;
   pcholesky_params *par = (pcholesky_params *) params;
@@ -428,53 +439,4 @@ pcholesky_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
   status = gsl_linalg_pcholesky_svx(par->LDLT, par->perm, x);
 
   return status;
-}
-
-/*
-pcholesky_swap_rowcol()
-  Swap rows and columns i and j of matrix m, assuming only the
-lower triangle of m is up to date.
-*/
-
-static int
-pcholesky_swap_rowcol(gsl_matrix * m, const size_t i, const size_t j)
-{
-  if (i != j)
-    {
-      const size_t N = m->size1;
-      size_t k;
-
-      /* fill in column i above diagonal using lower triangle */
-      for (k = 0; k < i; ++k)
-        {
-          double mki = gsl_matrix_get(m, i, k);
-          gsl_matrix_set(m, k, i, mki);
-        }
-
-      /* fill in row i above diagonal using lower triangle */
-      for (k = i + 1; k < N; ++k)
-        {
-          double mik = gsl_matrix_get(m, k, i);
-          gsl_matrix_set(m, i, k, mik);
-        }
-
-      /* fill in column j above diagonal using lower triangle */
-      for (k = 0; k < j; ++k)
-        {
-          double mkj = gsl_matrix_get(m, j, k);
-          gsl_matrix_set(m, k, j, mkj);
-        }
-
-      /* fill in row j above diagonal using lower triangle */
-      for (k = j + 1; k < N; ++k)
-        {
-          double mjk = gsl_matrix_get(m, k, j);
-          gsl_matrix_set(m, j, k, mjk);
-        }
-
-      gsl_matrix_swap_rows(m, i, j);
-      gsl_matrix_swap_columns(m, i, j);
-    }
-
-  return GSL_SUCCESS;
 }

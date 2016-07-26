@@ -561,6 +561,9 @@ int gsl_linalg_mcholesky_svx(const gsl_matrix * LDLT,
                              const gsl_permutation * p,
                              gsl_vector * x);
 
+int gsl_linalg_mcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
+                                double * rcond, gsl_vector * work);
+
 /* Symmetric to symmetric tridiagonal decomposition */
 
 int gsl_linalg_symmtd_decomp (gsl_matrix * A, 
