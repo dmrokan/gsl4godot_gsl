@@ -53,6 +53,7 @@ typedef struct
   gsl_matrix *work_JTJ;      /* copy of J^T J */
   gsl_vector *rhs;           /* -J^T f, size p */
   gsl_permutation *perm;     /* permutation matrix for modified Cholesky */
+  gsl_vector *work3p;        /* workspace, size 3*p */
 } cholesky_state_t;
 
 static void *cholesky_alloc (const size_t n, const size_t p);
@@ -103,6 +104,12 @@ cholesky_alloc (const size_t n, const size_t p)
       GSL_ERROR_NULL ("failed to allocate space for perm", GSL_ENOMEM);
     }
 
+  state->work3p = gsl_vector_alloc(3 * p);
+  if (state->work3p == NULL)
+    {
+      GSL_ERROR_NULL ("failed to allocate space for work3p", GSL_ENOMEM);
+    }
+
   return state;
 }
 
@@ -122,6 +129,9 @@ cholesky_free(void *vstate)
 
   if (state->perm)
     gsl_permutation_free(state->perm);
+
+  if (state->work3p)
+    gsl_vector_free(state->work3p);
 
   free(state);
 }
@@ -210,12 +220,13 @@ cholesky_solve(const gsl_vector * f, gsl_vector *x,
 static int
 cholesky_rcond(double * rcond, void * vstate)
 {
-  int status = GSL_SUCCESS;
+  int status;
   cholesky_state_t *state = (cholesky_state_t *) vstate;
-  double Lnorm;
+  double rcond_JTJ;
 
-  /* compute norm_1(L) */
-  Lnorm = cholesky_1norm(state->work_JTJ);
+  status = gsl_linalg_mcholesky_rcond(state->work_JTJ, state->perm, &rcond_JTJ, state->work3p);
+  if (status == GSL_SUCCESS)
+    *rcond = sqrt(rcond_JTJ);
 
   return status;
 }

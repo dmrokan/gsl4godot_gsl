@@ -11,8 +11,3 @@
 
    TAUCS is a C library of sparse linear solvers.
     http://www.tau.ac.il/~stoledo/taucs/
-
-* pcholesky_decomp destroys upper half of matrix, which is
-bad for pcholesky_rcond which needs original matrix to compute
-||A||_1 - use additional workspace for row/col swap in _decomp
-instead of using upper part of matrix?

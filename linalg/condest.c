@@ -80,7 +80,8 @@ gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
 
 /*
 gsl_linalg_invnorm1()
-  Estimate the 1-norm of ||A^{-1}||
+  Estimate the 1-norm of ||A^{-1}||, where A is a square
+N-by-N matrix
 
 Inputs: N        - size of matrix
         Ainvx    - pointer to function which calculates:
@@ -285,7 +286,7 @@ condest_same_sign(const gsl_vector * x, const gsl_vector * y)
 static int
 condest_invtriu(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
 {
-  gsl_matrix * A = (gsl_matrix * ) params;
+  gsl_matrix * A = (gsl_matrix *) params;
   return gsl_blas_dtrsv(CblasUpper, TransA, CblasNonUnit, A, x);
 }
 
@@ -293,6 +294,6 @@ condest_invtriu(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
 static int
 condest_invtril(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
 {
-  gsl_matrix * A = (gsl_matrix * ) params;
+  gsl_matrix * A = (gsl_matrix *) params;
   return gsl_blas_dtrsv(CblasLower, TransA, CblasNonUnit, A, x);
 }
