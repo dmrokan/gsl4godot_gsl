@@ -64,7 +64,6 @@ static int cholesky_solve(const gsl_vector * f, gsl_vector *x,
 static int cholesky_solve_rhs(const gsl_vector * b, gsl_vector *x, cholesky_state_t *state);
 static int cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
                                cholesky_state_t * state);
-static double cholesky_1norm(const gsl_matrix * A);
 
 static void *
 cholesky_alloc (const size_t n, const size_t p)
@@ -250,6 +249,8 @@ static int
 cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
                     cholesky_state_t * state)
 {
+  (void) state;
+
   if (mu != 0.0)
     {
       size_t i;
@@ -263,26 +264,6 @@ cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
     }
 
   return GSL_SUCCESS;
-}
-
-/* compute 1-norm of Cholesky factor L stored in lower half of A */
-static double
-cholesky_1norm(const gsl_matrix * A)
-{
-  const size_t p = A->size1;
-  double sum = 0.0;
-  size_t i, j;
-
-  for (i = 0; i < p; ++i)
-    {
-      for (j = 0; j <= i; ++j)
-        {
-          double Aij = gsl_matrix_get(A, i, j);
-          sum += fabs(Aij);
-        }
-    }
-
-  return sum;
 }
 
 static const gsl_multifit_nlinear_solver cholesky_type =

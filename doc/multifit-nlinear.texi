@@ -1117,12 +1117,38 @@ The iteration counter is updated on each call to the
 @end deftypefun
 
 @deftypefun int gsl_multifit_nlinear_rcond (double * @var{rcond}, gsl_multifit_nlinear_workspace * @var{w})
-This function computes the reciprocal condition number
-of the Jacobian at the current position @math{x} and
-stores it in @var{rcond}. It is computed by calculating
-the eigenvalues @math{\gamma} of @math{J(x)^T J(x)} and setting
-@var{rcond} = @math{\sqrt{\gamma_{min} / \gamma_{max}}}. If
-the eigenvalue decomposition fails, an error is returned.
+This function estimates the reciprocal condition number
+of the Jacobian matrix at the current position @math{x} and
+stores it in @var{rcond}. The computed value is only an estimate
+to give the user a guideline as to the conditioning of their particular
+problem. Its calculation is based on which factorization
+method is used (Cholesky, QR, or SVD). 
+
+@itemize @bullet
+
+@item For the Cholesky solver, the matrix @math{J^T J} is factored at each
+iteration, or in the case of Levenberg-Marquardt, @math{J^T J + \mu D^T D}.
+Therefore this function will estimate the 1-norm condition number
+@math{rcond^2 = 1/(||J^T J||_1 \cdot ||(J^T J)^{-1}||_1)}
+(or @math{1/(||J^T J + \mu D^T D||_1 \cdot ||(J^T J + \mu D^T D)^{-1}||_1)} for
+Levenberg-Marquardt). The added term for Levenberg-Marquardt tends to improve
+the conditioning of the Jacobian, so treat the calculated number with caution in this
+case.
+
+@item For the QR solver, @math{J} is factored as @math{J = Q R} at each
+iteration. For simplicity, this function calculates the 1-norm conditioning of
+only the @math{R} factor, @math{rcond = 1 / (||R||_1 \cdot ||R^{-1}||_1)}.
+This can be computed efficiently since @math{R} is upper triangular.
+
+@item For the SVD solver, in order to efficiently solve the trust region
+subproblem, the matrix which is factored is @math{J D^{-1}}, instead of
+@math{J} itself. The resulting singular values are used to provide
+the 2-norm reciprocal condition number, as @math{rcond = \sigma_{min} / \sigma_{max}}.
+Note that when using Mor@'e scaling, @math{D \ne I} and the resulting
+@var{rcond} estimate may be significantly different from the true
+@var{rcond} of @math{J} itself.
+
+@end itemize
 @end deftypefun
 
 @node Nonlinear Least-Squares Testing for Convergence
@@ -1452,35 +1478,7 @@ the gradient falls below @math{10^{-8}}. Here are the results of running
 the program:
 
 @smallexample
-iter 0: A = 1.0000, lambda = 1.0000, b = 0.0000, cond(J) = 46.1118, |f(x)| = 62.2029
-iter 1: A = 1.2196, lambda = 0.3663, b = 0.0436, cond(J) = 19.8763, |f(x)| = 59.8062
-iter 2: A = 1.6062, lambda = 0.1506, b = 0.1054, cond(J) = 20.2970, |f(x)| = 53.9039
-iter 3: A = 2.4528, lambda = 0.0583, b = 0.2470, cond(J) = 90.3289, |f(x)| = 28.8039
-iter 4: A = 2.9723, lambda = 0.0494, b = 0.3727, cond(J) = 184.3828, |f(x)| = 15.3252
-iter 5: A = 3.3473, lambda = 0.0477, b = 0.4410, cond(J) = 235.5901, |f(x)| = 10.7511
-iter 6: A = 3.6690, lambda = 0.0508, b = 0.4617, cond(J) = 206.1182, |f(x)| = 9.7373
-iter 7: A = 3.9907, lambda = 0.0580, b = 0.5433, cond(J) = 147.7071, |f(x)| = 8.7661
-iter 8: A = 4.2353, lambda = 0.0731, b = 0.7989, cond(J) = 125.8964, |f(x)| = 7.4299
-iter 9: A = 4.6573, lambda = 0.0958, b = 1.0302, cond(J) = 100.5450, |f(x)| = 6.1893
-iter 10: A = 5.0138, lambda = 0.1060, b = 1.0329, cond(J) = 94.0404, |f(x)| = 5.4961
-iter 11: A = 5.1505, lambda = 0.1103, b = 1.0497, cond(J) = 91.2259, |f(x)| = 5.4552
-iter 12: A = 5.1724, lambda = 0.1110, b = 1.0526, cond(J) = 90.7179, |f(x)| = 5.4542
-iter 13: A = 5.1737, lambda = 0.1110, b = 1.0528, cond(J) = 90.6803, |f(x)| = 5.4542
-iter 14: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) = 90.6791, |f(x)| = 5.4542
-iter 15: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) = 90.6790, |f(x)| = 5.4542
-iter 16: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) = 90.6790, |f(x)| = 5.4542
-summary from method 'trust-region/levenberg-marquardt'
-number of iterations: 16
-function evaluations: 23
-Jacobian evaluations: 17
-reason for stopping: small step size
-initial |f(x)| = 62.202928
-final   |f(x)| = 5.454180
-chisq/dof = 0.804002
-A      = 5.17379 +/- 0.27938
-lambda = 0.11104 +/- 0.00817
-b      = 1.05283 +/- 0.05365
-status = success
+@verbatiminclude examples/nlfit.err
 @end smallexample
 
 @noindent
@@ -1633,24 +1631,7 @@ Phi(x*) = 0
 The program output is shown below.
 
 @smallexample
-=== Solving system without acceleration ===
-NITER         = 53
-NFEV          = 56
-NJEV          = 54
-NAEV          = 0
-initial cost  = 2.250225000000e+04
-final cost    = 6.674986031430e-18
-final x       = (9.999999974165e-01, 9.999999948328e-01)
-final cond(J) = 5.000079979663e+02
-=== Solving system with acceleration ===
-NITER         = 15
-NFEV          = 16
-NJEV          = 16
-NAEV          = 15
-initial cost  = 2.250225000000e+04
-final cost    = 1.778587232284e-21
-final x       = (9.999999999578e-01, 9.999999999157e-01)
-final cond(J) = 5.000079999976e+02
+@verbatiminclude examples/nlfit2.err
 @end smallexample
 
 @noindent
@@ -1708,14 +1689,9 @@ below uses the starting point @math{(x_1,x_2) = (6,14.5)}
 and calculates the solution with all available nonlinear
 least squares TRS methods. The program output is shown below.
 
-@smallexample
-Method                    NITER  NFEV   NJEV   Initial Cost  Final cost   Final cond(J) Final x        
-levenberg-marquardt       20     27     21     1.9874e+02    3.9789e-01   1.4844e+08    (-3.14e+00, 1.23e+01)
-levenberg-marquardt+accel 27     36     28     1.9874e+02    3.9789e-01   3.4719e+07    (3.14e+00, 2.27e+00)
-dogleg                    23     64     23     1.9874e+02    3.9789e-01   inf           (3.14e+00, 2.28e+00)
-double-dogleg             24     69     24     1.9874e+02    3.9789e-01   3.1929e+07    (3.14e+00, 2.27e+00)
-2D-subspace               23     54     24     1.9874e+02    3.9789e-01   5.1824e+07    (3.14e+00, 2.27e+00)
-@end smallexample
+@smallformat
+@verbatiminclude examples/nlfit3.err
+@end smallformat
 
 @noindent
 The first row of output above corresponds to standard Levenberg-Marquardt, while
