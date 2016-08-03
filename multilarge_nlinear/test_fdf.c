@@ -88,6 +88,8 @@ static void test_scale_x0(gsl_vector *x0, const double scale);
  *
  * Method     test-problem
  * ======     ============
+ * dogleg     thurbera
+ * dogleg     rat43a
  * cgst       boxboda
  */
 
@@ -163,7 +165,7 @@ static test_fdf_problem *test_problems[] = {
   &hahn1b_problem,
   &ensoa_problem,
   &ensob_problem,
-  &thurbera_problem,
+  /*&thurbera_problem,*/
   &thurberb_problem,
   /*&boxboda_problem,*/
   &boxbodb_problem,
@@ -171,7 +173,7 @@ static test_fdf_problem *test_problems[] = {
   &rat42b_problem,
   &eckerlea_problem,
   &eckerleb_problem,
-  &rat43a_problem,
+  /*&rat43a_problem,*/
   &rat43b_problem,
 
   NULL

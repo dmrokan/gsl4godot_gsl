@@ -33,6 +33,8 @@
 #include "test_fdf.c"
 
 static const gsl_multilarge_nlinear_trs **nlinear_trs[] = {
+  &gsl_multilarge_nlinear_trs_dogleg,
+  &gsl_multilarge_nlinear_trs_ddogleg,
   &gsl_multilarge_nlinear_trs_cgst,
 
   NULL

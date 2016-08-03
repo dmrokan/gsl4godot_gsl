@@ -55,6 +55,7 @@ typedef struct
   gsl_vector *workn;         /* workspace, length n */
 
   void *trs_state;           /* workspace for trust region subproblem */
+  void *solver_state;        /* workspace for linear least squares solver */
 
   double avratio;            /* current |a| / |v| */
 
@@ -70,11 +71,11 @@ static void * trust_alloc (const gsl_multilarge_nlinear_parameters * params,
 static void trust_free(void *vstate);
 static int trust_init(void *vstate, const gsl_vector * swts,
                       gsl_multilarge_nlinear_fdf *fdf, const gsl_vector *x,
-                      gsl_vector *f, gsl_vector *g);
+                      gsl_vector *f, gsl_vector *g, gsl_matrix *JTJ);
 static int trust_iterate(void *vstate, const gsl_vector *swts,
                          gsl_multilarge_nlinear_fdf *fdf,
                          gsl_vector *x, gsl_vector *f,
-                         gsl_vector *g, gsl_vector *dx);
+                         gsl_vector *g, gsl_matrix *JTJ, gsl_vector *dx);
 static int trust_rcond(const gsl_matrix *J, double *rcond, void *vstate);
 static double trust_avratio(void *vstate);
 static void trust_trial_step(const gsl_vector * x, const gsl_vector * dx,
@@ -135,6 +136,15 @@ trust_alloc (const gsl_multilarge_nlinear_parameters * params,
       GSL_ERROR_NULL ("failed to allocate space for trs state", GSL_ENOMEM);
     }
 
+  if (params->solver != gsl_multilarge_nlinear_solver_none)
+    {
+      state->solver_state = (params->solver->alloc)(n, p);
+      if (state->solver_state == NULL)
+        {
+          GSL_ERROR_NULL ("failed to allocate space for solver state", GSL_ENOMEM);
+        }
+    }
+
   state->JTJ = gsl_matrix_alloc(p, p);
   if (state->JTJ == NULL)
     {
@@ -179,6 +189,9 @@ trust_free(void *vstate)
   if (state->trs_state)
     (params->trs->free)(state->trs_state);
 
+  if (state->solver_state)
+    (params->solver->free)(state->solver_state);
+
   if (state->JTJ)
     gsl_matrix_free(state->JTJ);
 
@@ -205,7 +218,7 @@ Return: success/error
 static int
 trust_init(void *vstate, const gsl_vector *swts,
            gsl_multilarge_nlinear_fdf *fdf, const gsl_vector *x,
-           gsl_vector *f, gsl_vector *g)
+           gsl_vector *f, gsl_vector *g, gsl_matrix *JTJ)
 {
   int status;
   trust_state_t *state = (trust_state_t *) vstate;
@@ -217,10 +230,10 @@ trust_init(void *vstate, const gsl_vector *swts,
   if (status)
    return status;
 
-  /* compute g = J^T f */
+  /* compute g = J^T f and J^T J */
   status = gsl_multilarge_nlinear_eval_df(CblasTrans, x, f, f,
                                           swts, params->h_df, params->fdtype,
-                                          fdf, g, state->workn);
+                                          fdf, g, JTJ, state->workn);
   if (status)
     return status;
 
@@ -233,9 +246,10 @@ trust_init(void *vstate, const gsl_vector *swts,
 
   /* initialize trust region method solver */
   {
-    const gsl_multilarge_nlinear_trust_state trust_state = { x, f, g, state->diag,
+    const gsl_multilarge_nlinear_trust_state trust_state = { x, f, g, JTJ, state->diag,
                                                              swts, &(state->mu), params,
-                                                             fdf, &(state->avratio) };
+                                                             state->solver_state, fdf,
+                                                             &(state->avratio) };
 
     status = (params->trs->init)(&trust_state, state->trs_state);
 
@@ -265,6 +279,8 @@ Args: vstate - trust workspace
                on output, f(x + dx)
       g      - on input, g(x) = J(x)' f(x)
                on output, g(x + dx) = J(x + dx)' f(x + dx)
+      JTJ    - on input, J(x)^T J(x)
+               on output, J(x + dx)^T J(x + dx)
       dx     - (output only) parameter step vector
 
 Return:
@@ -281,7 +297,8 @@ set to the unscaled quantities (ie: J and g)
 static int
 trust_iterate(void *vstate, const gsl_vector *swts,
               gsl_multilarge_nlinear_fdf *fdf, gsl_vector *x,
-              gsl_vector *f, gsl_vector *g, gsl_vector *dx)
+              gsl_vector *f, gsl_vector *g, gsl_matrix *JTJ,
+              gsl_vector *dx)
 {
   int status;
   trust_state_t *state = (trust_state_t *) vstate;
@@ -289,15 +306,21 @@ trust_iterate(void *vstate, const gsl_vector *swts,
   const gsl_multilarge_nlinear_trs *trs = params->trs;
 
   /* collect all state parameters needed by low level methods */
-  const gsl_multilarge_nlinear_trust_state trust_state = { x, f, g, state->diag,
+  const gsl_multilarge_nlinear_trust_state trust_state = { x, f, g, JTJ, state->diag,
                                                          swts, &(state->mu), params,
-                                                         fdf, &(state->avratio) };
+                                                         state->solver_state, fdf,
+                                                         &(state->avratio) };
 
   gsl_vector *x_trial = state->x_trial;       /* trial x + dx */
   gsl_vector *f_trial = state->f_trial;       /* trial f(x + dx) */
   double rho;                                 /* ratio actual_reduction/predicted_reduction */
   int foundstep = 0;                          /* found step dx */
   int bad_steps = 0;                          /* consecutive rejected steps */
+
+  /* initialize trust region subproblem with this Jacobian */
+  status = (trs->preloop)(&trust_state, state->trs_state);
+  if (status)
+    return status;
 
   /* loop until we find an acceptable step dx */
   while (!foundstep)
@@ -355,7 +378,7 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           /* compute new g = J^T f */
           status = gsl_multilarge_nlinear_eval_df(CblasTrans, x, f, f,
                                                   swts, params->h_df, params->fdtype,
-                                                  fdf, g, state->workn);
+                                                  fdf, g, JTJ, state->workn);
           if (status)
             return status;
 
