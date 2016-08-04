@@ -33,7 +33,7 @@
 #include "test_fdf.c"
 
 static const gsl_multifit_nlinear_trs **nlinear_trs[] = {
-#if 1
+#if 1 /*XXX*/
   &gsl_multifit_nlinear_trs_lm,
   &gsl_multifit_nlinear_trs_lmaccel,
   &gsl_multifit_nlinear_trs_dogleg,
