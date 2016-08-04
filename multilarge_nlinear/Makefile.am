@@ -8,6 +8,7 @@ AM_CPPFLAGS = -I$(top_srcdir)
 
 noinst_HEADERS =     \
 common.c             \
+nielsen.c            \
 test_fdf.c           \
 test_bard.c          \
 test_beale.c         \
