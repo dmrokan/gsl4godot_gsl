@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslmultilarge_nlinear.la
 
 pkginclude_HEADERS = gsl_multilarge_nlinear.h
 
-libgslmultilarge_nlinear_la_SOURCES = cgst.c cholesky.c convergence.c dogleg.c dummy.c fdf.c trust.c
+libgslmultilarge_nlinear_la_SOURCES = cgst.c cholesky.c convergence.c dogleg.c dummy.c fdf.c lm.c trust.c
 
 AM_CPPFLAGS = -I$(top_srcdir)
 

@@ -29,6 +29,7 @@
 #include <gsl/gsl_eigen.h>
 
 #include "common.c"
+#include "nielsen.c"
 
 /*
  * This module contains a high level driver for a general trust
@@ -48,6 +49,7 @@ typedef struct
   size_t p;                  /* number of parameters */
   double delta;              /* trust region radius */
   double mu;                 /* LM parameter */
+  long nu;                   /* for updating LM parameter */
   gsl_vector *diag;          /* D = diag(J^T J) */
   gsl_vector *x_trial;       /* trial parameter vector */
   gsl_vector *f_trial;       /* trial function vector */
@@ -244,6 +246,9 @@ trust_init(void *vstate, const gsl_vector *swts,
   Dx = trust_scaled_norm(state->diag, x);
   state->delta = 0.3 * GSL_MAX(1.0, Dx);
 
+  /* initialize LM parameter */
+  nielsen_init(JTJ, state->diag, &(state->mu), &(state->nu));
+
   /* initialize trust region method solver */
   {
     const gsl_multilarge_nlinear_trust_state trust_state = { x, f, g, JTJ, state->diag,
@@ -345,6 +350,18 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           status = trust_eval_step(&trust_state, f_trial, dx, &rho, state);
           if (status == GSL_SUCCESS)
             foundstep = 1;
+
+#if 0 /*XXX*/
+          fprintf(stdout, "delta = %.12e |D dx| = %.12e |dx| = %.12e, dx0 = %.12e dx1 = %.12e |x_trial| = %.12e |f_trial| = %.12e rho = %.12e\n",
+                  state->delta,
+                  scaled_enorm(state->diag, dx),
+                  gsl_blas_dnrm2(dx),
+                  gsl_vector_get(dx, 0),
+                  gsl_vector_get(dx, 1),
+                  gsl_blas_dnrm2(x_trial),
+                  gsl_blas_dnrm2(f_trial),
+                  rho);
+#endif
         }
       else
         {
@@ -382,10 +399,16 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           if (status)
             return status;
 
+          /* step accepted, decrease LM parameter */
+          nielsen_accept(rho, &(state->mu), &(state->nu));
+
           bad_steps = 0;
         }
       else
         {
+          /* step rejected, increase LM parameter */
+          nielsen_reject(&(state->mu), &(state->nu));
+
           /* if more than 15 consecutive rejected steps, report no progress */
           if (++bad_steps > 15)
             {
@@ -535,7 +558,7 @@ trust_eval_step(const gsl_multilarge_nlinear_trust_state * trust_state,
   int status = GSL_SUCCESS;
   const gsl_multilarge_nlinear_parameters *params = &(state->params);
 
-  if (params->accel)
+  if (params->trs == gsl_multilarge_nlinear_trs_lmaccel)
     {
       /* reject step if acceleration is too large compared to velocity */
       if (state->avratio > params->avmax)

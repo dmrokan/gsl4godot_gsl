@@ -83,11 +83,14 @@ gsl_multilarge_nlinear_alloc (const gsl_multilarge_nlinear_type * T,
       GSL_ERROR_VAL ("failed to allocate space for g", GSL_ENOMEM, 0);
     }
 
-  w->JTJ = gsl_matrix_alloc (p, p);
-  if (w->JTJ == 0) 
+  if (w->params.solver == gsl_multilarge_nlinear_solver_cholesky)
     {
-      gsl_multilarge_nlinear_free (w);
-      GSL_ERROR_VAL ("failed to allocate space for JTJ", GSL_ENOMEM, 0);
+      w->JTJ = gsl_matrix_alloc (p, p);
+      if (w->JTJ == 0) 
+        {
+          gsl_multilarge_nlinear_free (w);
+          GSL_ERROR_VAL ("failed to allocate space for JTJ", GSL_ENOMEM, 0);
+        }
     }
 
   w->sqrt_wts_work = gsl_vector_calloc (n);
@@ -146,7 +149,6 @@ gsl_multilarge_nlinear_default_parameters(void)
   params.fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
   params.factor_up = 3.0;
   params.factor_down = 2.0;
-  params.accel = 0;
   params.avmax = 0.75;
   params.h_df = GSL_SQRT_DBL_EPSILON;
   params.h_fvv = 0.01;
@@ -472,4 +474,57 @@ gsl_multilarge_nlinear_eval_df(const CBLAS_TRANSPOSE_t TransJ,
 
       return status;
     }
+}
+
+/*
+gsl_multilarge_nlinear_eval_fvv()
+  Compute second direction derivative vector yvv with user
+callback function, and apply weighting transform if given:
+
+yvv~ = sqrt(W) yvv
+
+Inputs: h    - step size for finite difference, if needed
+        x    - model parameters, size p
+        v    - unscaled geodesic velocity vector, size p
+        f    - residual vector f(x), size n
+        swts - weight matrix sqrt(W) = sqrt(diag(w1,w2,...,wn))
+               set to NULL for unweighted fit
+        fdf  - callback function
+        yvv  - (output) (weighted) second directional derivative vector
+               yvv_i = sqrt(w_i) fvv_i where f_i is unweighted
+        work - workspace, size p
+*/
+
+int
+gsl_multilarge_nlinear_eval_fvv(const double h,
+                                const gsl_vector *x,
+                                const gsl_vector *v,
+                                const gsl_vector *f,
+                                const gsl_vector *swts,
+                                gsl_multilarge_nlinear_fdf *fdf,
+                                gsl_vector *yvv,
+                                gsl_vector *work)
+{
+  int status;
+  
+  if (fdf->fvv != NULL)
+    {
+      /* call user-supplied function */
+      status = ((*((fdf)->fvv)) (x, v, fdf->params, yvv));
+      ++(fdf->nevalfvv);
+    }
+  else
+    {
+#if 0
+      /* use finite difference approximation */
+      status = gsl_multilarge_nlinear_fdfvv(h, x, v, f, J,
+                                          swts, fdf, yvv, work);
+#endif
+    }
+
+  /* yvv <- sqrt(W) yvv */
+  if (swts)
+    gsl_vector_mul(yvv, swts);
+
+  return status;
 }

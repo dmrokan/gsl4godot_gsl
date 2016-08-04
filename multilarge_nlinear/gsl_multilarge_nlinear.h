@@ -130,7 +130,6 @@ typedef struct
   gsl_multilarge_nlinear_fdtype fdtype;        /* finite difference method */
   double factor_up;                            /* factor for increasing trust radius */
   double factor_down;                          /* factor for decreasing trust radius */
-  int accel;                                   /* use geodesic acceleration */
   double avmax;                                /* max allowed |a|/|v| */
   double h_df;                                 /* step size for finite difference Jacobian */
   double h_fvv;                                /* step size for finite difference fvv */
@@ -264,10 +263,10 @@ gsl_multilarge_nlinear_eval_fvv(const double h,
                                 const gsl_vector *x,
                                 const gsl_vector *v,
                                 const gsl_vector *f,
-                                const gsl_matrix *J,
                                 const gsl_vector *swts,
                                 gsl_multilarge_nlinear_fdf *fdf,
-                                gsl_vector *yvv, gsl_vector *work);
+                                gsl_vector *yvv,
+                                gsl_vector *work);
 
 /* covar.c */
 int
@@ -299,6 +298,7 @@ GSL_VAR const gsl_multilarge_nlinear_type * gsl_multilarge_nlinear_trust;
 
 /* trust region subproblem methods */
 GSL_VAR const gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_lm;
+GSL_VAR const gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_lmaccel;
 GSL_VAR const gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_dogleg;
 GSL_VAR const gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_ddogleg;
 GSL_VAR const gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_subspace2D;

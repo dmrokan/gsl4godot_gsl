@@ -33,6 +33,8 @@
 #include "test_fdf.c"
 
 static const gsl_multilarge_nlinear_trs **nlinear_trs[] = {
+  &gsl_multilarge_nlinear_trs_lm,
+  &gsl_multilarge_nlinear_trs_lmaccel,
   &gsl_multilarge_nlinear_trs_dogleg,
   &gsl_multilarge_nlinear_trs_ddogleg,
   &gsl_multilarge_nlinear_trs_cgst,
@@ -41,15 +43,13 @@ static const gsl_multilarge_nlinear_trs **nlinear_trs[] = {
 };
 
 static void
-test_proc(const gsl_multilarge_nlinear_trs *trs,
-          const int fdtype, const int accel)
+test_proc(const gsl_multilarge_nlinear_trs *trs, const int fdtype)
 {
   gsl_multilarge_nlinear_parameters fdf_params =
     gsl_multilarge_nlinear_default_parameters();
 
   fdf_params.trs = trs;
   fdf_params.fdtype = fdtype;
-  fdf_params.accel = accel;
 
   test_fdf_main(&fdf_params);
 }
@@ -72,7 +72,7 @@ main (void)
       for (fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
            fdtype <= GSL_MULTILARGE_NLINEAR_CTRDIFF; ++fdtype)
         {
-          test_proc(*trs, fdtype, 0);
+          test_proc(*trs, fdtype);
         }
     }
 
