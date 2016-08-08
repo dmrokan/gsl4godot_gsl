@@ -149,7 +149,7 @@ typedef struct
                   gsl_multilarge_nlinear_fdf * fdf, gsl_vector * x,
                   gsl_vector * f, gsl_vector * g, gsl_matrix * JTJ,
                   gsl_vector * dx);
-  int (*rcond) (const gsl_matrix * J, double * rcond, void * state);
+  int (*rcond) (double * rcond, void * state);
   double (*avratio) (void * state);
   void (*free) (void * state);
 } gsl_multilarge_nlinear_type;
@@ -210,6 +210,9 @@ gsl_multilarge_nlinear_iterate (gsl_multilarge_nlinear_workspace * w);
 
 double
 gsl_multilarge_nlinear_avratio (const gsl_multilarge_nlinear_workspace * w);
+
+int
+gsl_multilarge_nlinear_rcond (double * rcond, const gsl_multilarge_nlinear_workspace * w);
 
 int
 gsl_multilarge_nlinear_driver (const size_t maxiter,

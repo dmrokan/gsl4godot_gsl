@@ -26,7 +26,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_permutation.h>
-#include <gsl/gsl_eigen.h>
 
 #include "common.c"
 #include "nielsen.c"
@@ -53,7 +52,6 @@ typedef struct
   gsl_vector *diag;          /* D = diag(J^T J) */
   gsl_vector *x_trial;       /* trial parameter vector */
   gsl_vector *f_trial;       /* trial function vector */
-  gsl_vector *workp;         /* workspace, length p */
   gsl_vector *workn;         /* workspace, length n */
 
   void *trs_state;           /* workspace for trust region subproblem */
@@ -63,9 +61,6 @@ typedef struct
 
   /* tunable parameters */
   gsl_multilarge_nlinear_parameters params;
-
-  gsl_matrix *JTJ;           /* J^T J for rcond calculation */
-  gsl_eigen_symm_workspace *eigen_p;
 } trust_state_t;
 
 static void * trust_alloc (const gsl_multilarge_nlinear_parameters * params,
@@ -78,7 +73,7 @@ static int trust_iterate(void *vstate, const gsl_vector *swts,
                          gsl_multilarge_nlinear_fdf *fdf,
                          gsl_vector *x, gsl_vector *f,
                          gsl_vector *g, gsl_matrix *JTJ, gsl_vector *dx);
-static int trust_rcond(const gsl_matrix *J, double *rcond, void *vstate);
+static int trust_rcond(double *rcond, void *vstate);
 static double trust_avratio(void *vstate);
 static void trust_trial_step(const gsl_vector * x, const gsl_vector * dx,
                              gsl_vector * x_trial);
@@ -106,12 +101,6 @@ trust_alloc (const gsl_multilarge_nlinear_parameters * params,
   if (state->diag == NULL)
     {
       GSL_ERROR_NULL ("failed to allocate space for diag", GSL_ENOMEM);
-    }
-
-  state->workp = gsl_vector_alloc(p);
-  if (state->workp == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for workp", GSL_ENOMEM);
     }
 
   state->workn = gsl_vector_alloc(n);
@@ -147,18 +136,6 @@ trust_alloc (const gsl_multilarge_nlinear_parameters * params,
         }
     }
 
-  state->JTJ = gsl_matrix_alloc(p, p);
-  if (state->JTJ == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for JTJ", GSL_ENOMEM);
-    }
-
-  state->eigen_p = gsl_eigen_symm_alloc(p);
-  if (state->eigen_p == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for eigen workspace", GSL_ENOMEM);
-    }
-
   state->n = n;
   state->p = p;
   state->delta = 0.0;
@@ -176,9 +153,6 @@ trust_free(void *vstate)
   if (state->diag)
     gsl_vector_free(state->diag);
 
-  if (state->workp)
-    gsl_vector_free(state->workp);
-
   if (state->workn)
     gsl_vector_free(state->workn);
 
@@ -193,12 +167,6 @@ trust_free(void *vstate)
 
   if (state->solver_state)
     (params->solver->free)(state->solver_state);
-
-  if (state->JTJ)
-    gsl_matrix_free(state->JTJ);
-
-  if (state->eigen_p)
-    gsl_eigen_symm_free(state->eigen_p);
 
   free(state);
 }
@@ -421,42 +389,15 @@ trust_iterate(void *vstate, const gsl_vector *swts,
 } /* trust_iterate() */
 
 static int
-trust_rcond(const gsl_matrix *J, double *rcond, void *vstate)
+trust_rcond(double *rcond, void *vstate)
 {
   int status;
   trust_state_t *state = (trust_state_t *) vstate;
-
-#if 0
   const gsl_multilarge_nlinear_parameters *params = &(state->params);
+
   status = (params->solver->rcond)(rcond, state->solver_state);
+
   return status;
-#else
-  gsl_vector *eval = state->workp;
-  double eval_min, eval_max;
-
-  /* compute J^T J */
-  gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, J, 0.0, state->JTJ);
-
-  /* compute eigenvalues of J^T J */
-  status = gsl_eigen_symm(state->JTJ, eval, state->eigen_p);
-  if (status)
-    return status;
-
-  gsl_vector_minmax(eval, &eval_min, &eval_max);
-
-  if (eval_max > 0.0 && eval_min > 0.0)
-    {
-      *rcond = sqrt(eval_min / eval_max);
-    }
-  else
-    {
-      /* compute eigenvalues are not accurate; possibly due
-       * to rounding errors in forming J^T J */
-      *rcond = 0.0;
-    }
-
-  return GSL_SUCCESS;
-#endif
 }
 
 static double

@@ -144,7 +144,7 @@ gsl_multilarge_nlinear_default_parameters(void)
 {
   gsl_multilarge_nlinear_parameters params;
 
-  params.trs = gsl_multilarge_nlinear_trs_cgst;
+  params.trs = gsl_multilarge_nlinear_trs_lm;
   params.solver = gsl_multilarge_nlinear_solver_cholesky;
   params.fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
   params.factor_up = 3.0;
@@ -235,6 +235,13 @@ double
 gsl_multilarge_nlinear_avratio (const gsl_multilarge_nlinear_workspace * w)
 {
   return (w->type->avratio) (w->state);
+}
+
+int
+gsl_multilarge_nlinear_rcond (double * rcond, const gsl_multilarge_nlinear_workspace * w)
+{
+  int status = (w->type->rcond) (rcond, w->state);
+  return status;
 }
 
 /*

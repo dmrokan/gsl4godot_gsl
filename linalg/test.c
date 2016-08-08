@@ -32,7 +32,6 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_rng.h>
 
-#include "oct.c"
 #include "test_cholesky.c"
 
 #define TEST_SVD_4X4 1
