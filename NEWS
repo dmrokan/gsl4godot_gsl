@@ -1,5 +1,8 @@
 * What is new in gsl-2.2:
 
+** added complete orthogonal decomposition routines
+   (gsl_linalg_COD)
+
 ** bug fix where median calculation wasn't reset in
    gsl_rstat_reset(); added gsl_rstat_quantile_reset() function
    (reported by Pedro Donato)
