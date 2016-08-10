@@ -50,13 +50,16 @@ typedef struct
 } pcholesky_params;
 
 /*
-gsl_linalg_pcholesky_decomp()
+pcholesky_decomp()
   Perform Pivoted Cholesky LDLT decomposition of a symmetric positive
 semidefinite matrix
 
-Inputs: A - (input) symmetric, positive semidefinite matrix,
+Inputs: copy_uplo - copy lower triangle to upper to save original matrix
+                    for rcond calculation later
+        A         - (input) symmetric, positive semidefinite matrix,
                     stored in lower triangle
-            (output) lower triangle contains L; diagonal contains D
+                    (output) lower triangle contains L; diagonal contains D
+        p         - permutation vector
 
 Return: success/error
 
@@ -65,8 +68,8 @@ Notes:
 Golub and Van Loan, Matrix Computations (4th ed).
 */
 
-int
-gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
+static int
+pcholesky_decomp (const int copy_uplo, gsl_matrix * A, gsl_permutation * p)
 {
   const size_t N = A->size1;
 
@@ -83,8 +86,11 @@ gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
       gsl_vector_view diag = gsl_matrix_diagonal(A);
       size_t k;
 
-      /* save a copy of A in upper triangle (for later rcond calculation) */
-      gsl_matrix_transpose_tricpy('L', 0, A, A);
+      if (copy_uplo)
+        {
+          /* save a copy of A in upper triangle (for later rcond calculation) */
+          gsl_matrix_transpose_tricpy('L', 0, A, A);
+        }
 
       gsl_permutation_init(p);
 
@@ -121,6 +127,30 @@ gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
 
       return GSL_SUCCESS;
     }
+}
+
+/*
+gsl_linalg_pcholesky_decomp()
+  Perform Pivoted Cholesky LDLT decomposition of a symmetric positive
+semidefinite matrix
+
+Inputs: A - (input) symmetric, positive semidefinite matrix,
+                    stored in lower triangle
+            (output) lower triangle contains L; diagonal contains D
+        p - permutation vector
+
+Return: success/error
+
+Notes:
+1) Based on algorithm 4.2.2 (Outer Product LDLT with Pivoting) of
+Golub and Van Loan, Matrix Computations (4th ed).
+*/
+
+int
+gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
+{
+  int status = pcholesky_decomp(1, A, p);
+  return status;
 }
 
 int
@@ -220,6 +250,9 @@ gsl_linalg_pcholesky_decomp2(gsl_matrix * A, gsl_permutation * p,
     {
       int status;
 
+      /* save a copy of A in upper triangle (for later rcond calculation) */
+      gsl_matrix_transpose_tricpy('L', 0, A, A);
+
       /* compute scaling factors to reduce cond(A) */
       status = gsl_linalg_cholesky_scale(A, S);
       if (status)
@@ -231,7 +264,7 @@ gsl_linalg_pcholesky_decomp2(gsl_matrix * A, gsl_permutation * p,
         return status;
 
       /* compute Cholesky decomposition of diag(S) A diag(S) */
-      status = gsl_linalg_pcholesky_decomp(A, p);
+      status = pcholesky_decomp(0, A, p);
       if (status)
         return status;
 
