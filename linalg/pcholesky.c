@@ -83,6 +83,9 @@ gsl_linalg_pcholesky_decomp (gsl_matrix * A, gsl_permutation * p)
       gsl_vector_view diag = gsl_matrix_diagonal(A);
       size_t k;
 
+      /* save a copy of A in upper triangle (for later rcond calculation) */
+      gsl_matrix_transpose_tricpy('L', 0, A, A);
+
       gsl_permutation_init(p);
 
       for (k = 0; k < N; ++k)

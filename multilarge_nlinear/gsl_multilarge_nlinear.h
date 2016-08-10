@@ -61,7 +61,8 @@ typedef struct
   size_t p;        /* number of independent variables */
   void * params;   /* user parameters */
   size_t nevalf;   /* number of function evaluations */
-  size_t nevaldf;  /* number of Jacobian evaluations */
+  size_t nevaldfu; /* number of Jacobian matrix-vector evaluations */
+  size_t nevaldf2; /* number of Jacobian J^T J evaluations */
   size_t nevalfvv; /* number of fvv evaluations */
 } gsl_multilarge_nlinear_fdf;
 
@@ -118,7 +119,7 @@ typedef struct
   int (*presolve) (const double mu, const void * vtrust_state, void * vstate);
   int (*solve) (const gsl_vector * g, gsl_vector * x,
                 const void * vtrust_state, void * vstate);
-  int (*rcond) (double * rcond, void * vstate);
+  int (*rcond) (double * rcond, const gsl_matrix * JTJ, void * vstate);
   void (*free) (void * vstate);
 } gsl_multilarge_nlinear_solver;
 
@@ -149,7 +150,7 @@ typedef struct
                   gsl_multilarge_nlinear_fdf * fdf, gsl_vector * x,
                   gsl_vector * f, gsl_vector * g, gsl_matrix * JTJ,
                   gsl_vector * dx);
-  int (*rcond) (double * rcond, void * state);
+  int (*rcond) (double * rcond, const gsl_matrix * JTJ, void * state);
   double (*avratio) (void * state);
   void (*free) (void * state);
 } gsl_multilarge_nlinear_type;

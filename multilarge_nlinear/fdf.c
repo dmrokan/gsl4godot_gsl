@@ -192,7 +192,8 @@ gsl_multilarge_nlinear_winit (const gsl_vector * x,
 
       /* initialize counters for function and Jacobian evaluations */
       fdf->nevalf = 0;
-      fdf->nevaldf = 0;
+      fdf->nevaldfu = 0;
+      fdf->nevaldf2 = 0;
       fdf->nevalfvv = 0;
 
       w->fdf = fdf;
@@ -240,7 +241,7 @@ gsl_multilarge_nlinear_avratio (const gsl_multilarge_nlinear_workspace * w)
 int
 gsl_multilarge_nlinear_rcond (double * rcond, const gsl_multilarge_nlinear_workspace * w)
 {
-  int status = (w->type->rcond) (rcond, w->state);
+  int status = (w->type->rcond) (rcond, w->JTJ, w->state);
   return status;
 }
 
@@ -469,7 +470,12 @@ gsl_multilarge_nlinear_eval_df(const CBLAS_TRANSPOSE_t TransJ,
         {
           /* call user-supplied function */
           status = ((*((fdf)->df)) (TransJ, x, u, fdf->params, v, JTJ));
-          ++(fdf->nevaldf);
+
+          if (v)
+            ++(fdf->nevaldfu);
+
+          if (JTJ)
+            ++(fdf->nevaldf2);
         }
       else
         {

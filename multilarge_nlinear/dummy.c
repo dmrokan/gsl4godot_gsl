@@ -78,10 +78,11 @@ dummy_solve(const gsl_vector * g, gsl_vector *x,
 }
 
 static int
-dummy_rcond(double * rcond, void * vstate)
+dummy_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate)
 {
   (void) vstate;
   (void) rcond;
+  (void) JTJ;
   *rcond = 0.0;
   return GSL_SUCCESS;
 }
