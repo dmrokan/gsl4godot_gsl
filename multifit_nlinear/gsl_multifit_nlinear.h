@@ -149,7 +149,7 @@ typedef struct
                   gsl_multifit_nlinear_fdf * fdf, gsl_vector * x,
                   gsl_vector * f, gsl_matrix * J, gsl_vector * g,
                   gsl_vector * dx);
-  int (*rcond) (const gsl_matrix * J, double * rcond, void * state);
+  int (*rcond) (double * rcond, void * state);
   double (*avratio) (void * state);
   void (*free) (void * state);
 } gsl_multifit_nlinear_type;

@@ -1,5 +1,7 @@
 1. different mu update methods
 2. cleanup trust.c (scale_Jg)
 3. rewrite qrsolv
-4. add Transtrum and Sethna 2012 reference to linear leats squares docs
-5. More/Sorensen method for mu calculation
+4. More/Sorensen method for mu calculation
+5. better condition estimate for svd
+6. remove gsl_multifit_nlinear_update
+7. update rcond for cholesky (similar to multilarge)

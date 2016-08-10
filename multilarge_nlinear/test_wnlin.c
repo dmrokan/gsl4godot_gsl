@@ -1,7 +1,7 @@
 #define wnlin_N         40
 #define wnlin_P         3
 
-static double wnlin_x0[wnlin_P] = { 1.0, 0.0, 0.0 };
+static double wnlin_x0[wnlin_P] = { 1.0, 0.9, 0.0 };
 static double wnlin_epsrel = 1.0e-8;
 
 static double wnlin_J[wnlin_N * wnlin_P];
@@ -82,7 +82,8 @@ wnlin_f (const gsl_vector *x, void *params, gsl_vector *f)
 
 static int
 wnlin_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
-          const gsl_vector * u, void * params, gsl_vector * v)
+          const gsl_vector * u, void * params, gsl_vector * v,
+          gsl_matrix * JTJ)
 {
   gsl_matrix_view J = gsl_matrix_view_array(wnlin_J, wnlin_N, wnlin_P);
   int *iptr = (int *) params;
@@ -106,7 +107,11 @@ wnlin_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
         gsl_vector_scale(&v.vector, swi);
     }
 
-  gsl_blas_dgemv(TransJ, 1.0, &J.matrix, u, 0.0, v);
+  if (v)
+    gsl_blas_dgemv(TransJ, 1.0, &J.matrix, u, 0.0, v);
+
+  if (JTJ)
+    gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, &J.matrix, 0.0, JTJ);
 
   return GSL_SUCCESS;
 }

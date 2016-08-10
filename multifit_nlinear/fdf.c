@@ -356,7 +356,7 @@ gsl_multifit_nlinear_niter (const gsl_multifit_nlinear_workspace * w)
 int
 gsl_multifit_nlinear_rcond (double *rcond, const gsl_multifit_nlinear_workspace * w)
 {
-  int status = (w->type->rcond) (w->J, rcond, w->state);
+  int status = (w->type->rcond) (rcond, w->state);
   return status;
 }
 
