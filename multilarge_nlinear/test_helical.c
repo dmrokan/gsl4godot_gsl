@@ -110,6 +110,7 @@ static gsl_multilarge_nlinear_fdf helical_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

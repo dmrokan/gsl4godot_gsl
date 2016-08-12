@@ -94,6 +94,7 @@ main (void)
   for (trs = nlinear_trs[i]; trs != NULL; trs = nlinear_trs[++i])
     {
       size_t j = 0;
+
       fprintf(stderr, "trs = %s\n", (*trs)->name);
 
       for (solver = nlinear_solvers[j]; solver != NULL; solver = nlinear_solvers[++j])

@@ -94,6 +94,7 @@ static gsl_multilarge_nlinear_fdf brown3_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

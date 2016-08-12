@@ -207,8 +207,11 @@ trust_init(void *vstate, const gsl_vector *swts,
   if (status)
     return status;
 
-  /*XXX*/
-  gsl_vector_set_all(state->diag, 1.0);
+  /* initialize diagonal scaling matrix D */
+  if (JTJ != NULL)
+    (params->scale->init)(JTJ, state->diag);
+  else
+    gsl_vector_set_all(state->diag, 1.0);
 
   /* compute initial trust region radius */
   Dx = trust_scaled_norm(state->diag, x);
@@ -360,12 +363,16 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           /* update f <- f(x + dx) */
           gsl_vector_memcpy(f, f_trial);
 
-          /* compute new g = J^T f */
+          /* compute new g = J^T f and J^T J */
           status = gsl_multilarge_nlinear_eval_df(CblasTrans, x, f, f,
                                                   swts, params->h_df, params->fdtype,
                                                   fdf, g, JTJ, state->workn);
           if (status)
             return status;
+
+          /* update scaling matrix D */
+          if (JTJ != NULL)
+            (params->scale->update)(JTJ, state->diag);
 
           /* step accepted, decrease LM parameter */
           nielsen_accept(rho, &(state->mu), &(state->nu));

@@ -139,6 +139,7 @@ static gsl_multilarge_nlinear_fdf eckerle_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

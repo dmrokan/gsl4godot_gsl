@@ -110,7 +110,7 @@ typedef struct
   void (*free) (void * vstate);
 } gsl_multifit_nlinear_solver;
 
-/* tunable parameters for Levenberg-Marquardt method */
+/* tunable parameters */
 typedef struct
 {
   const gsl_multifit_nlinear_trs *trs;        /* trust region subproblem method */

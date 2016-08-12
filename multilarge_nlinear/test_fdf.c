@@ -280,11 +280,11 @@ test_fdf(const gsl_multilarge_nlinear_type * T,
   char sname[2048];
   int status, info;
 
-  sprintf(buf, "%s/%s/solver=%s/scale=%g%s%s",
+  sprintf(buf, "%s/%s/solver=%s/scale=%s%s%s",
     gsl_multilarge_nlinear_name(w),
     params->trs->name,
     params->solver->name,
-    x0_scale,
+    params->scale->name,
     problem->fdf->df ? "" : "/fdjac",
     problem->fdf->fvv ? "" : "/fdfvv");
 

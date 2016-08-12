@@ -136,6 +136,7 @@ static gsl_multilarge_nlinear_fdf thurber_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

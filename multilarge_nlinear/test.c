@@ -42,13 +42,23 @@ static const gsl_multilarge_nlinear_trs **nlinear_trs[] = {
   NULL
 };
 
+static const gsl_multilarge_nlinear_scale **nlinear_scales[] = {
+  &gsl_multilarge_nlinear_scale_levenberg,
+  &gsl_multilarge_nlinear_scale_more,
+
+  NULL
+};
+
 static void
-test_proc(const gsl_multilarge_nlinear_trs *trs, const int fdtype)
+test_proc(const gsl_multilarge_nlinear_trs *trs,
+          const gsl_multilarge_nlinear_scale *scale,
+          const int fdtype)
 {
   gsl_multilarge_nlinear_parameters fdf_params =
     gsl_multilarge_nlinear_default_parameters();
 
   fdf_params.trs = trs;
+  fdf_params.scale = scale;
   fdf_params.fdtype = fdtype;
 
   test_fdf_main(&fdf_params);
@@ -58,6 +68,7 @@ int
 main (void)
 {
   const gsl_multilarge_nlinear_trs **trs;
+  const gsl_multilarge_nlinear_scale **scale;
   int fdtype;
   size_t i = 0;
 
@@ -67,12 +78,17 @@ main (void)
 
   for (trs = nlinear_trs[i]; trs != NULL; trs = nlinear_trs[++i])
     {
+      size_t j = 0;
+
       fprintf(stderr, "trs = %s\n", (*trs)->name);
 
-      for (fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
-           fdtype <= GSL_MULTILARGE_NLINEAR_CTRDIFF; ++fdtype)
+      for (scale = nlinear_scales[j]; scale != NULL; scale = nlinear_scales[++j])
         {
-          test_proc(*trs, fdtype);
+          for (fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
+               fdtype <= GSL_MULTILARGE_NLINEAR_CTRDIFF; ++fdtype)
+            {
+              test_proc(*trs, *scale, fdtype);
+            }
         }
     }
 

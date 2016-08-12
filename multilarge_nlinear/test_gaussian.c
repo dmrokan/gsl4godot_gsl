@@ -131,6 +131,7 @@ static gsl_multilarge_nlinear_fdf gaussian_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

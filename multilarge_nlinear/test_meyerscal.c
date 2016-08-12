@@ -128,6 +128,7 @@ static gsl_multilarge_nlinear_fdf meyerscal_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

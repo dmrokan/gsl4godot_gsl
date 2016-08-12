@@ -109,6 +109,7 @@ static gsl_multilarge_nlinear_fdf lin3_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

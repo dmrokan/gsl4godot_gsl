@@ -155,6 +155,7 @@ static gsl_multilarge_nlinear_fdf wnlin_func1 =
   (void *) &wnlin_internal_weight,
   0,
   0,
+  0,
   0
 };
 
@@ -166,6 +167,7 @@ static gsl_multilarge_nlinear_fdf wnlin_func2 =
   wnlin_N,
   wnlin_P,
   NULL,
+  0,
   0,
   0,
   0

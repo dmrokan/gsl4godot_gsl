@@ -145,6 +145,7 @@ static gsl_multilarge_nlinear_fdf biggs_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

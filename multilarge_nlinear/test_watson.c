@@ -158,6 +158,7 @@ static gsl_multilarge_nlinear_fdf watson_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

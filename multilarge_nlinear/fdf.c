@@ -145,6 +145,7 @@ gsl_multilarge_nlinear_default_parameters(void)
   gsl_multilarge_nlinear_parameters params;
 
   params.trs = gsl_multilarge_nlinear_trs_lm;
+  params.scale = gsl_multilarge_nlinear_scale_more;
   params.solver = gsl_multilarge_nlinear_solver_cholesky;
   params.fdtype = GSL_MULTILARGE_NLINEAR_FWDIFF;
   params.factor_up = 3.0;

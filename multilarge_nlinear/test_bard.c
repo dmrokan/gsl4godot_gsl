@@ -146,6 +146,7 @@ static gsl_multilarge_nlinear_fdf bard_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

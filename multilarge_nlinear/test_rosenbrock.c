@@ -87,6 +87,7 @@ static gsl_multilarge_nlinear_fdf rosenbrock_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

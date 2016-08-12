@@ -159,6 +159,7 @@ static gsl_multilarge_nlinear_fdf kowalik_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

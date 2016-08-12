@@ -93,6 +93,7 @@ static gsl_multilarge_nlinear_fdf powell3_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

@@ -109,6 +109,7 @@ static gsl_multilarge_nlinear_fdf beale_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

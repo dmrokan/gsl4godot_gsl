@@ -138,6 +138,7 @@ static gsl_multilarge_nlinear_fdf rat42_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

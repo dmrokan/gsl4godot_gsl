@@ -175,6 +175,7 @@ static gsl_multilarge_nlinear_fdf penalty2_func =
   NULL,
   0,
   0,
+  0,
   0
 };
 

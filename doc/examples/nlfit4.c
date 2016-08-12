@@ -191,6 +191,8 @@ main (void)
           "Method", "NITER", "NFEV", "NJUEV", "NJTJEV", "NAEV", "Init Cost",
           "Final cost", "cond(J)", "Final |x|^2", "Time (s)");
   
+  fdf_params.scale = gsl_multilarge_nlinear_scale_levenberg;
+
   fdf_params.trs = gsl_multilarge_nlinear_trs_lm;
   solve_system(x, &fdf, &fdf_params);
 
