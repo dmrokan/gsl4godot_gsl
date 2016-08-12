@@ -1,5 +1,8 @@
 * What is new in gsl-2.2:
 
+** fix GSL_EIGEN_SORT_VAL_{ASC,DESC} for nonsymmetric
+   eigensystems (Victor Zverovich)
+
 ** added complete orthogonal decomposition routines
    (gsl_linalg_COD)
 
