@@ -54,6 +54,7 @@ typedef struct
   gsl_vector *rhs;           /* -J^T f, size p */
   gsl_permutation *perm;     /* permutation matrix for modified Cholesky */
   gsl_vector *work3p;        /* workspace, size 3*p */
+  double mu;                 /* current regularization parameter */
 } cholesky_state_t;
 
 static void *cholesky_alloc (const size_t n, const size_t p);
@@ -108,6 +109,8 @@ cholesky_alloc (const size_t n, const size_t p)
     {
       GSL_ERROR_NULL ("failed to allocate space for work3p", GSL_ENOMEM);
     }
+
+  state->mu = -1.0;
 
   return state;
 }
@@ -185,6 +188,8 @@ cholesky_presolve(const double mu, const void * vtrust_state, void * vstate)
   if (status)
     return status;
 
+  state->mu = mu;
+
   return GSL_SUCCESS;
 }
 
@@ -222,6 +227,22 @@ cholesky_rcond(double * rcond, void * vstate)
   int status;
   cholesky_state_t *state = (cholesky_state_t *) vstate;
   double rcond_JTJ;
+
+  if (state->mu != 0)
+    {
+      /*
+       * Cholesky decomposition hasn't been computed yet, or was computed
+       * with mu > 0 - recompute Cholesky decomposition of J^T J
+       */
+
+      /* copy lower triangle of JTJ to workspace */
+      gsl_matrix_tricpy('L', 1, state->work_JTJ, state->JTJ);
+
+      /* compute modified Cholesky decomposition */
+      status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
+      if (status)
+        return status;
+    }
 
   status = gsl_linalg_mcholesky_rcond(state->work_JTJ, state->perm, &rcond_JTJ, state->work3p);
   if (status == GSL_SUCCESS)
