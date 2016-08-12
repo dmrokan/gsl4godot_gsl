@@ -28,6 +28,7 @@
 #include <gsl/gsl_permutation.h>
 
 #include "common.c"
+#include "nielsen.c"
 
 #define SCALE_SUB2D           1
 
@@ -49,6 +50,7 @@ typedef struct
   size_t p;                  /* number of parameters */
   double delta;              /* trust region radius */
   double mu;                 /* LM parameter */
+  long nu;                   /* for updating LM parameter */
   gsl_vector *diag;          /* D = diag(J^T J) */
   gsl_vector *dx_scaled;     /* scaled step vector: dx_scaled = D*dx */
   gsl_vector *x_trial;       /* trial parameter vector */
@@ -57,7 +59,6 @@ typedef struct
   gsl_vector *workn;         /* workspace, length n */
 
   void *trs_state;           /* workspace for trust region subproblem */
-  void *update_state;        /* workspace for trust region update method */
   void *solver_state;        /* workspace for linear least squares solver */
 
   double avratio;            /* current |a| / |v| */
@@ -145,12 +146,6 @@ trust_alloc (const gsl_multifit_nlinear_parameters * params,
       GSL_ERROR_NULL ("failed to allocate space for trs state", GSL_ENOMEM);
     }
 
-  state->update_state = (params->update->alloc)();
-  if (state->update_state == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for update state", GSL_ENOMEM);
-    }
-
   state->solver_state = (params->solver->alloc)(n, p);
   if (state->solver_state == NULL)
     {
@@ -191,9 +186,6 @@ trust_free(void *vstate)
 
   if (state->trs_state)
     (params->trs->free)(state->trs_state);
-
-  if (state->update_state)
-    (params->update->free)(state->update_state);
 
   if (state->solver_state)
     (params->solver->free)(state->solver_state);
@@ -247,8 +239,7 @@ trust_init(void *vstate, const gsl_vector *swts,
   state->delta = 0.3 * GSL_MAX(1.0, Dx);
 
   /* initialize LM parameter */
-  status = (params->update->init)(J, state->diag, &(state->mu),
-                                  state->update_state);
+  status = nielsen_init(J, state->diag, &(state->mu), &(state->nu));
   if (status)
     return status;
 
@@ -444,7 +435,7 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           (params->scale->update)(J, diag);
 
           /* step accepted, decrease LM parameter */
-          status = (params->update->accept)(rho, &(state->mu), state->update_state);
+          status = nielsen_accept(rho, &(state->mu), &(state->nu));
           if (status)
             return status;
 
@@ -453,7 +444,7 @@ trust_iterate(void *vstate, const gsl_vector *swts,
       else
         {
           /* step rejected, increase LM parameter */
-          status = (params->update->reject)(&(state->mu), state->update_state);
+          status = nielsen_reject(&(state->mu), &(state->nu));
           if (status)
             return status;
 

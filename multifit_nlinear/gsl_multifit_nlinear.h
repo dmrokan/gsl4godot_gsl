@@ -77,18 +77,6 @@ typedef struct
   void (*free) (void * vstate);
 } gsl_multifit_nlinear_trs;
 
-/* LM parameter updating method */
-typedef struct
-{
-  const char *name;
-  void * (*alloc) (void);
-  int (*init) (const gsl_matrix * J, const gsl_vector * diag,
-               double * mu, void * vstate);
-  int (*accept) (const double rho, double * mu, void * vstate);
-  int (*reject) (double * mu, void * vstate);
-  void (*free) (void * vstate);
-} gsl_multifit_nlinear_update;
-
 /* scaling matrix specification */
 typedef struct
 {
@@ -126,7 +114,6 @@ typedef struct
 typedef struct
 {
   const gsl_multifit_nlinear_trs *trs;        /* trust region subproblem method */
-  const gsl_multifit_nlinear_update *update;  /* LM parameter update method */
   const gsl_multifit_nlinear_scale *scale;    /* scaling method */
   const gsl_multifit_nlinear_solver *solver;  /* solver method */
   gsl_multifit_nlinear_fdtype fdtype;         /* finite difference method */
@@ -300,10 +287,6 @@ GSL_VAR const gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_lmaccel;
 GSL_VAR const gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_dogleg;
 GSL_VAR const gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_ddogleg;
 GSL_VAR const gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_subspace2D;
-
-/* parameter update methods */
-GSL_VAR const gsl_multifit_nlinear_update * gsl_multifit_nlinear_update_trust;
-GSL_VAR const gsl_multifit_nlinear_update * gsl_multifit_nlinear_update_nielsen;
 
 /* scaling matrix strategies */
 GSL_VAR const gsl_multifit_nlinear_scale * gsl_multifit_nlinear_scale_levenberg;

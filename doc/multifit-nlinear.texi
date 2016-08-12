@@ -507,7 +507,6 @@ defined as follows:
 typedef struct
 @{
   const gsl_multifit_nlinear_trs *trs;        /* trust region subproblem method */
-  const gsl_multifit_nlinear_update *update;  /* LM parameter update method */
   const gsl_multifit_nlinear_scale *scale;    /* scaling method */
   const gsl_multifit_nlinear_solver *solver;  /* solver method */
   gsl_multifit_nlinear_fdtype fdtype;         /* finite difference method */
