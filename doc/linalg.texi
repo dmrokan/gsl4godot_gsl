@@ -30,7 +30,8 @@ The functions described in this chapter are declared in the header file
 * Givens Rotations::  
 * Householder Transformations::  
 * Householder solver for linear systems::  
-* Tridiagonal Systems::         
+* Tridiagonal Systems::
+* Triangular Systems::
 * Balancing::
 * Linear Algebra Examples::     
 * Linear Algebra References and Further Reading::  
@@ -927,6 +928,12 @@ On input, @var{x} contains the right hand side vector @math{b} which is
 replaced by the solution vector on output.
 @end deftypefun
 
+@deftypefun int gsl_linalg_pcholesky_invert (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, gsl_matrix * @var{Ainv})
+This function computes the inverse of the matrix @math{A}, using the Pivoted
+Cholesky decomposition stored in @var{LDLT} and @var{p}. On output, the
+matrix @var{Ainv} contains @math{A^{-1}}.
+@end deftypefun
+
 @deftypefun int gsl_linalg_pcholesky_rcond (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, double * @var{rcond}, gsl_vector * @var{work})
 This function estimates the reciprocal condition number (using the 1-norm) of the symmetric positive
 definite matrix @math{A}, using its pivoted Cholesky decomposition provided in @var{LDLT}.
@@ -1551,6 +1558,19 @@ A = ( d_0 e_0  0  e_3 )
     ( e_3  0  e_2 d_3 )
 @end example
 @end ifinfo
+@end deftypefun
+
+@node Triangular Systems
+@section Triangular Systems
+@cindex triangular systems
+
+@deftypefun int gsl_linalg_invtri (CBLAS_UPLO_t @var{Uplo}, CBLAS_DIAG_t @var{Diag}, gsl_matrix * @var{T})
+This function calculates the in-place inverse of the triangular matrix @var{T}. When
+@var{Uplo} is @code{CblasUpper} then the upper triangle of @var{T} is used, and when
+@var{Uplo} is @code{CblasLower}, the lower triangle is used. If @var{Diag} is
+@code{CblasNonUnit}, then the diagonal of the matrix is used, but if @var{Diag}
+is @code{CblasUnit}, then the diagonal elements of the matrix @var{T} are taken as
+unity and are not referenced.
 @end deftypefun
 
 @node Balancing

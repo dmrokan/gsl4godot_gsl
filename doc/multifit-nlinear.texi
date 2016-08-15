@@ -526,15 +526,17 @@ defined as follows:
 @example
 typedef struct
 @{
-  const gsl_multilarge_nlinear_trs *trs;      /* trust region subproblem method */
-  gsl_multilarge_nlinear_fdtype fdtype;       /* finite difference method */
-  double factor_up;                           /* factor for increasing trust radius */
-  double factor_down;                         /* factor for decreasing trust radius */
-  double avmax;                               /* max allowed |a|/|v| */
-  double h_df;                                /* step size for finite difference Jacobian */
-  double h_fvv;                               /* step size for finite difference fvv */
-  size_t max_iter;                            /* maximum iterations for trs method */
-  double tol;                                 /* tolerance for solving trs */
+  const gsl_multilarge_nlinear_trs *trs;       /* trust region subproblem method */
+  const gsl_multilarge_nlinear_scale *scale;   /* scaling method */
+  const gsl_multilarge_nlinear_solver *solver; /* solver method */
+  gsl_multilarge_nlinear_fdtype fdtype;        /* finite difference method */
+  double factor_up;                            /* factor for increasing trust radius */
+  double factor_down;                          /* factor for decreasing trust radius */
+  double avmax;                                /* max allowed |a|/|v| */
+  double h_df;                                 /* step size for finite difference Jacobian */
+  double h_fvv;                                /* step size for finite difference fvv */
+  size_t max_iter;                             /* maximum iterations for trs method */
+  double tol;                                  /* tolerance for solving trs */
 @} gsl_multilarge_nlinear_parameters;
 @end example
 
@@ -580,11 +582,13 @@ method is available only for large systems.
 @end deftypevr
 
 @deftypevr {Parameter} {const gsl_multifit_nlinear_scale *} scale
+@deftypevrx {Parameter} {const gsl_multilarge_nlinear_scale *} scale
 
 This parameter determines the diagonal scaling matrix @math{D} and
 may be selected from the following choices,
 
 @defvr {Default} gsl_multifit_nlinear_scale_more
+@defvrx {Default} gsl_multilarge_nlinear_scale_more
 This damping strategy was suggested by Mor@'e, and
 corresponds to @math{D^T D = } max(diag(@math{J^T J})),
 in other words the maximum elements of
@@ -602,6 +606,7 @@ default, but it may not be the best choice for all problems.
 @end defvr
 
 @defvr {Option} gsl_multifit_nlinear_scale_levenberg
+@defvrx {Option} gsl_multilarge_nlinear_scale_levenberg
 This damping strategy was originally suggested by Levenberg, and
 corresponds to @math{D^T D = I}. This method has also proven
 effective on a large class of problems, but is not scale-invariant.
@@ -611,6 +616,7 @@ to parameter evaporation (ie: parameters go to infinity)
 @end defvr
 
 @defvr {Option} gsl_multifit_nlinear_scale_marquardt
+@defvrx {Option} gsl_multilarge_nlinear_scale_marquardt
 This damping strategy was suggested by Marquardt, and
 corresponds to @math{D^T D = } diag(@math{J^T J}). This
 method is scale-invariant, but it is generally considered

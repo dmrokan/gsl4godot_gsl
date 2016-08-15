@@ -176,74 +176,49 @@ gsl_linalg_cholesky_invert(gsl_matrix * LLT)
     }
   else
     {
-      size_t N = LLT->size1;
-      size_t i, j;
-      double sum;
+      const size_t N = LLT->size1;
+      size_t i;
       gsl_vector_view v1, v2;
 
       /* invert the lower triangle of LLT */
-      for (i = 0; i < N; ++i)
-        {
-          double ajj;
-
-          j = N - i - 1;
-
-          gsl_matrix_set(LLT, j, j, 1.0 / gsl_matrix_get(LLT, j, j));
-          ajj = -gsl_matrix_get(LLT, j, j);
-
-          if (j < N - 1)
-            {
-              gsl_matrix_view m;
-              
-              m = gsl_matrix_submatrix(LLT, j + 1, j + 1,
-                                       N - j - 1, N - j - 1);
-              v1 = gsl_matrix_subcolumn(LLT, j, j + 1, N - j - 1);
-
-              gsl_blas_dtrmv(CblasLower, CblasNoTrans, CblasNonUnit,
-                             &m.matrix, &v1.vector);
-
-              gsl_blas_dscal(ajj, &v1.vector);
-            }
-        } /* for (i = 0; i < N; ++i) */
+      gsl_linalg_invtri(CblasLower, CblasNonUnit, LLT);
 
       /*
        * The lower triangle of LLT now contains L^{-1}. Now compute
-       * A^{-1} = L^{-t} L^{-1}
-       *
-       * The (ij) element of A^{-1} is column i of L^{-1} dotted into
-       * column j of L^{-1}
+       * A^{-1} = L^{-T} L^{-1}
        */
 
       for (i = 0; i < N; ++i)
         {
-          for (j = i + 1; j < N; ++j)
+          double aii = gsl_matrix_get(LLT, i, i);
+
+          if (i < N - 1)
             {
-              v1 = gsl_matrix_subcolumn(LLT, i, j, N - j);
-              v2 = gsl_matrix_subcolumn(LLT, j, j, N - j);
+              double tmp;
 
-              /* compute Ainv_{ij} = sum_k Linv_{ki} Linv_{kj} */
-              gsl_blas_ddot(&v1.vector, &v2.vector, &sum);
+              v1 = gsl_matrix_subcolumn(LLT, i, i, N - i);
+              gsl_blas_ddot(&v1.vector, &v1.vector, &tmp);
+              gsl_matrix_set(LLT, i, i, tmp);
 
-              /* store in upper triangle */
-              gsl_matrix_set(LLT, i, j, sum);
+              if (i > 0)
+                {
+                  gsl_matrix_view m = gsl_matrix_submatrix(LLT, i + 1, 0, N - i - 1, i);
+
+                  v1 = gsl_matrix_subcolumn(LLT, i, i + 1, N - i - 1);
+                  v2 = gsl_matrix_subrow(LLT, i, 0, i);
+
+                  gsl_blas_dgemv(CblasTrans, 1.0, &m.matrix, &v1.vector, aii, &v2.vector);
+                }
             }
-
-          /* now compute the diagonal element */
-          v1 = gsl_matrix_subcolumn(LLT, i, i, N - i);
-          gsl_blas_ddot(&v1.vector, &v1.vector, &sum);
-          gsl_matrix_set(LLT, i, i, sum);
+          else
+            {
+              v1 = gsl_matrix_row(LLT, N - 1);
+              gsl_blas_dscal(aii, &v1.vector);
+            }
         }
 
-      /* copy the transposed upper triangle to the lower triangle */
-
-      for (j = 1; j < N; j++)
-        {
-          for (i = 0; i < j; i++)
-            {
-              double A_ij = gsl_matrix_get (LLT, i, j);
-              gsl_matrix_set (LLT, j, i, A_ij);
-            }
-        } 
+      /* copy lower triangle to upper */
+      gsl_matrix_transpose_tricpy('L', 0, LLT, LLT);
 
       return GSL_SUCCESS;
     }

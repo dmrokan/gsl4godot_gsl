@@ -36,6 +36,8 @@ static int test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
                                     const double expected_rcond, const double eps,
                                     const char * desc);
 static int test_cholesky_decomp(gsl_rng * r);
+int test_cholesky_invert_eps(const gsl_matrix * m, const double eps, const char *desc);
+int test_cholesky_invert(gsl_rng * r);
 static int test_pcholesky_decomp_eps(const int scale, const gsl_matrix * m,
                                      const double expected_rcond, const double eps,
                                      const char * desc);
@@ -44,6 +46,8 @@ int test_pcholesky_solve_eps(const int scale, const gsl_matrix * m, const gsl_ve
                              const gsl_vector * sol, const double eps,
                              const char * desc);
 static int test_pcholesky_solve(gsl_rng * r);
+int test_pcholesky_invert_eps(const gsl_matrix * m, const double eps, const char *desc);
+int test_pcholesky_invert(gsl_rng * r);
 
 static int test_mcholesky_decomp_eps(const int posdef, const int scale, const gsl_matrix * m,
                                      const double expected_rcond, const double eps, const char * desc);
@@ -219,7 +223,7 @@ test_cholesky_decomp(gsl_rng * r)
       gsl_matrix * m = gsl_matrix_alloc(N, N);
 
       create_posdef_matrix(m, r);
-      test_cholesky_decomp_eps(0, m, -1.0, N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
+      test_cholesky_decomp_eps(0, m, -1.0, 10.0 * N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
       test_cholesky_decomp_eps(1, m, -1.0, 20.0 * N * GSL_DBL_EPSILON, "cholesky_decomp scaled random");
 
       if (N <= 12)
@@ -233,6 +237,70 @@ test_cholesky_decomp(gsl_rng * r)
 
           test_cholesky_decomp_eps(0, m, expected_rcond, GSL_DBL_EPSILON, "cholesky_decomp unscaled hilbert");
           test_cholesky_decomp_eps(1, m, expected_rcond, N * GSL_DBL_EPSILON, "cholesky_decomp scaled hilbert");
+        }
+
+      gsl_matrix_free(m);
+    }
+
+  return s;
+}
+
+int
+test_cholesky_invert_eps(const gsl_matrix * m, const double eps, const char *desc)
+{
+  int s = 0;
+  size_t i, j, N = m->size1;
+
+  gsl_matrix * v  = gsl_matrix_alloc(N, N);
+  gsl_matrix * c  = gsl_matrix_alloc(N, N);
+
+  gsl_matrix_memcpy(v, m);
+
+  s += gsl_linalg_cholesky_decomp(v);
+  s += gsl_linalg_cholesky_invert(v);
+
+  /* c = m m^{-1} */
+  gsl_blas_dsymm(CblasLeft, CblasUpper, 1.0, m, v, 0.0, c);
+
+  /* c should be the identity matrix */
+
+  for (i = 0; i < N; ++i)
+    {
+      for (j = 0; j < N; ++j)
+        {
+          double cij = gsl_matrix_get(c, i, j);
+          double expected = (i == j) ? 1.0 : 0.0;
+
+          gsl_test_rel(cij, expected, eps, "%s (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                       desc, N, N, i, j, cij, expected);
+        }
+    }
+
+  gsl_matrix_free(v);
+  gsl_matrix_free(c);
+
+  return s;
+}
+
+int
+test_cholesky_invert(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 50;
+  size_t N;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      gsl_matrix * m = gsl_matrix_alloc(N, N);
+
+      create_posdef_matrix(m, r);
+
+      test_cholesky_invert_eps(m, N * GSL_DBL_EPSILON, "cholesky_invert unscaled random");
+
+      if (N <= 4)
+        {
+          create_hilbert_matrix2(m);
+          test_cholesky_invert_eps(m, N * 256.0 * GSL_DBL_EPSILON, "cholesky_invert unscaled hilbert");
         }
 
       gsl_matrix_free(m);
@@ -738,13 +806,80 @@ test_pcholesky_solve(gsl_rng * r)
         {
           create_hilbert_matrix2(m);
           gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
-          test_pcholesky_solve_eps(0, m, rhs, sol, 512.0 * N * GSL_DBL_EPSILON, "pcholesky_solve unscaled hilbert");
-          test_pcholesky_solve_eps(1, m, rhs, sol, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_solve scaled hilbert");
+          test_pcholesky_solve_eps(0, m, rhs, sol, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_solve unscaled hilbert");
+          test_pcholesky_solve_eps(1, m, rhs, sol, 2048.0 * N * GSL_DBL_EPSILON, "pcholesky_solve scaled hilbert");
         }
 
       gsl_matrix_free(m);
       gsl_vector_free(rhs);
       gsl_vector_free(sol);
+    }
+
+  return s;
+}
+
+int
+test_pcholesky_invert_eps(const gsl_matrix * m, const double eps, const char *desc)
+{
+  int s = 0;
+  size_t i, j, N = m->size1;
+
+  gsl_matrix * v  = gsl_matrix_alloc(N, N);
+  gsl_matrix * c  = gsl_matrix_alloc(N, N);
+  gsl_matrix * minv = gsl_matrix_alloc(N, N);
+  gsl_permutation * p = gsl_permutation_alloc(N);
+
+  gsl_matrix_memcpy(v, m);
+
+  s += gsl_linalg_pcholesky_decomp(v, p);
+  s += gsl_linalg_pcholesky_invert(v, p, minv);
+
+  /* c = m m^{-1} */
+  gsl_blas_dsymm(CblasLeft, CblasUpper, 1.0, m, minv, 0.0, c);
+
+  /* c should be the identity matrix */
+
+  for (i = 0; i < N; ++i)
+    {
+      for (j = 0; j < N; ++j)
+        {
+          double cij = gsl_matrix_get(c, i, j);
+          double expected = (i == j) ? 1.0 : 0.0;
+
+          gsl_test_rel(cij, expected, eps, "%s (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                       desc, N, N, i, j, cij, expected);
+        }
+    }
+
+  gsl_matrix_free(v);
+  gsl_matrix_free(c);
+  gsl_matrix_free(minv);
+  gsl_permutation_free(p);
+
+  return s;
+}
+
+int
+test_pcholesky_invert(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 30;
+  size_t N;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      gsl_matrix * m = gsl_matrix_alloc(N, N);
+
+      create_posdef_matrix(m, r);
+      test_pcholesky_invert_eps(m, N * GSL_DBL_EPSILON, "pcholesky_invert unscaled random");
+
+      if (N <= 4)
+        {
+          create_hilbert_matrix2(m);
+          test_pcholesky_invert_eps(m, 256.0 * N * GSL_DBL_EPSILON, "pcholesky_invert unscaled hilbert");
+        }
+
+      gsl_matrix_free(m);
     }
 
   return s;

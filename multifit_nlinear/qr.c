@@ -43,8 +43,6 @@
 #include <gsl/gsl_multifit_nlinear.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
-#include <gsl/gsl_permute_vector.h>
-#include <gsl/gsl_permute_matrix.h>
 
 #include "common.c"
 #include "qrsolv.c"

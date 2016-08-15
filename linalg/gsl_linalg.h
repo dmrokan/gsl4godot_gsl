@@ -544,6 +544,9 @@ int gsl_linalg_pcholesky_svx2(const gsl_matrix * LDLT,
                               const gsl_vector * S,
                               gsl_vector * x);
 
+int gsl_linalg_pcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
+                                gsl_matrix * Ainv);
+
 int gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
                                 double * rcond, gsl_vector * work);
 
@@ -704,6 +707,10 @@ int gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * wor
 int gsl_linalg_invnorm1(const size_t N,
                         int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
                         void * params, double * Ainvnorm, gsl_vector * work);
+
+/* triangular matrices */
+
+int gsl_linalg_invtri(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T);
 
 INLINE_DECL void gsl_linalg_givens (const double a, const double b,
                                     double *c, double *s);
