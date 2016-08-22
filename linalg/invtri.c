@@ -29,7 +29,7 @@
 #include <gsl/gsl_linalg.h>
 
 /*
-gsl_linalg_invtri()
+gsl_linalg_tri_invert()
   Invert a triangular matrix T
 
 Inputs: Uplo - CblasUpper or CblasLower
@@ -41,7 +41,7 @@ Return: success/error
 */
 
 int
-gsl_linalg_invtri(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T)
+gsl_linalg_tri_invert(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T)
 {
   const size_t N = T->size1;
 

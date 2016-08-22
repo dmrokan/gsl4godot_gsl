@@ -394,7 +394,7 @@ gsl_linalg_pcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
 
       /* invert the lower triangle of LDLT */
       gsl_matrix_memcpy(Ainv, LDLT);
-      gsl_linalg_invtri(CblasLower, CblasUnit, Ainv);
+      gsl_linalg_tri_invert(CblasLower, CblasUnit, Ainv);
 
       /* compute sqrt(D^{-1}) L^{-1} in the lower triangle of Ainv */
       for (i = 0; i < N; ++i)
@@ -457,7 +457,7 @@ gsl_linalg_pcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
           gsl_permute_vector_inverse(p, &v1.vector);
         }
 
-      /* compute P^T L^{-T} D^{-1} L^{-1} P^T */
+      /* compute P L^{-T} D^{-1} L^{-1} P^T */
       for (i = 0; i < N; ++i)
         {
           v1 = gsl_matrix_column(Ainv, i);

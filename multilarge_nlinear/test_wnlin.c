@@ -6,8 +6,6 @@ static double wnlin_epsrel = 1.0e-8;
 
 static double wnlin_J[wnlin_N * wnlin_P];
 
-static int wnlin_internal_weight = 1;
-
 /* data */
 static double wnlin_Y[wnlin_N] = {
   6.08035e+00, 5.47552e+00, 5.94654e+00, 5.04920e+00, 4.78568e+00,
@@ -56,8 +54,6 @@ wnlin_checksol(const double x[], const double sumsq,
 static int
 wnlin_f (const gsl_vector *x, void *params, gsl_vector *f)
 {
-  int *iptr = (int *) params;
-  int doweight = iptr ? *iptr : 0;
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
   double b = gsl_vector_get (x, 2);
@@ -71,10 +67,7 @@ wnlin_f (const gsl_vector *x, void *params, gsl_vector *f)
       double swi = sqrt(wnlin_W[i]);
       double Mi = A * exp (-lambda * ti) + b;
 
-      if (doweight)
-        gsl_vector_set (f, i, swi * (Mi - yi));
-      else
-        gsl_vector_set (f, i, Mi - yi);
+      gsl_vector_set (f, i, swi * (Mi - yi));
     }
 
   return GSL_SUCCESS;
@@ -86,8 +79,6 @@ wnlin_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
           gsl_matrix * JTJ)
 {
   gsl_matrix_view J = gsl_matrix_view_array(wnlin_J, wnlin_N, wnlin_P);
-  int *iptr = (int *) params;
-  int doweight = iptr ? *iptr : 0;
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
   size_t i;
@@ -103,8 +94,7 @@ wnlin_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
       gsl_vector_set(&v.vector, 1, -ti * A * e);
       gsl_vector_set(&v.vector, 2, 1.0);
 
-      if (doweight)
-        gsl_vector_scale(&v.vector, swi);
+      gsl_vector_scale(&v.vector, swi);
     }
 
   if (v)
@@ -120,8 +110,6 @@ static int
 wnlin_fvv (const gsl_vector * x, const gsl_vector * v,
            void *params, gsl_vector * fvv)
 {
-  int *iptr = (int *) params;
-  int doweight = iptr ? *iptr : 0;
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
   double v1 = gsl_vector_get(v, 0);
@@ -136,30 +124,13 @@ wnlin_fvv (const gsl_vector * x, const gsl_vector * v,
 
       fvvi = exp(-ti*lambda)*ti*v2 * (-2*v1 + ti*v2*A);
 
-      if (doweight)
-        gsl_vector_set(fvv, i, swi * fvvi);
-      else
-        gsl_vector_set(fvv, i, fvvi);
+      gsl_vector_set(fvv, i, swi * fvvi);
     }
 
   return GSL_SUCCESS;
 }
 
 static gsl_multilarge_nlinear_fdf wnlin_func1 =
-{
-  wnlin_f,
-  wnlin_df,
-  wnlin_fvv,
-  wnlin_N,
-  wnlin_P,
-  (void *) &wnlin_internal_weight,
-  0,
-  0,
-  0,
-  0
-};
-
-static gsl_multilarge_nlinear_fdf wnlin_func2 =
 {
   wnlin_f,
   wnlin_df,
@@ -181,14 +152,4 @@ static test_fdf_problem wnlin_problem1 =
   &wnlin_epsrel,
   &wnlin_checksol,
   &wnlin_func1
-};
-
-static test_fdf_problem wnlin_problem2 =
-{
-  "wnlin_external_weights",
-  wnlin_x0,
-  NULL,
-  &wnlin_epsrel,
-  &wnlin_checksol,
-  &wnlin_func2
 };

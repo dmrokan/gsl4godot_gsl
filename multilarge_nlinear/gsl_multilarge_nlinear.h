@@ -108,6 +108,7 @@ typedef struct
   int (*solve) (const gsl_vector * g, gsl_vector * x,
                 const void * vtrust_state, void * vstate);
   int (*rcond) (double * rcond, const gsl_matrix * JTJ, void * vstate);
+  int (*covar) (const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate);
   void (*free) (void * vstate);
 } gsl_multilarge_nlinear_solver;
 
@@ -140,6 +141,7 @@ typedef struct
                   gsl_vector * f, gsl_vector * g, gsl_matrix * JTJ,
                   gsl_vector * dx);
   int (*rcond) (double * rcond, const gsl_matrix * JTJ, void * state);
+  int (*covar) (const gsl_matrix * JTJ, gsl_matrix * covar, void * state);
   double (*avratio) (void * state);
   void (*free) (void * state);
 } gsl_multilarge_nlinear_type;
@@ -171,6 +173,8 @@ typedef struct
   gsl_matrix * JTJ;           /* matrix J^T J */
   gsl_vector * sqrt_wts_work; /* sqrt(W) */
   gsl_vector * sqrt_wts;      /* ptr to sqrt_wts_work, or NULL if not using weights */
+  size_t n;                   /* number of residuals */
+  size_t p;                   /* number of parameters */
   size_t niter;               /* number of iterations performed */
   gsl_multilarge_nlinear_parameters params;
   void *state;
@@ -203,6 +207,9 @@ gsl_multilarge_nlinear_avratio (const gsl_multilarge_nlinear_workspace * w);
 
 int
 gsl_multilarge_nlinear_rcond (double * rcond, const gsl_multilarge_nlinear_workspace * w);
+
+int
+gsl_multilarge_nlinear_covar (gsl_matrix * covar, gsl_multilarge_nlinear_workspace * w);
 
 int
 gsl_multilarge_nlinear_driver (const size_t maxiter,
@@ -260,11 +267,6 @@ gsl_multilarge_nlinear_eval_fvv(const double h,
                                 gsl_multilarge_nlinear_fdf *fdf,
                                 gsl_vector *yvv,
                                 gsl_vector *work);
-
-/* covar.c */
-int
-gsl_multilarge_nlinear_covar (const gsl_matrix * J, const double epsrel,
-                              gsl_matrix * covar);
 
 /* convergence.c */
 int

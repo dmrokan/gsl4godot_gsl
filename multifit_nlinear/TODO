@@ -3,3 +3,4 @@
 3. More/Sorensen method for mu calculation
 4. better condition estimate for svd
 5. fix subspace2D
+6. Revisit h_fvv = 0.01 vs 0.02 (originally 0.01)

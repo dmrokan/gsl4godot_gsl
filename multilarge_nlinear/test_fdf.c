@@ -231,12 +231,6 @@ test_fdf_main(const gsl_multilarge_nlinear_parameters * params)
   /* internal weighting in _f and _df functions */
   test_fdf(gsl_multilarge_nlinear_trust, params, xtol, gtol, ftol,
            wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
-
-#if 0 /* XXX */
-  /* weighting through nlinear_winit */
-  test_fdf(gsl_multilarge_nlinear_trust, params, xtol, gtol, ftol,
-           wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
-#endif
 }
 
 /*
@@ -353,7 +347,10 @@ test_fdf_checksol(const char *sname, const char *pname,
   gsl_blas_ddot(f, f, &sumsq);
   (problem->checksol)(x->data, sumsq, epsrel, sname, pname);
 
-#if 0
+  /* XXX: covariance not implemented for cgst method */
+  if (w->params.trs == gsl_multilarge_nlinear_trs_cgst)
+    return;
+
   /* check variances */
   if (sigma)
     {
@@ -361,9 +358,8 @@ test_fdf_checksol(const char *sname, const char *pname,
       const size_t p = fdf->p;
       size_t i;
       gsl_matrix * covar = gsl_matrix_alloc (p, p);
-      gsl_matrix *J = gsl_multilarge_nlinear_jac (w);
 
-      gsl_multilarge_nlinear_covar (J, 0.0, covar);
+      gsl_multilarge_nlinear_covar (covar, w);
 
       for (i = 0; i < p; i++) 
         {
@@ -374,7 +370,6 @@ test_fdf_checksol(const char *sname, const char *pname,
 
       gsl_matrix_free (covar);
     }
-#endif
 }
 
 static void

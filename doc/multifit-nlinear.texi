@@ -1304,6 +1304,7 @@ see @ref{Nonlinear Least-Squares Troubleshooting} for further guidance.
 @cindex covariance matrix, nonlinear fits
 
 @deftypefun int gsl_multifit_nlinear_covar (const gsl_matrix * @var{J}, const double @var{epsrel}, gsl_matrix * @var{covar})
+@deftypefunx int gsl_multilarge_nlinear_covar (gsl_matrix * @var{covar}, gsl_multilarge_nlinear_workspace * @var{w})
 This function computes the covariance matrix of best-fit parameters
 using the Jacobian matrix @var{J} and stores it in @var{covar}.
 The parameter @var{epsrel} is used to remove linear-dependent columns
@@ -1340,8 +1341,8 @@ covar = (J^T W J)^@{-1@}
 
 @end ifinfo
 @noindent
-and is computed by QR decomposition of J with column-pivoting.  Any
-columns of @math{R} which satisfy 
+and is computed using the factored form of the Jacobian (Cholesky, QR, or SVD).
+Any columns of @math{R} which satisfy 
 @tex
 \beforedisplay
 $$

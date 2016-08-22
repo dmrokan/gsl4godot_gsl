@@ -74,6 +74,7 @@ static int trust_iterate(void *vstate, const gsl_vector *swts,
                          gsl_vector *x, gsl_vector *f,
                          gsl_vector *g, gsl_matrix *JTJ, gsl_vector *dx);
 static int trust_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate);
+static int trust_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate);
 static double trust_avratio(void *vstate);
 static void trust_trial_step(const gsl_vector * x, const gsl_vector * dx,
                              gsl_vector * x_trial);
@@ -407,6 +408,18 @@ trust_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate)
   return status;
 }
 
+static int
+trust_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate)
+{
+  int status;
+  trust_state_t *state = (trust_state_t *) vstate;
+  const gsl_multilarge_nlinear_parameters *params = &(state->params);
+
+  status = (params->solver->covar)(JTJ, covar, state->solver_state);
+
+  return status;
+}
+
 static double
 trust_avratio(void *vstate)
 {
@@ -548,6 +561,7 @@ static const gsl_multilarge_nlinear_type trust_type =
   trust_init,
   trust_iterate,
   trust_rcond,
+  trust_covar,
   trust_avratio,
   trust_free
 };

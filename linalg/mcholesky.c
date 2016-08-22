@@ -224,6 +224,14 @@ gsl_linalg_mcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
   return status;
 }
 
+int
+gsl_linalg_mcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
+                            gsl_matrix * Ainv)
+{
+  int status = gsl_linalg_pcholesky_invert(LDLT, p, Ainv);
+  return status;
+}
+
 /*
 mcholesky_maxabs()
   Compute:

@@ -55,6 +55,7 @@ static int cholesky_presolve(const double mu, const void * vtrust_state, void * 
 static int cholesky_solve(const gsl_vector * g, gsl_vector *x,
                           const  void * vtrust_state, void *vstate);
 static int cholesky_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate);
+static int cholesky_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate);
 static int cholesky_solve_rhs(const gsl_vector * b, gsl_vector *x, cholesky_state_t *state);
 static int cholesky_regularize(const double mu, const gsl_vector * diag, gsl_matrix * A,
                                cholesky_state_t * state);
@@ -230,27 +231,46 @@ cholesky_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate)
   cholesky_state_t *state = (cholesky_state_t *) vstate;
   double rcond_JTJ;
 
-  if (state->mu != 0)
-    {
-      /*
-       * Cholesky decomposition hasn't been computed yet, or was computed
-       * with mu > 0 - recompute Cholesky decomposition of J^T J
-       */
+  /* its possible the current Cholesky decomposition is from the previous
+   * iteration so do a new one to be sure we use the right Jacobian */
 
-      /* copy lower triangle of JTJ to workspace */
-      gsl_matrix_tricpy('L', 1, state->work_JTJ, JTJ);
+  /* copy lower triangle of JTJ to workspace */
+  gsl_matrix_tricpy('L', 1, state->work_JTJ, JTJ);
 
-      /* compute modified Cholesky decomposition */
-      status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
-      if (status)
-        return status;
-    }
+  /* compute modified Cholesky decomposition */
+  status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
+  if (status)
+    return status;
 
   status = gsl_linalg_mcholesky_rcond(state->work_JTJ, state->perm, &rcond_JTJ, state->work3p);
   if (status == GSL_SUCCESS)
     *rcond = sqrt(rcond_JTJ);
 
   return status;
+}
+
+static int
+cholesky_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate)
+{
+  int status;
+  cholesky_state_t *state = (cholesky_state_t *) vstate;
+
+  /* its possible the current Cholesky decomposition is from the previous
+   * iteration so do a new one to be sure we use the right Jacobian */
+
+  /* copy lower triangle of JTJ to workspace */
+  gsl_matrix_tricpy('L', 1, state->work_JTJ, JTJ);
+
+  /* compute modified Cholesky decomposition */
+  status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
+  if (status)
+    return status;
+
+  status = gsl_linalg_mcholesky_invert(state->work_JTJ, state->perm, covar);
+  if (status)
+    return status;
+
+  return GSL_SUCCESS;
 }
 
 /* solve: (J^T J + mu D^T D) x = b */
@@ -297,6 +317,7 @@ static const gsl_multilarge_nlinear_solver cholesky_type =
   cholesky_presolve,
   cholesky_solve,
   cholesky_rcond,
+  cholesky_covar,
   cholesky_free
 };
 

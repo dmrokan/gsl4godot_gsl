@@ -567,6 +567,9 @@ int gsl_linalg_mcholesky_svx(const gsl_matrix * LDLT,
 int gsl_linalg_mcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation * p,
                                 double * rcond, gsl_vector * work);
 
+int gsl_linalg_mcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
+                                gsl_matrix * Ainv);
+
 /* Symmetric to symmetric tridiagonal decomposition */
 
 int gsl_linalg_symmtd_decomp (gsl_matrix * A, 
@@ -710,7 +713,7 @@ int gsl_linalg_invnorm1(const size_t N,
 
 /* triangular matrices */
 
-int gsl_linalg_invtri(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T);
+int gsl_linalg_tri_invert(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T);
 
 INLINE_DECL void gsl_linalg_givens (const double a, const double b,
                                     double *c, double *s);

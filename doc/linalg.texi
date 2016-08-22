@@ -1564,7 +1564,7 @@ A = ( d_0 e_0  0  e_3 )
 @section Triangular Systems
 @cindex triangular systems
 
-@deftypefun int gsl_linalg_invtri (CBLAS_UPLO_t @var{Uplo}, CBLAS_DIAG_t @var{Diag}, gsl_matrix * @var{T})
+@deftypefun int gsl_linalg_tri_invert (CBLAS_UPLO_t @var{Uplo}, CBLAS_DIAG_t @var{Diag}, gsl_matrix * @var{T})
 This function calculates the in-place inverse of the triangular matrix @var{T}. When
 @var{Uplo} is @code{CblasUpper} then the upper triangle of @var{T} is used, and when
 @var{Uplo} is @code{CblasLower}, the lower triangle is used. If @var{Diag} is

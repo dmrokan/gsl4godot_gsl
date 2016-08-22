@@ -44,6 +44,8 @@ gsl_multilarge_nlinear_alloc (const gsl_multilarge_nlinear_type * T,
                      GSL_ENOMEM, 0);
     }
 
+  w->n = n;
+  w->p = p;
   w->type = T;
   w->fdf = NULL;
   w->niter = 0;
@@ -244,6 +246,24 @@ gsl_multilarge_nlinear_rcond (double * rcond, const gsl_multilarge_nlinear_works
 {
   int status = (w->type->rcond) (rcond, w->JTJ, w->state);
   return status;
+}
+
+int
+gsl_multilarge_nlinear_covar (gsl_matrix * covar, gsl_multilarge_nlinear_workspace * w)
+{
+  if (covar->size1 != covar->size2)
+    {
+      GSL_ERROR ("covariance matrix must be square", GSL_ENOTSQR);
+    }
+  else if (covar->size1 != w->p)
+    {
+      GSL_ERROR ("covariance matrix does not match workspace", GSL_EBADLEN);
+    }
+  else
+    {
+      int status = (w->type->covar) (w->JTJ, covar, w->state);
+      return status;
+    }
 }
 
 /*

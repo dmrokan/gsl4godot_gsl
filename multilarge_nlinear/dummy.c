@@ -34,6 +34,8 @@ static int dummy_init(const void * vtrust_state, void * vstate);
 static int dummy_presolve(const double mu, const void * vtrust_state, void * vstate);
 static int dummy_solve(const gsl_vector * g, gsl_vector *x,
                        const  void * vtrust_state, void *vstate);
+static int dummy_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate);
+static int dummy_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate);
 
 static void *
 dummy_alloc (const size_t n, const size_t p)
@@ -87,6 +89,15 @@ dummy_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate)
   return GSL_SUCCESS;
 }
 
+static int
+dummy_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate)
+{
+  (void) vstate;
+  (void) JTJ;
+  gsl_matrix_set_zero(covar);
+  return GSL_SUCCESS;
+}
+
 static const gsl_multilarge_nlinear_solver dummy_type =
 {
   "dummy",
@@ -95,6 +106,7 @@ static const gsl_multilarge_nlinear_solver dummy_type =
   dummy_presolve,
   dummy_solve,
   dummy_rcond,
+  dummy_covar,
   dummy_free
 };
 
