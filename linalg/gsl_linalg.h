@@ -705,15 +705,18 @@ int gsl_linalg_balance_columns (gsl_matrix * A, gsl_vector * D);
 
 /* condition estimation */
 
-int gsl_linalg_triu_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
-int gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
+int gsl_linalg_tri_upper_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
+int gsl_linalg_tri_lower_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work);
 int gsl_linalg_invnorm1(const size_t N,
                         int (* Ainvx)(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params),
                         void * params, double * Ainvnorm, gsl_vector * work);
 
 /* triangular matrices */
 
-int gsl_linalg_tri_invert(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T);
+int gsl_linalg_tri_upper_invert(gsl_matrix * T);
+int gsl_linalg_tri_lower_invert(gsl_matrix * T);
+int gsl_linalg_tri_upper_unit_invert(gsl_matrix * T);
+int gsl_linalg_tri_lower_unit_invert(gsl_matrix * T);
 
 INLINE_DECL void gsl_linalg_givens (const double a, const double b,
                                     double *c, double *s);

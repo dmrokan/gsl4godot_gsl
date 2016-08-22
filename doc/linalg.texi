@@ -481,7 +481,7 @@ a default value of @math{20 (M + N) eps(max(|diag(R)|))} is used.
 @deftypefun int gsl_linalg_QRPT_rcond (const gsl_matrix * @var{QR}, double * @var{rcond}, gsl_vector * @var{work})
 This function estimates the reciprocal condition number (using the 1-norm) of the @math{R} factor,
 stored in the upper triangle of @var{QR}. The reciprocal condition number estimate, defined as
-@math{1 / (||A||_1 \cdot ||A^{-1}||_1)}, is stored in @var{rcond}.
+@math{1 / (||R||_1 \cdot ||R^{-1}||_1)}, is stored in @var{rcond}.
 Additional workspace of size @math{3 N} is required in @var{work}.
 @end deftypefun
 
@@ -1564,13 +1564,23 @@ A = ( d_0 e_0  0  e_3 )
 @section Triangular Systems
 @cindex triangular systems
 
-@deftypefun int gsl_linalg_tri_invert (CBLAS_UPLO_t @var{Uplo}, CBLAS_DIAG_t @var{Diag}, gsl_matrix * @var{T})
-This function calculates the in-place inverse of the triangular matrix @var{T}. When
-@var{Uplo} is @code{CblasUpper} then the upper triangle of @var{T} is used, and when
-@var{Uplo} is @code{CblasLower}, the lower triangle is used. If @var{Diag} is
-@code{CblasNonUnit}, then the diagonal of the matrix is used, but if @var{Diag}
-is @code{CblasUnit}, then the diagonal elements of the matrix @var{T} are taken as
-unity and are not referenced.
+@deftypefun int gsl_linalg_tri_upper_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_lower_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_upper_unit_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_lower_unit_invert (gsl_matrix * @var{T})
+These functions calculate the in-place inverse of the triangular matrix @var{T}. When
+the @code{upper} prefix is specified, then the upper triangle of @var{T} is used, and when
+the @code{lower} prefix is specified, the lower triangle is used. If the @code{unit}
+prefix is specified, then the diagonal elements of the matrix @var{T} are taken as
+unity and are not referenced. Otherwise the diagonal elements are used in the inversion.
+@end deftypefun
+
+@deftypefun int gsl_linalg_tri_upper_rcond (const gsl_matrix * @var{T}, double * @var{rcond}, gsl_vector * @var{work})
+@deftypefunx int gsl_linalg_tri_lower_rcond (const gsl_matrix * @var{T}, double * @var{rcond}, gsl_vector * @var{work})
+These functions estimate the reciprocal condition number, in the 1-norm, of the upper or lower
+@math{N}-by-@math{N} triangular matrix @var{T}. The reciprocal condition number
+is stored in @var{rcond} on output, and is defined by @math{1 / (||T||_1 \cdot ||T^{-1}||_1)}.
+Additional workspace of size @math{3 N} is required in @var{work}.
 @end deftypefun
 
 @node Balancing

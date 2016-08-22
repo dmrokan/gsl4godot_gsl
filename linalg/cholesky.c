@@ -181,7 +181,7 @@ gsl_linalg_cholesky_invert(gsl_matrix * LLT)
       gsl_vector_view v1, v2;
 
       /* invert the lower triangle of LLT */
-      gsl_linalg_tri_invert(CblasLower, CblasNonUnit, LLT);
+      gsl_linalg_tri_lower_invert(LLT);
 
       /*
        * The lower triangle of LLT now contains L^{-1}. Now compute

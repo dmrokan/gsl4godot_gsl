@@ -28,8 +28,38 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
+static int triangular_inverse(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T);
+
+int
+gsl_linalg_tri_upper_invert(gsl_matrix * T)
+{
+  int status = triangular_inverse(CblasUpper, CblasNonUnit, T);
+  return status;
+}
+
+int
+gsl_linalg_tri_lower_invert(gsl_matrix * T)
+{
+  int status = triangular_inverse(CblasLower, CblasNonUnit, T);
+  return status;
+}
+
+int
+gsl_linalg_tri_upper_unit_invert(gsl_matrix * T)
+{
+  int status = triangular_inverse(CblasUpper, CblasUnit, T);
+  return status;
+}
+
+int
+gsl_linalg_tri_lower_unit_invert(gsl_matrix * T)
+{
+  int status = triangular_inverse(CblasLower, CblasUnit, T);
+  return status;
+}
+
 /*
-gsl_linalg_tri_invert()
+triangular_inverse()
   Invert a triangular matrix T
 
 Inputs: Uplo - CblasUpper or CblasLower
@@ -40,8 +70,8 @@ Inputs: Uplo - CblasUpper or CblasLower
 Return: success/error
 */
 
-int
-gsl_linalg_tri_invert(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T)
+static int
+triangular_inverse(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T)
 {
   const size_t N = T->size1;
 

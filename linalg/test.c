@@ -4672,6 +4672,16 @@ test_tri_invert2(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_rng * r, const double
   const size_t N_max = 30;
   int s = 0;
   size_t n, i, j;
+  int (*invert_func) (gsl_matrix * T) = NULL;
+
+  if (Uplo == CblasUpper && Diag == CblasNonUnit)
+    invert_func = gsl_linalg_tri_upper_invert;
+  else if (Uplo == CblasLower && Diag == CblasNonUnit)
+    invert_func = gsl_linalg_tri_lower_invert;
+  else if (Uplo == CblasUpper && Diag == CblasUnit)
+    invert_func = gsl_linalg_tri_upper_unit_invert;
+  else if (Uplo == CblasLower && Diag == CblasUnit)
+    invert_func = gsl_linalg_tri_lower_unit_invert;
 
   for (n = 1; n <= N_max; ++n)
     {
@@ -4683,7 +4693,7 @@ test_tri_invert2(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_rng * r, const double
 
       /* compute B = T^{-1} */
       gsl_matrix_memcpy(B, T);
-      gsl_linalg_tri_invert(Uplo, Diag, B);
+      (invert_func)(B);
 
       /* compute B = T * T^{-1} */
       gsl_blas_dtrmm(CblasLeft, Uplo, CblasNoTrans, Diag, 1.0, T, B);

@@ -43,7 +43,7 @@ static int condest_invtriu(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * para
 static int condest_invtril(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 
 /*
-gsl_linalg_triu_rcond()
+gsl_linalg_tri_upper_rcond()
   Estimate reciprocal condition number of upper triangular matrix
 
 Inputs: A     - upper triangular matrix, N-by-N
@@ -54,14 +54,14 @@ Return: success/error
 */
 
 int
-gsl_linalg_triu_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
+gsl_linalg_tri_upper_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
 {
   int status = condest_tri_rcond(CblasUpper, A, rcond, work);
   return status;
 }
 
 /*
-gsl_linalg_tril_rcond()
+gsl_linalg_tri_lower_rcond()
   Estimate reciprocal condition number of lower triangular matrix
 
 Inputs: A     - lower triangular matrix, N-by-N
@@ -72,7 +72,7 @@ Return: success/error
 */
 
 int
-gsl_linalg_tril_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
+gsl_linalg_tri_lower_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
 {
   int status = condest_tri_rcond(CblasLower, A, rcond, work);
   return status;
