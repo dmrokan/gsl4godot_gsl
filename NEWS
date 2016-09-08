@@ -1,5 +1,8 @@
 * What is new in gsl-2.3:
 
+** fixed scaling issue in 2D subspace nonlinear least squares
+   method
+
 ** optimize dogleg methods to calculate Gauss-Newton point
    only when needed
 
