@@ -1,5 +1,8 @@
 * What is new in gsl-2.3:
 
+** bug fix in gsl_complex_tan for negative imaginary arguments
+   (bug #47347, Yu Liu)
+
 ** doc bug fix: value of golden ratio
 
 ** fixed scaling issue in 2D subspace nonlinear least squares
