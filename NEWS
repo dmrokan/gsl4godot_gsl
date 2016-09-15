@@ -1,5 +1,7 @@
 * What is new in gsl-2.3:
 
+** doc bug fix: value of golden ratio
+
 ** fixed scaling issue in 2D subspace nonlinear least squares
    method
 

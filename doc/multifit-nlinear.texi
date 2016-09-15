@@ -1847,9 +1847,7 @@ and the normal equations matrix is given by
 \beforedisplay
 $$
 J^T J =
-\left(
 \alpha I_p + 4 x x^T
-\right)
 $$
 \afterdisplay
 @end tex
