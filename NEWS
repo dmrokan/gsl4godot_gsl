@@ -1,5 +1,8 @@
 * What is new in gsl-2.3:
 
+** improved rstat example program and added documentation for
+   gsl_rstat_sd_mean (Jonathan Leto)
+
 ** added function gsl_multifit_linear_rank
 
 ** bug fix in nonlinear least squares when using data weights with
