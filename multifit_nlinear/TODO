@@ -1,4 +1,4 @@
-1. rewrite qrsolv
+1. rewrite qrsolv (COD, test on lin2)
 2. More/Sorensen method for mu calculation
 3. better condition estimate for svd
 4. Revisit h_fvv = 0.01 vs 0.02 (originally 0.01)
