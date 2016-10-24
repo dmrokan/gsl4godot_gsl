@@ -10,6 +10,8 @@
 
 #include <gsl/gsl_sf_trig.h>
 
+#include "oct.c"
+
 /* construct design matrix and rhs vector for Shaw problem */
 static int
 shaw_system(gsl_matrix * X, gsl_vector * y)
@@ -66,9 +68,9 @@ shaw_system(gsl_matrix * X, gsl_vector * y)
 }
 
 static int
-test_shaw_system(gsl_rng *rng_p, const size_t n, const size_t p,
-                 const double lambda_expected,
-                 gsl_vector *rhs)
+test_shaw_system_l(gsl_rng *rng_p, const size_t n, const size_t p,
+                   const double lambda_expected,
+                   gsl_vector *rhs)
 {
   const size_t npoints = 1000; /* number of points on L-curve */
   const double tol1 = 1.0e-12;
@@ -163,7 +165,113 @@ test_shaw_system(gsl_rng *rng_p, const size_t n, const size_t p,
   gsl_multifit_linear_free(work);
 
   return 0;
-} /* test_shaw_system() */
+} /* test_shaw_system_l() */
+
+static int
+test_shaw_system_gcv(gsl_rng *rng_p, const size_t n, const size_t p,
+                     const double lambda_expected,
+                     gsl_vector *rhs)
+{
+  const size_t npoints = 200; /* number of points on L-curve */
+  const double tol1 = 1.0e-12;
+  const double tol2 = 1.0e-10;
+  const double tol3 = 1.0e-5;
+  gsl_vector * reg_param = gsl_vector_alloc(npoints);
+  gsl_vector * G = gsl_vector_alloc(npoints);
+
+  gsl_matrix * X = gsl_matrix_alloc(n, p);
+  gsl_matrix * cov = gsl_matrix_alloc(p, p);
+  gsl_vector * c = gsl_vector_alloc(p);
+  gsl_vector * ytmp = gsl_vector_alloc(n);
+  gsl_vector * y;
+  gsl_vector * r = gsl_vector_alloc(n);
+  gsl_multifit_linear_workspace * work = 
+    gsl_multifit_linear_alloc (n, p);
+
+  size_t reg_idx, i;
+  double lambda, rnorm, snorm;
+
+  /* build design matrix */
+  shaw_system(X, ytmp);
+
+  if (rhs)
+    y = rhs;
+  else
+    {
+      y = ytmp;
+
+      /* add random noise to exact rhs vector */
+      test_random_vector_noise(rng_p, y);
+    }
+
+  print_octave(X, "X");
+  printv_octave(y, "y");
+
+  /* SVD decomposition */
+  gsl_multifit_linear_svd(X, work);
+
+  /* calculate GCV curve */
+  gsl_multifit_linear_gcv(y, reg_param, G, work);
+
+  /* test rho and eta vectors */
+  for (i = 0; i < npoints; ++i)
+    {
+      double Gi = gsl_vector_get(G, i);
+      double lami = gsl_vector_get(reg_param, i);
+
+#if 0
+      /* solve regularized system and check for consistent rho/eta values */
+      gsl_multifit_linear_solve(lami, X, y, c, &rnorm, &snorm, work);
+      gsl_test_rel(rhoi, rnorm, tol3, "shaw rho n=%zu p=%zu lambda=%e",
+                   n, p, lami);
+      gsl_test_rel(etai, snorm, tol1, "shaw eta n=%zu p=%zu lambda=%e",
+                   n, p, lami);
+#endif
+      printf("%e %e\n", lami, Gi);
+    }
+    exit(1);
+
+#if 0
+  /* calculate corner of L-curve */
+  gsl_multifit_linear_lcorner(rho, eta, &reg_idx);
+
+  lambda = gsl_vector_get(reg_param, reg_idx);
+
+  /* test against known lambda value if given */
+  if (lambda_expected > 0.0)
+    {
+      gsl_test_rel(lambda, lambda_expected, tol1,
+                   "shaw: n=%zu p=%zu L-curve corner lambda",
+                   n, p);
+    }
+
+  /* compute regularized solution with optimal lambda */
+  gsl_multifit_linear_solve(lambda, X, y, c, &rnorm, &snorm, work);
+
+  /* compute residual norm ||y - X c|| */
+  gsl_vector_memcpy(r, y);
+  gsl_blas_dgemv(CblasNoTrans, 1.0, X, c, -1.0, r);
+
+  /* test rnorm value */
+  gsl_test_rel(rnorm, gsl_blas_dnrm2(r), tol2,
+               "shaw: n=%zu p=%zu rnorm", n, p);
+
+  /* test snorm value */
+  gsl_test_rel(snorm, gsl_blas_dnrm2(c), tol2,
+               "shaw: n=%zu p=%zu snorm", n, p);
+#endif
+
+  gsl_matrix_free(X);
+  gsl_matrix_free(cov);
+  gsl_vector_free(reg_param);
+  gsl_vector_free(G);
+  gsl_vector_free(r);
+  gsl_vector_free(c);
+  gsl_vector_free(ytmp);
+  gsl_multifit_linear_free(work);
+
+  return 0;
+} /* test_shaw_system_gcv() */
 
 void
 test_shaw(void)
@@ -185,7 +293,9 @@ test_shaw(void)
     gsl_vector_view rhs = gsl_vector_view_array(shaw20_y, 20);
 
     /* lambda and rhs values from [1] */
-    test_shaw_system(r, 20, 20, 5.793190958069266e-06, &rhs.vector);
+    test_shaw_system_l(r, 20, 20, 5.793190958069266e-06, &rhs.vector);
+
+    test_shaw_system_gcv(r, 20, 20, 5.793190958069266e-06, &rhs.vector);
   }
 
   {
@@ -194,7 +304,7 @@ test_shaw(void)
     for (n = 10; n <= 50; n += 2)
       {
         for (p = n - 6; p <= n; p += 2)
-          test_shaw_system(r, n, p, -1.0, NULL);
+          test_shaw_system_l(r, n, p, -1.0, NULL);
       }
   }
 

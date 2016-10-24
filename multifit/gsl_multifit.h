@@ -236,6 +236,13 @@ int
 gsl_multifit_linear_residuals (const gsl_matrix *X, const gsl_vector *y,
                                const gsl_vector *c, gsl_vector *r);
 
+/* gcv.c */
+int
+gsl_multifit_linear_gcv(const gsl_vector * y,
+                        gsl_vector * reg_param,
+                        gsl_vector * G,
+                        gsl_multifit_linear_workspace * work);
+
 typedef struct
 {
   const char * name;     /* method name */
