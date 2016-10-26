@@ -10,7 +10,60 @@
 
 #include <gsl/gsl_sf_trig.h>
 
-#include "oct.c"
+/* alternate (and inefficient) method of computing G(lambda) */
+static double
+shaw_gcv_G(const double lambda, const gsl_matrix * X, const gsl_vector * y,
+           gsl_multifit_linear_workspace * work)
+{
+  const size_t n = X->size1;
+  const size_t p = X->size2;
+  gsl_matrix * XTX = gsl_matrix_alloc(p, p);
+  gsl_matrix * XI = gsl_matrix_alloc(p, n);
+  gsl_matrix * XXI = gsl_matrix_alloc(n, n);
+  gsl_vector * c = gsl_vector_alloc(p);
+  gsl_vector_view d;
+  double rnorm, snorm;
+  double term1, term2, G;
+  size_t i;
+
+  /* compute regularized solution with this lambda */
+  gsl_multifit_linear_solve(lambda, X, y, c, &rnorm, &snorm, work);
+
+  /* compute X^T X */
+  gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, X, 0.0, XTX);
+
+  /* add lambda*I */
+  d = gsl_matrix_diagonal(XTX);
+  gsl_vector_add_constant(&d.vector, lambda * lambda);
+
+  /* invert (X^T X + lambda*I) */
+  gsl_linalg_cholesky_decomp1(XTX);
+  gsl_linalg_cholesky_invert(XTX);
+  gsl_matrix_transpose_tricpy('L', 0, XTX, XTX);
+
+  /* XI = (X^T X + lambda*I)^{-1} X^T */
+  gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, XTX, X, 0.0, XI);
+
+  /* XXI = X (X^T X + lambda*I)^{-1} X^T */
+  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, X, XI, 0.0, XXI);
+
+  /* compute: term1 = Tr(I - X XI) */
+  term1 = 0.0;
+  for (i = 0; i < n; ++i)
+    {
+      double *Ai = gsl_matrix_ptr(XXI, i, i);
+      term1 += 1.0 - (*Ai);
+    }
+
+  gsl_matrix_free(XTX);
+  gsl_matrix_free(XI);
+  gsl_matrix_free(XXI);
+  gsl_vector_free(c);
+
+  term2 = rnorm / term1;
+
+  return term2 * term2;;
+}
 
 /* construct design matrix and rhs vector for Shaw problem */
 static int
@@ -189,7 +242,7 @@ test_shaw_system_gcv(gsl_rng *rng_p, const size_t n, const size_t p,
     gsl_multifit_linear_alloc (n, p);
 
   size_t reg_idx, i;
-  double lambda, rnorm, snorm;
+  double lambda, rnorm, snorm, G_lambda;
 
   /* build design matrix */
   shaw_system(X, ytmp);
@@ -204,44 +257,33 @@ test_shaw_system_gcv(gsl_rng *rng_p, const size_t n, const size_t p,
       test_random_vector_noise(rng_p, y);
     }
 
-  print_octave(X, "X");
-  printv_octave(y, "y");
-
   /* SVD decomposition */
   gsl_multifit_linear_svd(X, work);
 
   /* calculate GCV curve */
-  gsl_multifit_linear_gcv(y, reg_param, G, work);
+  gsl_multifit_linear_gcv(y, reg_param, G, &lambda, &G_lambda, work);
 
-  /* test rho and eta vectors */
+  /* test G vector */
   for (i = 0; i < npoints; ++i)
     {
-      double Gi = gsl_vector_get(G, i);
       double lami = gsl_vector_get(reg_param, i);
 
-#if 0
-      /* solve regularized system and check for consistent rho/eta values */
-      gsl_multifit_linear_solve(lami, X, y, c, &rnorm, &snorm, work);
-      gsl_test_rel(rhoi, rnorm, tol3, "shaw rho n=%zu p=%zu lambda=%e",
-                   n, p, lami);
-      gsl_test_rel(etai, snorm, tol1, "shaw eta n=%zu p=%zu lambda=%e",
-                   n, p, lami);
-#endif
-      printf("%e %e\n", lami, Gi);
+      if (lami > 1.0e-5)
+        {
+          /* test unreliable for small lambda */
+          double Gi = gsl_vector_get(G, i);
+          double Gi_expected = shaw_gcv_G(lami, X, y, work);
+
+          gsl_test_rel(Gi, Gi_expected, tol3, "shaw[%zu,%zu] gcv G i=%zu lambda=%e",
+                       n, p, i, lami);
+        }
     }
-    exit(1);
-
-#if 0
-  /* calculate corner of L-curve */
-  gsl_multifit_linear_lcorner(rho, eta, &reg_idx);
-
-  lambda = gsl_vector_get(reg_param, reg_idx);
 
   /* test against known lambda value if given */
   if (lambda_expected > 0.0)
     {
       gsl_test_rel(lambda, lambda_expected, tol1,
-                   "shaw: n=%zu p=%zu L-curve corner lambda",
+                   "shaw gcv: n=%zu p=%zu lambda",
                    n, p);
     }
 
@@ -254,12 +296,11 @@ test_shaw_system_gcv(gsl_rng *rng_p, const size_t n, const size_t p,
 
   /* test rnorm value */
   gsl_test_rel(rnorm, gsl_blas_dnrm2(r), tol2,
-               "shaw: n=%zu p=%zu rnorm", n, p);
+               "shaw gcv: n=%zu p=%zu rnorm", n, p);
 
   /* test snorm value */
   gsl_test_rel(snorm, gsl_blas_dnrm2(c), tol2,
-               "shaw: n=%zu p=%zu snorm", n, p);
-#endif
+               "shaw gcv: n=%zu p=%zu snorm", n, p);
 
   gsl_matrix_free(X);
   gsl_matrix_free(cov);
@@ -295,7 +336,7 @@ test_shaw(void)
     /* lambda and rhs values from [1] */
     test_shaw_system_l(r, 20, 20, 5.793190958069266e-06, &rhs.vector);
 
-    test_shaw_system_gcv(r, 20, 20, 5.793190958069266e-06, &rhs.vector);
+    test_shaw_system_gcv(r, 20, 20, 1.24921780949051038e-05, &rhs.vector);
   }
 
   {
