@@ -1,5 +1,8 @@
 * What is new in gsl-2.3:
 
+** added gsl_multifit_linear_tsvd and gsl_multifit_wlinear_tsvd
+   to give user more control over cutoff for truncated SVD
+
 ** added routines for Generalized Cross Validation for
    regularized linear least squares
 

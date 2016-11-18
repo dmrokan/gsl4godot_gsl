@@ -363,11 +363,42 @@ which have zero singular value (to machine precision) are discarded
 from the fit.
 @end deftypefun
 
+@deftypefun int gsl_multifit_linear_tsvd (const gsl_matrix * @var{X}, const gsl_vector * @var{y}, const double @var{tol}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, gsl_multifit_linear_workspace * @var{work})
+This function computes the best-fit parameters @var{c} of the model
+@math{y = X c} for the observations @var{y} and the matrix of
+predictor variables @var{X}, using a truncated SVD expansion.
+Singular values which satisfy @math{s_i \le tol \times s_0}
+are discarded from the fit, where @math{s_0} is the largest singular value.
+The @math{p}-by-@math{p} variance-covariance matrix of the model parameters
+@var{cov} is set to @math{\sigma^2 (X^T X)^{-1}}, where @math{\sigma} is
+the standard deviation of the fit residuals.
+The sum of squares of the residuals from the best-fit,
+@math{\chi^2}, is returned in @var{chisq}. If the coefficient of
+determination is desired, it can be computed from the expression
+@math{R^2 = 1 - \chi^2 / TSS}, where the total sum of squares (TSS) of
+the observations @var{y} may be computed from @code{gsl_stats_tss}.
+@end deftypefun
+
 @deftypefun int gsl_multifit_wlinear (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, gsl_multifit_linear_workspace * @var{work})
 This function computes the best-fit parameters @var{c} of the weighted
 model @math{y = X c} for the observations @var{y} with weights @var{w}
 and the matrix of predictor variables @var{X}, using the preallocated
 workspace provided in @var{work}.  The @math{p}-by-@math{p} covariance matrix of the model
+parameters @var{cov} is computed as @math{(X^T W X)^{-1}}. The weighted
+sum of squares of the residuals from the best-fit, @math{\chi^2}, is
+returned in @var{chisq}. If the coefficient of determination is
+desired, it can be computed from the expression @math{R^2 = 1 - \chi^2
+/ WTSS}, where the weighted total sum of squares (WTSS) of the
+observations @var{y} may be computed from @code{gsl_stats_wtss}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_wlinear_tsvd (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, const double @var{tol}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, gsl_multifit_linear_workspace * @var{work})
+This function computes the best-fit parameters @var{c} of the weighted
+model @math{y = X c} for the observations @var{y} with weights @var{w}
+and the matrix of predictor variables @var{X}, using a truncated SVD expansion.
+Singular values which satisfy @math{s_i \le tol \times s_0}
+are discarded from the fit, where @math{s_0} is the largest singular value.
+The @math{p}-by-@math{p} covariance matrix of the model
 parameters @var{cov} is computed as @math{(X^T W X)^{-1}}. The weighted
 sum of squares of the residuals from the best-fit, @math{\chi^2}, is
 returned in @var{chisq}. If the coefficient of determination is
