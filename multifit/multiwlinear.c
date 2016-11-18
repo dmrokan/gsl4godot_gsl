@@ -220,7 +220,9 @@ gsl_multifit_wlinear (const gsl_matrix * X,
                       gsl_matrix * cov,
                       double *chisq, gsl_multifit_linear_workspace * work)
 {
-  int status = gsl_multifit_wlinear_tsvd(X, w, y, GSL_DBL_EPSILON, c, cov, chisq, work);
+  size_t rank;
+  int status = gsl_multifit_wlinear_tsvd(X, w, y, GSL_DBL_EPSILON, c, cov, chisq, &rank, work);
+
   return status;
 }
 
@@ -231,7 +233,8 @@ gsl_multifit_wlinear_tsvd (const gsl_matrix * X,
                            const double tol,
                            gsl_vector * c,
                            gsl_matrix * cov,
-                           double *chisq,
+                           double * chisq,
+                           size_t * rank,
                            gsl_multifit_linear_workspace * work)
 {
   const size_t n = X->size1;
@@ -259,21 +262,21 @@ gsl_multifit_wlinear_tsvd (const gsl_matrix * X,
   else
     {
       int status;
-      size_t rank = 0;
       double rnorm, snorm;
-      gsl_vector_view b = gsl_vector_subvector(work->t, 0, y->size);
+      gsl_matrix_view A = gsl_matrix_submatrix(work->A, 0, 0, n, p);
+      gsl_vector_view b = gsl_vector_subvector(work->t, 0, n);
 
       /* compute A = sqrt(W) X, b = sqrt(W) y */
-      status = gsl_multifit_linear_applyW(X, w, y, work->A, &b.vector);
+      status = gsl_multifit_linear_applyW(X, w, y, &A.matrix, &b.vector);
       if (status)
         return status;
 
       /* compute SVD of A */
-      status = gsl_multifit_linear_bsvd(work->A, work);
+      status = gsl_multifit_linear_bsvd(&A.matrix, work);
       if (status)
         return status;
 
-      status = multifit_linear_solve(X, &b.vector, tol, 0.0, &rank,
+      status = multifit_linear_solve(X, &b.vector, tol, 0.0, rank,
                                      c, &rnorm, &snorm, work);
       if (status)
         return status;

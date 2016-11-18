@@ -39,7 +39,9 @@ gsl_multifit_linear (const gsl_matrix * X,
                      gsl_matrix * cov,
                      double *chisq, gsl_multifit_linear_workspace * work)
 {
-  int status = gsl_multifit_linear_tsvd(X, y, GSL_DBL_EPSILON, c, cov, chisq, work);
+  size_t rank;
+  int status = gsl_multifit_linear_tsvd(X, y, GSL_DBL_EPSILON, c, cov, chisq, &rank, work);
+
   return status;
 }
 
@@ -55,6 +57,8 @@ Inputs: X     - least squares matrix, n-by-p
         c     - (output) solution vector, p-by-1
         cov   - (output) covariance matrix, p-by-p
         chisq - (output) cost function chi^2
+        rank  - (output) effective rank (number of singular values
+                used in solution)
         work  - workspace
 */
 
@@ -64,7 +68,8 @@ gsl_multifit_linear_tsvd (const gsl_matrix * X,
                           const double tol,
                           gsl_vector * c,
                           gsl_matrix * cov,
-                          double *chisq,
+                          double * chisq,
+                          size_t * rank,
                           gsl_multifit_linear_workspace * work)
 {
   const size_t n = X->size1;
@@ -86,7 +91,6 @@ gsl_multifit_linear_tsvd (const gsl_matrix * X,
     }
   else
     {
-      size_t rank = 0;
       int status;
       double rnorm = 0.0, snorm;
 
@@ -95,7 +99,7 @@ gsl_multifit_linear_tsvd (const gsl_matrix * X,
       if (status)
         return status;
 
-      status = multifit_linear_solve (X, y, tol, -1.0, &rank,
+      status = multifit_linear_solve (X, y, tol, -1.0, rank,
                                       c, &rnorm, &snorm, work);
 
       *chisq = rnorm * rnorm;
@@ -103,7 +107,7 @@ gsl_multifit_linear_tsvd (const gsl_matrix * X,
       /* variance-covariance matrix cov = s2 * (Q S^-1) (Q S^-1)^T */
       {
         double r2 = rnorm * rnorm;
-        double s2 = r2 / (double)(n - rank);
+        double s2 = r2 / (double)(n - *rank);
         size_t i, j;
         gsl_matrix_view QSI = gsl_matrix_submatrix(work->QSI, 0, 0, p, p);
         gsl_vector_view D = gsl_vector_subvector(work->D, 0, p);

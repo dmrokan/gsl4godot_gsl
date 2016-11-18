@@ -78,7 +78,8 @@ gsl_multifit_linear_tsvd (const gsl_matrix * X,
                           const double tol,
                           gsl_vector * c,
                           gsl_matrix * cov,
-                          double *chisq,
+                          double * chisq,
+                          size_t * rank,
                           gsl_multifit_linear_workspace * work);
 
 int
@@ -220,7 +221,8 @@ gsl_multifit_wlinear_tsvd (const gsl_matrix * X,
                            const double tol,
                            gsl_vector * c,
                            gsl_matrix * cov,
-                           double *chisq,
+                           double * chisq,
+                           size_t * rank,
                            gsl_multifit_linear_workspace * work);
 
 int
