@@ -461,8 +461,12 @@ the @math{p}-by-@math{1} solution vector,
 and @math{||r||_W^2 = r^T W r}.
 In cases where the least squares matrix @math{X} is ill-conditioned,
 small perturbations (ie: noise) in the observation vector could lead to
-widely different solution vectors @math{c}. In these cases it is often
-advantageous to include a regularization term in the least squares
+widely different solution vectors @math{c}.
+One way of dealing with ill-conditioned matrices is to use a ``truncated SVD''
+in which small singular values, below some given tolerance, are discarded
+from the solution. The truncated SVD method is available using the functions
+@code{gsl_multifit_linear_tsvd} and @code{gsl_multifit_wlinear_tsvd}. Another way
+to help solve ill-posed problems is to include a regularization term in the least squares
 minimization
 @tex
 \beforedisplay
