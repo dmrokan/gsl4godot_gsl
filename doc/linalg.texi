@@ -516,10 +516,13 @@ where @math{P} is a @math{N}-by-@math{N} permutation matrix,
 @math{r}-by-@math{r} upper triangular, with @math{r = {\rm rank}(A)},
 and @math{Z} is @math{N}-by-@math{N} orthogonal. If @math{A}
 has full rank, then @math{R_{11} = R}, @math{Z = I} and this reduces to the
-QR decomposition with column pivoting. The advantage of using
-the complete orthogonal decomposition for rank deficient matrices
-is the ability to compute the minimum norm solution to the linear
-least squares problem @math{Ax = b}, which is given by
+QR decomposition with column pivoting.
+
+@noindent
+For a rank deficient least squares problem, @math{\min_x{|| b - Ax||^2}}, the solution vector
+@math{x} is not unique. However if we further require that @math{||x||^2} is minimized,
+then the complete orthogonal decomposition gives us the ability to compute
+the unique minimum norm solution, which is given by
 @tex
 \beforedisplay
 $$
@@ -555,13 +558,13 @@ of length @math{k = \min(M,N)}. The vector @var{work} is additional workspace of
 @end deftypefun
 
 @deftypefun int gsl_linalg_COD_lssolve (const gsl_matrix * @var{QRZ}, const gsl_vector * @var{tau_Q}, const gsl_vector * @var{tau_Z}, const gsl_permutation * @var{p}, const size_t @var{rank}, const gsl_vector * @var{b}, gsl_vector * @var{x}, gsl_vector * @var{residual})
-This function finds the least squares solution to the overdetermined
+This function finds the unique minimum norm least squares solution to the overdetermined
 system @math{A x = b} where the matrix @var{A} has more rows than
 columns.  The least squares solution minimizes the Euclidean norm of the
-residual, @math{||b - A x||}.  The routine requires as input 
+residual, @math{||b - A x||} as well as the norm of the solution @math{||x||}.  The routine requires as input 
 the @math{QRZ} decomposition of @math{A} into (@var{QRZ}, @var{tau_Q}, @var{tau_Z}, @var{p}, @var{rank})
 given by @code{gsl_linalg_COD_decomp}.  The solution is returned in @var{x}.  The
-residual is computed as a by-product and stored in @var{residual}.
+residual, @math{b - Ax}, is computed as a by-product and stored in @var{residual}.
 @end deftypefun
 
 @deftypefun int gsl_linalg_COD_unpack (const gsl_matrix * @var{QRZ}, const gsl_vector * @var{tau_Q}, const gsl_vector * @var{tau_Z}, const size_t @var{rank}, gsl_matrix * @var{Q}, gsl_matrix * @var{R}, gsl_matrix * @var{Z})
