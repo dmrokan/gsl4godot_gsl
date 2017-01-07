@@ -32,6 +32,7 @@ static int test_COD_decomp_dim(const gsl_matrix * m, const double eps, const cha
 static int test_COD_decomp(gsl_rng *r);
 static int test_COD_lssolve_dim(const gsl_matrix * m, const double * actual, const double eps, const char *desc);
 static int test_COD_lssolve(void);
+static int test_COD_lssolve2_dim(const double lambda, const gsl_matrix * m, const double * actual, const double eps, const char *desc);
 
 /* create a matrix of a given rank */
 static int
@@ -256,8 +257,12 @@ test_COD_lssolve(void)
     const size_t N = 5;
 
     /* unique minimum norm solution from "Factorize" matlab package */
-    const double x_sol[] = { 1.818181818181817e-02, 3.636363636363636e-02, 5.454545454545454e-02,
-                             7.272727272727272e-02, 9.090909090909088e-02 };
+    const double x_ls[] = { 1.818181818181817e-02, 3.636363636363636e-02, 5.454545454545454e-02,
+                            7.272727272727272e-02, 9.090909090909088e-02 };
+
+    const double lambda = 2.3;
+    const double x_reg[] = { 1.818120887808067e-02, 3.636241775616134e-02, 5.454362663424202e-02,
+                             7.272483551232273e-02, 9.090604439040341e-02 };
 
     gsl_matrix *m = gsl_matrix_alloc(M, N);
     size_t i, j;
@@ -270,10 +275,78 @@ test_COD_lssolve(void)
           }
       }
 
-    test_COD_lssolve_dim(m, x_sol, 1.0e2 * GSL_DBL_EPSILON, "COD_lssolve lin2");
+    test_COD_lssolve_dim(m, x_ls, 1.0e2 * GSL_DBL_EPSILON, "COD_lssolve lin2");
+
+    test_COD_lssolve2_dim(lambda, m, x_reg, 1.0e2 * GSL_DBL_EPSILON, "COD_lssolve2 lin2");
 
     gsl_matrix_free(m);
   }
+
+  return s;
+}
+
+static int
+test_COD_lssolve2_dim(const double lambda, const gsl_matrix * m, const double * actual, const double eps, const char *desc)
+{
+  int s = 0;
+  size_t i, M = m->size1, N = m->size2;
+
+  gsl_vector * lhs = gsl_vector_alloc(M);
+  gsl_vector * rhs = gsl_vector_alloc(M);
+  gsl_matrix * QRZT  = gsl_matrix_alloc(M, N);
+  gsl_vector * tau_Q = gsl_vector_alloc(GSL_MIN(M, N));
+  gsl_vector * tau_Z = gsl_vector_alloc(GSL_MIN(M, N));
+  gsl_vector * work = gsl_vector_alloc(N);
+  gsl_vector * x = gsl_vector_alloc(N);
+  gsl_vector * r = gsl_vector_alloc(M);
+  gsl_vector * res = gsl_vector_alloc(M);
+  gsl_permutation * perm = gsl_permutation_alloc(N);
+  size_t rank;
+
+  gsl_matrix_memcpy(QRZT, m);
+
+  for (i = 0; i < M; i++)
+    gsl_vector_set(rhs, i, i + 1.0);
+
+  s += gsl_linalg_COD_decomp(QRZT, tau_Q, tau_Z, perm, &rank, work);
+  s += gsl_linalg_COD_lssolve2(lambda, QRZT, tau_Q, tau_Z, perm, rank, rhs, x, res);
+
+  for (i = 0; i < N; i++)
+    {
+      double xi = gsl_vector_get(x, i);
+      gsl_test_rel(xi, actual[i], eps,
+                   "%s (%3lu,%3lu)[%lu]: %22.18g   %22.18g\n",
+                   desc, M, N, i, xi, actual[i]);
+    }
+
+  /* compute residual r = b - m x */
+  if (M == N)
+    {
+      gsl_vector_set_zero(r);
+    }
+  else
+    {
+      gsl_vector_memcpy(r, rhs);
+      gsl_blas_dgemv(CblasNoTrans, -1.0, m, x, 1.0, r);
+    }
+
+  for (i = 0; i < N; i++)
+    {
+      gsl_test_rel(gsl_vector_get(res, i), gsl_vector_get(r, i), sqrt(eps),
+                   "%s res (%3lu,%3lu)[%lu]: %22.18g   %22.18g\n",
+                   desc, M, N, i, gsl_vector_get(res, i), gsl_vector_get(r,i));
+    }
+
+  gsl_vector_free(r);
+  gsl_vector_free(res);
+  gsl_vector_free(x);
+  gsl_vector_free(tau_Q);
+  gsl_vector_free(tau_Z);
+  gsl_matrix_free(QRZT);
+  gsl_vector_free(rhs);
+  gsl_vector_free(lhs);
+  gsl_vector_free(work);
+  gsl_permutation_free(perm);
 
   return s;
 }
