@@ -4433,6 +4433,7 @@ main(void)
 
   gsl_test(test_COD_decomp(r),           "COD Decomposition");
   gsl_test(test_COD_lssolve(),           "COD LS Solve");
+  gsl_test(test_COD_lssolve2(r),         "COD LS Solve 2");
 
   gsl_test(test_SV_decomp(),             "Singular Value Decomposition");
   gsl_test(test_SV_decomp_jacobi(),      "Singular Value Decomposition (Jacobi)");

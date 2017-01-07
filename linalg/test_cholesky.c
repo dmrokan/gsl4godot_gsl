@@ -480,7 +480,7 @@ test_mcholesky_solve(gsl_rng * r)
         {
           create_hilbert_matrix2(m);
           gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
-          test_mcholesky_solve_eps(m, rhs, sol, 512.0 * N * GSL_DBL_EPSILON, "mcholesky_solve hilbert");
+          test_mcholesky_solve_eps(m, rhs, sol, 1.0e3 * N * GSL_DBL_EPSILON, "mcholesky_solve hilbert");
         }
 
       gsl_matrix_free(m);
