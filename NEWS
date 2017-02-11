@@ -1,5 +1,8 @@
 * What is new in gsl-2.4:
 
+** added check for nz == 0 in gsl_spmatrix_get
+   (reported by Manuel Schmitz)
+
 ** added routine gsl_linalg_COD_lssolve2 for regularized
    least squares problems
 
