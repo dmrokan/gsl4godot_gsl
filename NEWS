@@ -3,6 +3,9 @@
 ** added check for nz == 0 in gsl_spmatrix_get
    (reported by Manuel Schmitz)
 
+** permit zero-dimension blocks, vectors, matrics, subvectors,
+   submatrices, and views of the above (bug #49988)
+
 ** added routine gsl_linalg_COD_lssolve2 for regularized
    least squares problems
 
