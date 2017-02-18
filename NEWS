@@ -1,5 +1,8 @@
 * What is new in gsl-2.4:
 
+** changed COD expression to Q R Z^T instead of Q R Z to
+   be consistent with standard texts
+
 ** added check for nz == 0 in gsl_spmatrix_get
    (reported by Manuel Schmitz)
 
