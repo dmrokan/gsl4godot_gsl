@@ -1,5 +1,16 @@
 * What is new in gsl-2.4:
 
+** deprecated routines:
+     gsl_sf_coupling_6j_INCORRECT
+     gsl_sf_coupling_6j_INCORRECT_e
+
+** deprecated routine 'gsl_linalg_hessenberg' (replaced
+   by gsl_linalg_hessenberg_decomp)
+
+** removed routines which were deprecated in v2.1:
+     gsl_bspline_deriv_alloc
+     gsl_bspline_deriv_free
+
 ** changed COD expression to Q R Z^T instead of Q R Z to
    be consistent with standard texts
 
