@@ -1,5 +1,8 @@
 * What is new in gsl-2.4:
 
+** added new nonlinear least squares example for fitting
+   a Gaussian to data
+
 ** deprecated routines:
      gsl_sf_coupling_6j_INCORRECT
      gsl_sf_coupling_6j_INCORRECT_e
