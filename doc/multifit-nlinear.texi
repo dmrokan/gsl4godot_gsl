@@ -1601,7 +1601,7 @@ f2 = 1 - x1
 
 @end ifinfo
 @noindent
-The Jacobian matrix is given by
+The Jacobian matrix is
 @tex
 \beforedisplay
 $$
@@ -1634,7 +1634,7 @@ the second directional derivative of each residual in the
 velocity direction,
 @math{D_v^2 f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha} \partial_{\beta} f_i}.
 The velocity vector @math{v} is provided by the solver. For this example,
-these derivatives are given by
+these derivatives are
 @tex
 \beforedisplay
 $$
@@ -1663,7 +1663,7 @@ fvv = [ -200 v1^2 ; 0 ]
 
 @end ifinfo
 @noindent
-The solution of this minimization problem is given by
+The solution of this minimization problem is
 @tex
 \beforedisplay
 $$
@@ -1738,7 +1738,7 @@ The program is given below.
 
 The following example fits a set of data to a Gaussian model
 using the Levenberg-Marquardt method with geodesic acceleration.
-The cost function is given by
+The cost function is
 @tex
 \beforedisplay
 $$
@@ -1926,7 +1926,7 @@ The program is given below.
 
 The following program compares all available nonlinear least squares
 trust-region subproblem (TRS) methods on the Branin function, a common
-optimization test problem. The cost function is given by
+optimization test problem. The cost function is
 @tex
 \beforedisplay
 $$
@@ -1996,7 +1996,7 @@ The program is given below.
 
 The following program illustrates the large nonlinear least
 squares solvers on a system with significant sparse structure
-in the Jacobian. The cost function is given by
+in the Jacobian. The cost function is
 @tex
 \beforedisplay
 $$
@@ -2019,7 +2019,7 @@ f_@{p+1@} &= ||x||^2 - 1/4
 @end ifinfo
 with @math{\alpha = 10^{-5}}. The residual @math{f_{p+1}} imposes a constraint on the @math{p}
 parameters @math{x}, to ensure that @math{||x||^2 \approx {1 \over 4}}.
-The @math{(p+1)}-by-@math{p} Jacobian for this system is given by
+The @math{(p+1)}-by-@math{p} Jacobian for this system is
 @tex
 \beforedisplay
 $$
@@ -2040,7 +2040,7 @@ J(x) = [ \sqrt@{alpha@} I_p; 2 x^T ]
 @end example
 
 @end ifinfo
-and the normal equations matrix is given by
+and the normal equations matrix is
 @tex
 \beforedisplay
 $$
@@ -2058,7 +2058,7 @@ J^T J = [ \alpha I_p + 4 x x^T ]
 @end ifinfo
 @noindent
 Finally, the second directional derivative of @math{f} for the
-geodesic acceleration method is given by
+geodesic acceleration method is
 @tex
 \beforedisplay
 $$
