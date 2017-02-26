@@ -97,14 +97,14 @@ and satisfy the Schr@"odinger equation for a quantum mechanical harmonic oscilla
 @tex
 \beforedisplay
 $$
-\psi_n^{\prime\prime}(x) - (2n + 1 - x^2) \psi_n(x) = 0 \,.
+\psi_n^{\prime\prime}(x) + (2n + 1 - x^2) \psi_n(x) = 0 \,.
 $$
 \afterdisplay
 @end tex
 @ifinfo
 
 @example
-psi_n^@{''@}(x) - (2n + 1 - x^2) psi_n(x) = 0
+psi_n^@{''@}(x) + (2n + 1 - x^2) psi_n(x) = 0
 @end example
 
 @end ifinfo
