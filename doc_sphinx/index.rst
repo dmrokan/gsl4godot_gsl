@@ -8,10 +8,11 @@ Welcome to GSL's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Table of Contents
 
    intro.rst
    usage.rst
+   err.rst
+   math.rst
 
 Indices and tables
 ==================

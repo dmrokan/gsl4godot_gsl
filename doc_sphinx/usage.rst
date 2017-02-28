@@ -331,7 +331,7 @@ This feature is implemented by varying the name of the function with a
 type-related modifier---a primitive form of C++ templates.  The
 modifier is inserted into the function name after the initial module
 prefix.  The following table shows the function names defined for all
-the numeric types of an imaginary module :mod:`gsl_foo` with function
+the numeric types of an imaginary module :code:`gsl_foo` with function
 :func:`fn`::
 
     gsl_foo_fn               double        
@@ -353,9 +353,9 @@ while the function :func:`gsl_stats_int_mean` computes the mean of
 integers.
 
 A corresponding scheme is used for library defined types, such as
-:mod:`gsl_vector` and :mod:`gsl_matrix`.  In this case the modifier is
+:code:`gsl_vector` and :code:`gsl_matrix`.  In this case the modifier is
 appended to the type name.  For example, if a module defines a new
-type-dependent struct or typedef :mod:`gsl_foo` it is modified for other
+type-dependent struct or typedef :code:`gsl_foo` it is modified for other
 types in the following way::
 
     gsl_foo                  double        
