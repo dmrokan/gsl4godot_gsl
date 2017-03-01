@@ -47,8 +47,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'GSL'
-copyright = u'1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 The GSL Team'
-author = u'GSL Team'
+copyright = u'1996-2017 The GSL Team'
+author = u'The GSL Team'
 title = u'GNU Scientific Library'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -112,7 +112,25 @@ htmlhelp_basename = 'GSLdoc'
 
 my_latex_preamble = '\\DeclareMathOperator\\arccosh{arccosh} \
                      \\DeclareMathOperator\\arcsinh{arcsinh} \
-                     \\DeclareMathOperator\\arctanh{arctanh}'
+                     \\DeclareMathOperator\\arctanh{arctanh} \
+                     \\DeclareMathOperator\\arcsec{arcsec} \
+                     \\DeclareMathOperator\\arccsc{arccsc} \
+                     \\DeclareMathOperator\\arccot{arccot} \
+                     \\DeclareMathOperator\\csch{csch} \
+                     \\DeclareMathOperator\\sech{sech} \
+                     \\DeclareMathOperator\\arcsech{arcsech} \
+                     \\DeclareMathOperator\\arccsch{arccsch} \
+                     \\DeclareMathOperator\\arccoth{arccoth}'
+
+my_latex_authors = 'Mark Galassi \\\\ \
+                    Jim Davies \\\\ \
+                    James Theiler \\\\ \
+                    Brian Gough \\\\ \
+                    Gerard Jungman \\\\ \
+                    Patrick Alken \\\\ \
+                    Michael Booth \\\\ \
+                    Fabrice Rossi \\\\ \
+                    Rhys Ulerich'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -137,7 +155,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'gsl-ref.tex', title,
-     u'Mark Galassi \\and test', 'manual'),
+     my_latex_authors, 'manual'),
 ]
 
 imgmath_latex_preamble = my_latex_preamble

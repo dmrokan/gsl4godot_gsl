@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to GSL's documentation!
-===============================
+GNU Scientific Library
+++++++++++++++++++++++
 
 .. toctree::
    :maxdepth: 2
@@ -13,10 +13,7 @@ Welcome to GSL's documentation!
    usage.rst
    err.rst
    math.rst
-
-Indices and tables
-==================
+   complex.rst
+   poly.rst
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

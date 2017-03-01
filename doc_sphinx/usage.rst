@@ -259,6 +259,8 @@ If it is necessary to work on a system which does not support formatted
 formats or to convert :code:`long double` results into :code:`double` for
 reading and writing.
 
+.. _portability-functions:
+
 Portability functions
 =====================
 

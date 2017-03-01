@@ -55,9 +55,6 @@ Infinities and Not-a-number
 .. index::
    single: infinity, defined as a macro
    single: IEEE infinity, defined as a macro
-   single: NaN, defined as a macro
-   single: Not-a-number, defined as a macro
-   single: IEEE NaN, defined as a macro
 
 .. macro:: GSL_POSINF
 
@@ -69,6 +66,10 @@ Infinities and Not-a-number
    This macro contains the IEEE representation of negative infinity,
    :math:`-\infty`. It is computed from the expression :code:`-1.0/0.0`.
 
+.. index::
+   single: NaN, defined as a macro
+   single: Not-a-number, defined as a macro
+   single: IEEE NaN, defined as a macro
 .. macro:: GSL_NAN
 
    This macro contains the IEEE representation of the Not-a-Number symbol,
@@ -97,7 +98,7 @@ The following routines provide portable implementations of functions
 found in the BSD math library.  When native versions are not available
 the functions described here can be used instead.  The substitution can
 be made automatically if you use :code:`autoconf` to compile your
-application (@pxref{Portability functions}).
+application (see :ref:`portability-functions`).
 
 .. index::
    single: log1p
@@ -128,8 +129,8 @@ application (@pxref{Portability functions}).
    alternative to the BSD math function :code:`hypot(x,y)`.
 
 .. index::
-   single: euclidean distance function, hypot
-   single: length, computed accurately using hypot
+   single: euclidean distance function, hypot3
+   single: length, computed accurately using hypot3
 .. function:: double gsl_hypot3 (const double x, const double y, const double z)
 
    This function computes the value of
