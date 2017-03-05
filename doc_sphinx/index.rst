@@ -15,5 +15,6 @@ GNU Scientific Library
    math.rst
    complex.rst
    poly.rst
+   specfunc.rst
 
 * :ref:`genindex`

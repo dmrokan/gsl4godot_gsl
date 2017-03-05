@@ -274,23 +274,27 @@ which agrees with the analytic result, :math:`z_n = \exp(2 \pi n i/5)`.
 .. rubric:: References
 
 The balanced-QR method and its error analysis are described in the
-following papers,
+following papers, :cite:`poly-edelman1995`
 
-.. [martin1970] R.S. Martin, G. Peters and J.H. Wilkinson, "The QR Algorithm for Real
+.. bibliography:: poly.bib
+   :all:
+   :keyprefix: poly-
+
+#.. [martin1970] R.S. Martin, G. Peters and J.H. Wilkinson, "The QR Algorithm for Real
    Hessenberg Matrices", Numerische Mathematik, 14 (1970), 219--231.
 
-.. [parlett1969] B.N. Parlett and C. Reinsch, "Balancing a Matrix for Calculation of
+#.. [parlett1969] B.N. Parlett and C. Reinsch, "Balancing a Matrix for Calculation of
    Eigenvalues and Eigenvectors", Numerische Mathematik, 13 (1969),
    293--304.
 
-.. [edelman1995] A. Edelman and H. Murakami, "Polynomial roots from companion matrix
+#.. [edelman1995] A. Edelman and H. Murakami, "Polynomial roots from companion matrix
    eigenvalues", Mathematics of Computation, Vol.: 64, No.: 210
    (1995), 763--776.
 
 The formulas for divided differences are given in the following texts,
 
-.. [AS] Abramowitz and Stegun, Handbook of Mathematical Functions,
+#.. [AS] Abramowitz and Stegun, Handbook of Mathematical Functions,
    Sections 25.1.4 and 25.2.26.
 
-.. [burden2011] R. L. Burden and J. D. Faires, Numerical Analysis, 9th edition,
+#.. [burden2011] R. L. Burden and J. D. Faires, Numerical Analysis, 9th edition,
    ISBN 0-538-73351-9, 2011.
