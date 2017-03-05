@@ -26,8 +26,6 @@
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_sf_pow_int.h>
-#include <gsl/gsl_sf_hermite.h>
 #include <gsl/gsl_integration.h>
 
 static int hermite_compute(const double a, const double b, gsl_integration_hermite_workspace * w);
