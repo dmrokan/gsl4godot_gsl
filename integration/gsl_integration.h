@@ -317,6 +317,19 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
 		       gsl_integration_cquad_workspace * ws,
 		       double *result, double *abserr, size_t * nevals);
 
+typedef struct
+{
+  size_t size;
+  double *weights; /* quadrature weights */
+  double *x;       /* zeros of H_n(x) */
+  double *sdiag;   /* subdiagonal of Jacobi matrix */
+} gsl_integration_hermite_workspace;
+
+gsl_integration_hermite_workspace *gsl_integration_hermite_alloc(const size_t n, const double a, const double b);
+
+void gsl_integration_hermite_free(gsl_integration_hermite_workspace * w);
+
+int gsl_integration_hermite(const gsl_function * func, double * result, gsl_integration_hermite_workspace * w);
 
 __END_DECLS
 
