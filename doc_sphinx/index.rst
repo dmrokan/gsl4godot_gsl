@@ -17,4 +17,6 @@ GNU Scientific Library
    poly.rst
    specfunc.rst
 
+   integration.rst
+
 * :ref:`genindex`
