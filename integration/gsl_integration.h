@@ -330,12 +330,12 @@ typedef struct
   double slp;
   double al;
   double be;
-} gsl_integration_iquad_params;
+} gsl_integration_fixed_params;
 
 typedef struct
 {
-  int (*init)(const size_t n, double * diag, double * subdiag, gsl_integration_iquad_params * params);
-} gsl_integration_iquad_type;
+  int (*init)(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params);
+} gsl_integration_fixed_type;
 
 typedef struct
 {
@@ -344,21 +344,21 @@ typedef struct
   double *x;       /* quadrature nodes */
   double *diag;    /* diagonal of Jacobi matrix */
   double *subdiag; /* subdiagonal of Jacobi matrix */
-  const gsl_integration_iquad_type * type;
-} gsl_integration_iquad_workspace;
+  const gsl_integration_fixed_type * type;
+} gsl_integration_fixed_workspace;
 
 /* IQPACK integral types */
-GSL_VAR const gsl_integration_iquad_type * gsl_integration_iquad_laguerre;
-GSL_VAR const gsl_integration_iquad_type * gsl_integration_iquad_hermite;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_laguerre;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_hermite;
 
-gsl_integration_iquad_workspace *
-gsl_integration_iquad_alloc(const gsl_integration_iquad_type * type, const size_t n,
+gsl_integration_fixed_workspace *
+gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_t n,
                             const double a, const double b, const double alpha, const double beta);
 
-void gsl_integration_iquad_free(gsl_integration_iquad_workspace * w);
+void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w);
 
-int gsl_integration_iquad(const gsl_function * func, double * result,
-                          gsl_integration_iquad_workspace * w);
+int gsl_integration_fixed(const gsl_function * func, double * result,
+                          gsl_integration_fixed_workspace * w);
 
 typedef struct
 {

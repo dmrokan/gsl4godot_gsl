@@ -30,7 +30,7 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_iquad_params * params)
+hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
   size_t i;
 
@@ -50,9 +50,9 @@ hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_iq
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_iquad_type hermite_type =
+static const gsl_integration_fixed_type hermite_type =
 {
   hermite_init
 };
 
-const gsl_integration_iquad_type *gsl_integration_iquad_hermite = &hermite_type;
+const gsl_integration_fixed_type *gsl_integration_fixed_hermite = &hermite_type;

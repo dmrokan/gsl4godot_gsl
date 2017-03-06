@@ -30,7 +30,7 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_iquad_params * params)
+laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
   size_t i;
 
@@ -50,9 +50,9 @@ laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_i
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_iquad_type laguerre_type =
+static const gsl_integration_fixed_type laguerre_type =
 {
   laguerre_init
 };
 
-const gsl_integration_iquad_type *gsl_integration_iquad_laguerre = &laguerre_type;
+const gsl_integration_fixed_type *gsl_integration_fixed_laguerre = &laguerre_type;

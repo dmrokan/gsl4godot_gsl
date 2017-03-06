@@ -1,4 +1,4 @@
-/* integration/iq.c
+/* integration/fixed.c
  * 
  * Copyright (C) 2017 Patrick Alken
  * 
@@ -17,22 +17,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-/* the code in this module is based on IQPACK */
+/* the code in this module performs fixed-point quadrature calculations for
+ * integrands and is based on IQPACK */
 
 #include <stdio.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>
 
-static int iquad_compute(const double a, const double b, const double alpha, const double beta,
-                         gsl_integration_iquad_workspace * w);
+static int fixed_compute(const double a, const double b, const double alpha, const double beta,
+                         gsl_integration_fixed_workspace * w);
 static int imtqlx ( const int n, double d[], double e[], double z[] );
 
-gsl_integration_iquad_workspace *
-gsl_integration_iquad_alloc(const gsl_integration_iquad_type * type, const size_t n,
+gsl_integration_fixed_workspace *
+gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_t n,
                             const double a, const double b, const double alpha, const double beta)
 {
-  gsl_integration_iquad_workspace *w;
+  gsl_integration_fixed_workspace *w;
 
   /* check inputs */
   if (n < 1)
@@ -45,7 +46,7 @@ gsl_integration_iquad_alloc(const gsl_integration_iquad_type * type, const size_
       GSL_ERROR_VAL ("b must be greater than 0", GSL_EDOM, 0);
     }
 
-  w = calloc(1, sizeof(gsl_integration_iquad_workspace));
+  w = calloc(1, sizeof(gsl_integration_fixed_workspace));
   if (w == NULL)
     {
       GSL_ERROR_VAL ("unable to allocate workspace", GSL_ENOMEM, 0);
@@ -54,28 +55,28 @@ gsl_integration_iquad_alloc(const gsl_integration_iquad_type * type, const size_
   w->weights = malloc(n * sizeof(double));
   if (w->weights == NULL)
     {
-      gsl_integration_iquad_free(w);
+      gsl_integration_fixed_free(w);
       GSL_ERROR_VAL ("unable to allocate weights", GSL_ENOMEM, 0);
     }
 
   w->x = malloc(n * sizeof(double));
   if (w->x == NULL)
     {
-      gsl_integration_iquad_free(w);
+      gsl_integration_fixed_free(w);
       GSL_ERROR_VAL ("unable to allocate x", GSL_ENOMEM, 0);
     }
 
   w->diag = malloc(n * sizeof(double));
   if (w->diag == NULL)
     {
-      gsl_integration_iquad_free(w);
+      gsl_integration_fixed_free(w);
       GSL_ERROR_VAL ("unable to allocate diag", GSL_ENOMEM, 0);
     }
 
   w->subdiag = malloc(n * sizeof(double));
   if (w->subdiag == NULL)
     {
-      gsl_integration_iquad_free(w);
+      gsl_integration_fixed_free(w);
       GSL_ERROR_VAL ("unable to allocate subdiag", GSL_ENOMEM, 0);
     }
 
@@ -83,13 +84,13 @@ gsl_integration_iquad_alloc(const gsl_integration_iquad_type * type, const size_
   w->type = type;
 
   /* compute quadrature weights and nodes */
-  iquad_compute(a, b, alpha, beta, w);
+  fixed_compute(a, b, alpha, beta, w);
 
   return w;
 }
 
 void
-gsl_integration_iquad_free(gsl_integration_iquad_workspace * w)
+gsl_integration_fixed_free(gsl_integration_fixed_workspace * w)
 {
   if (w->weights)
     free(w->weights);
@@ -107,8 +108,8 @@ gsl_integration_iquad_free(gsl_integration_iquad_workspace * w)
 }
 
 int
-gsl_integration_iquad(const gsl_function * func, double * result,
-                      gsl_integration_iquad_workspace * w)
+gsl_integration_fixed(const gsl_function * func, double * result,
+                      gsl_integration_fixed_workspace * w)
 {
   const size_t n = w->size;
   size_t i;
@@ -126,12 +127,12 @@ gsl_integration_iquad(const gsl_function * func, double * result,
 }
 
 static int
-iquad_compute(const double a, const double b, const double alpha, const double beta,
-              gsl_integration_iquad_workspace * w)
+fixed_compute(const double a, const double b, const double alpha, const double beta,
+              gsl_integration_fixed_workspace * w)
 {
   int s;
   const size_t n = w->size;
-  gsl_integration_iquad_params params;
+  gsl_integration_fixed_params params;
   size_t i;
 
   params.a = a;
