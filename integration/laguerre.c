@@ -1,4 +1,4 @@
-/* integration/hermite.c
+/* integration/laguerre.c
  * 
  * Copyright (C) 2017 Patrick Alken
  * 
@@ -30,29 +30,29 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_iquad_params * params)
+laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_iquad_params * params)
 {
   size_t i;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
   for (i = 0; i < n; i++)
     {
-      diag[i] = 0.0;
-      subdiag[i] = sqrt (0.5 * (i + 1.0));
+      diag[i] = 2.0 * i + 1.0 + params->alpha;
+      subdiag[i] = sqrt ((i + 1.0) * (params->alpha + i + 1.0));
     }
 
-  params->zemu = gsl_sf_gamma(0.5 * (params->alpha + 1.0));
+  params->zemu = gsl_sf_gamma(params->alpha + 1.0);
   params->shft = params->a;
-  params->slp = 1.0 / sqrt(params->b);
+  params->slp = 1.0 / params->b;
   params->al = params->alpha;
   params->be = 0.0;
 
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_iquad_type hermite_type =
+static const gsl_integration_iquad_type laguerre_type =
 {
-  hermite_init
+  laguerre_init
 };
 
-const gsl_integration_iquad_type *gsl_integration_iquad_hermite = &hermite_type;
+const gsl_integration_iquad_type *gsl_integration_iquad_laguerre = &laguerre_type;

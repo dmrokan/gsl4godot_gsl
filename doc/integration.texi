@@ -33,6 +33,7 @@ The functions described in this chapter are declared in the header file
 * CQUAD doubly-adaptive integration::  
 * Fixed order Gauss-Legendre integration::  
 * Hermite quadrature integration::
+* Special weight quadratures::
 * Numerical integration error codes::  
 * Numerical integration examples::  
 * Numerical integration References and Further Reading::  
@@ -878,6 +879,28 @@ value.  A function @math{f} may be integrated on [@var{a},@var{b}] by summing
 @tindex gsl_integration_glfixed_table
 This function frees the memory associated with the table @var{t}.
 @end deftypefun
+
+@node Special weight quadratures
+@section Special weight quadratures
+
+The routines in this section are designed to efficiently evaluate integrals of the form
+@tex
+\beforedisplay
+$$
+\int_a^b w(x) f(x) dx
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\int_a^b w(x) f(x) dx
+@end example
+
+@end ifinfo
+where the weight function @math{w(x)} takes certain forms which allow solutions based
+on interpolating quadratures. The table below lists the specialized integrals that
+can be solved with this method:
 
 @node Hermite quadrature integration
 @section Hermite quadrature integration

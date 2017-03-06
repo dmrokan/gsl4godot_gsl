@@ -2376,13 +2376,15 @@ main (void)
     }
   }
 
+  /* test Hermite quadrature */
   {
+    const gsl_integration_iquad_type *T = gsl_integration_iquad_hermite;
     size_t n;
     struct monomial_params params;
     gsl_function f;
     double exact, result;
-    double a, b;
-    gsl_integration_hermite_workspace *w;
+    double a, b, alpha;
+    gsl_integration_iquad_workspace *w;
 
     f.function = &f_monomial;
     f.params = &params;
@@ -2396,26 +2398,72 @@ main (void)
         a = b + 1.0;
         exact = 0.5 * M_SQRTPI * pow(b, -1.5) * (1.0 + 2*a*a*b);
 
-        w = gsl_integration_hermite_alloc(n, a, b);
+        w = gsl_integration_iquad_alloc(T, n, a, b, 0.0, 0.0);
 
-        gsl_integration_hermite(&f, &result, w);
+        gsl_integration_iquad(&f, &result, w);
         gsl_test_rel (result, exact, 1e-12, "hermite monomial a=%g b=%g", a, b);
 
-        gsl_integration_hermite_free(w);
+        gsl_integration_iquad_free(w);
       }
 
     /* now test on myfn1 */
 
     a = 1.2;
     b = 0.6;
-    n = 100;
-    exact = exp((1.0 - 4*a*(1+a)*b) / (4 * (1.0 + b))) * M_SQRTPI / sqrt(1.0 + b);
+    alpha = 1.0;
+    n = 200;
+    exact = 0.877421600198066;
 
     f = make_function(&myfn1, 0);
-    w = gsl_integration_hermite_alloc(n, a, b);
-    gsl_integration_hermite(&f, &result, w);
+    w = gsl_integration_iquad_alloc(T, n, a, b, alpha, 0.0);
+    gsl_integration_iquad(&f, &result, w);
     gsl_test_rel (result, exact, 1e-12, "hermite myfn1");
-    gsl_integration_hermite_free(w);
+    gsl_integration_iquad_free(w);
+  }
+
+  /* test Laguerre quadrature */
+  {
+    const gsl_integration_iquad_type *T = gsl_integration_iquad_laguerre;
+    size_t n;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    double a, b, alpha;
+    gsl_integration_iquad_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 2;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( b = 0.1; b <= 2.0; b += 0.1)
+      {
+        a = b + 1.0;
+        exact = (2.0 + a*b*(2.0 + a*b)) / (b*b*b);
+
+        w = gsl_integration_iquad_alloc(T, n, a, b, 0.0, 0.0);
+
+        gsl_integration_iquad(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "laguerre monomial a=%g b=%g", a, b);
+
+        gsl_integration_iquad_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 0.6;
+    alpha = 0.5;
+    n = 200;
+    exact = 0.006604180366378123;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_iquad_alloc(T, n, a, b, alpha, 0.0);
+    gsl_integration_iquad(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "laguerre myfn1");
+    gsl_integration_iquad_free(w);
   }
 
   exit (gsl_test_summary());
