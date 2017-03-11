@@ -2412,7 +2412,7 @@ main (void)
     b = 0.6;
     alpha = 1.0;
     n = 200;
-    exact = 0.877421600198066;
+    exact = 0.6542819629825344;
 
     f = make_function(&myfn1, 0);
     w = gsl_integration_fixed_alloc(T, n, a, b, alpha, 0.0);

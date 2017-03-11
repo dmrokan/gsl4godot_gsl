@@ -35,10 +35,10 @@ hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_fi
   size_t i;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  for (i = 0; i < n; i++)
+  for (i = 1; i <= n; i++)
     {
-      diag[i] = 0.0;
-      subdiag[i] = sqrt (0.5 * (i + 1.0));
+      diag[i - 1] = 0.0;
+      subdiag[i - 1] = sqrt (0.5 * (i + params->alpha * (i % 2)));
     }
 
   params->zemu = gsl_sf_gamma(0.5 * (params->alpha + 1.0));
