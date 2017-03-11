@@ -57,9 +57,17 @@ can be constructed which agrees with :math:`f` at :math:`n+1` distinct points
 :math:`x_0,x_1,...,x_{n}`. This polynomial can be written in a
 form known as Newton's divided-difference representation
 
-.. math::
+.. only:: not texinfo
 
-   P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) \cdots (x-x_{k-1})
+   .. math::
+
+      P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) \cdots (x-x_{k-1})
+
+.. only:: texinfo
+
+   .. math::
+
+      P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) ... (x-x_{k-1})
 
 where the divided differences :math:`[x_0,x_1,...,x_k]` are defined in section 25.1.4 of
 Abramowitz and Stegun. Additionally, it is possible to construct an interpolating
