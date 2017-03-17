@@ -100,32 +100,37 @@ Modes
 The goal of the library is to achieve double precision accuracy wherever
 possible.  However the cost of evaluating some special functions to
 double precision can be significant, particularly where very high order
-terms are required.  In these cases a :code:`mode` argument allows the
+terms are required.  In these cases a :code:`mode` argument, of type
+:type:`gsl_mode_t` allows the
 accuracy of the function to be reduced in order to improve performance.
 The following precision levels are available for the mode argument,
 
-.. macro:: GSL_PREC_DOUBLE
+.. type:: gsl_mode_t
 
-   Double-precision, a relative accuracy of approximately :math:`2 * 10^{-16}`.
+   .. macro:: GSL_PREC_DOUBLE
 
-.. macro:: GSL_PREC_SINGLE
+      Double-precision, a relative accuracy of approximately :math:`2 * 10^{-16}`.
 
-   Single-precision, a relative accuracy of approximately :math:`10^{-7}`.
+   .. macro:: GSL_PREC_SINGLE
 
-.. macro:: GSL_PREC_APPROX
+      Single-precision, a relative accuracy of approximately :math:`10^{-7}`.
 
-   Approximate values, a relative accuracy of approximately :math:`5 * 10^{-4}`.
+   .. macro:: GSL_PREC_APPROX
+
+      Approximate values, a relative accuracy of approximately :math:`5 * 10^{-4}`.
 
 The approximate mode provides the fastest evaluation at the lowest
 accuracy.
 
 Airy Functions and Derivatives
 ==============================
-@include specfunc-airy.texi
+
+.. include:: specfunc-airy.rst
 
 Bessel Functions
 ================
-@include specfunc-bessel.texi
+
+.. include:: specfunc-bessel.rst
 
 Clausen Functions
 =================
