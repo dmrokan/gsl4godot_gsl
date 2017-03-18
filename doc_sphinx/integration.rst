@@ -30,32 +30,38 @@ Introduction
 Each algorithm computes an approximation to a definite integral of the
 form,
 
-.. math::
+.. math:: I = \int_a^b f(x) w(x) dx
 
-   I = \int_a^b f(x) w(x) \,dx
-
-where :math:`w(x)` is a weight function (for general integrands :math:`w(x)=1`).
+where :math:`w(x)` is a weight function (for general integrands :math:`w(x) = 1`).
 The user provides absolute and relative error bounds 
 :math:`(epsabs, epsrel)` which specify the following accuracy requirement,
 
-.. math::
+.. only:: not texinfo
 
-   |\hbox{\it RESULT} - I|  \leq \max(\hbox{\it epsabs}, \hbox{\it epsrel}\, |I|)
+   .. math:: |RESULT - I| \leq \max{(epsabs, epsrel |I|)}
+
+.. only:: texinfo
+
+   .. math:: |RESULT - I| <= max(epsabs, epsrel |I|)
 
 where :math:`RESULT` is the numerical approximation obtained by the
 algorithm.  The algorithms attempt to estimate the absolute error
 :math:`ABSERR = |RESULT - I|` in such a way that the following inequality
 holds,
 
-.. math::
+.. only:: not texinfo
 
-   |\hbox{\it RESULT} - I| \leq \hbox{\it ABSERR} \leq \max(\hbox{\it epsabs}, \hbox{\it epsrel}\,|I|)
+   .. math:: |RESULT - I| \leq ABSERR \leq \max{(epsabs, epsrel |I|)}
+
+.. only:: texinfo
+
+   .. math:: |RESULT - I| <= ABSERR <= max(epsabs, epsrel |I|)
 
 In short, the routines return the first approximation 
 which has an absolute error smaller than
 :math:`epsabs` or a relative error smaller than :math:`epsrel`.   
 
-Note that this is an @i{either-or} constraint, 
+Note that this is an *either-or* constraint, 
 not simultaneous.  To compute to a specified absolute error, set
 :math:`epsrel` to zero.  To compute to a specified relative error,
 set :math:`epsabs` to zero.  
@@ -96,7 +102,7 @@ based on Gauss-Kronrod rules.
 
 A Gauss-Kronrod rule begins with a classical Gaussian quadrature rule of
 order :math:`m`.  This is extended with additional points between each of
-the abscissae to give a higher order Kronrod rule of order :math:`2m+1`.
+the abscissae to give a higher order Kronrod rule of order :math:`2m + 1`.
 The Kronrod rule is efficient because it reuses existing function
 evaluations from the Gaussian rule.  
 
@@ -166,9 +172,12 @@ integration region is divided into subintervals, and on each iteration
 the subinterval with the largest estimated error is bisected.  This
 reduces the overall error rapidly, as the subintervals become
 concentrated around local difficulties in the integrand.  These
-subintervals are managed by a @code{gsl_integration_workspace} struct,
-which handles the memory for the subinterval ranges, results and error
-estimates.
+subintervals are managed by the following struct,
+
+.. type:: gsl_integration_workspace
+
+   This workspace handles the memory for the subinterval ranges, results and error
+   estimates.
 
 .. index:: gsl_integration_workspace
 
@@ -281,10 +290,7 @@ QAGI adaptive integration on infinite intervals
    infinite interval :math:`(-\infty,+\infty)`.  The integral is mapped onto the
    semi-open interval :math:`(0,1]` using the transformation :math:`x = (1-t)/t`,
 
-   .. math::
-
-      \int_{-\infty}^{+\infty} dx \, f(x) 
-        = \int_0^1 dt \, (f((1-t)/t) + f(-(1-t)/t))/t^2.
+   .. math:: \int_{-\infty}^{+\infty} dx f(x) = \int_0^1 dt (f((1-t)/t) + f(-(1-t)/t))/t^2.
 
    It is then integrated using the QAGS algorithm.  The normal 21-point
    Gauss-Kronrod rule of QAGS is replaced by a 15-point rule, because the
@@ -297,10 +303,7 @@ QAGI adaptive integration on infinite intervals
    semi-infinite interval :math:`(a,+\infty)`.  The integral is mapped onto the
    semi-open interval :math:`(0,1]` using the transformation :math:`x = a + (1-t)/t`,
 
-   .. math::
-
-      \int_{a}^{+\infty} dx \, f(x) 
-        = \int_0^1 dt \, f(a + (1-t)/t)/t^2
+   .. math:: \int_{a}^{+\infty} dx f(x) = \int_0^1 dt f(a + (1-t)/t)/t^2
 
    and then integrated using the QAGS algorithm.
 
@@ -310,10 +313,7 @@ QAGI adaptive integration on infinite intervals
    semi-infinite interval :math:`(-\infty,b)`.  The integral is mapped onto the
    semi-open interval :math:`(0,1]` using the transformation :math:`x = b - (1-t)/t`,
 
-   .. math::
-
-      \int_{-\infty}^{b} dx \, f(x) 
-        = \int_0^1 dt \, f(b - (1-t)/t)/t^2
+   .. math:: \int_{-\infty}^{b} dx f(x) = \int_0^1 dt f(b - (1-t)/t)/t^2
 
    and then integrated using the QAGS algorithm.
 
@@ -328,15 +328,21 @@ QAWC adaptive integration for Cauchy principal values
    This function computes the Cauchy principal value of the integral of
    :math:`f` over :math:`(a,b)`, with a singularity at :data:`c`,
 
-   .. math::
+   .. only:: not texinfo
 
-      I = \int_a^b dx\, {f(x) \over x - c}
-        = \lim_{\epsilon \to 0} 
-      \left\{
-      \int_a^{c-\epsilon} dx\, {f(x) \over x - c}
-      +
-      \int_{c+\epsilon}^b dx\, {f(x) \over x - c}
-      \right\}
+      .. math::
+
+         I = \int_a^b dx\, {f(x) \over x - c}
+           = \lim_{\epsilon \to 0} 
+         \left\{
+         \int_a^{c-\epsilon} dx\, {f(x) \over x - c}
+         +
+         \int_{c+\epsilon}^b dx\, {f(x) \over x - c}
+         \right\}
+
+   .. only:: texinfo
+
+      .. math:: I = \int_a^b dx f(x) / (x - c)
 
    The adaptive bisection algorithm of QAG is used, with modifications to
    ensure that subdivisions do not occur at the singular point :math:`x = c`.
@@ -365,9 +371,7 @@ Chebyshev moments.
    struct describing a singular weight function
    :math:`w(x)` with the parameters :math:`(\alpha, \beta, \mu, \nu)`,
 
-   .. math::
-
-      w(x) = (x - a)^\alpha (b - x)^\beta \log^\mu (x - a) \log^\nu (b - x)
+   .. math:: w(x) = (x - a)^\alpha (b - x)^\beta \log^\mu (x - a) \log^\nu (b - x)
 
    where :math:`\alpha > -1`, :math:`\beta > -1`, and :math:`\mu = 0, 1`,
    :math:`\nu = 0, 1`.  The weight function can take four different forms
@@ -408,10 +412,7 @@ Chebyshev moments.
    of the weight function :math:`(\alpha, \beta, \mu, \nu)` are taken from the
    table :data:`t`.  The integral is,
 
-   .. math::
-
-      I = \int_a^b dx\, f(x) (x - a)^\alpha (b - x)^\beta 
-              \log^\mu (x - a) \log^\nu (b - x).
+   .. math:: I = \int_a^b dx f(x) (x - a)^\alpha (b - x)^\beta \log^\mu (x - a) \log^\nu (b - x).
 
    The adaptive bisection algorithm of QAG is used.  When a subinterval
    contains one of the endpoints then a special 25-point modified
@@ -438,15 +439,22 @@ which must be pre-computed with calls to the functions below.
    struct and its associated workspace describing a sine or cosine weight
    function :math:`w(x)` with the parameters :math:`(\omega, L)`,
 
-   .. math::
+   .. only:: not texinfo
 
-      w(x) =
-      \left\{
-      \begin{array}{c}
-      \sin{(\omega x)} \\
-      \cos{(\omega x)} \\
-      \end{array}
-      \right\}
+      .. math::
+
+         w(x) =
+         \left\{
+         \begin{array}{c}
+         \sin{(\omega x)} \\
+         \cos{(\omega x)} \\
+         \end{array}
+         \right\}
+
+   .. only:: texinfo
+
+      | w(x) = sin(\omega x)
+      | w(x) = cos(\omega x)
 
    The parameter :data:`L` must be the length of the interval over which the
    function will be integrated :math:`L = b - a`.  The choice of sine or
@@ -486,16 +494,23 @@ which must be pre-computed with calls to the functions below.
    :math:`f` over :math:`(a,b)` with the weight function 
    :math:`\sin(\omega x)` or :math:`\cos(\omega x)` defined 
    by the table :data:`wf`,
+ 
+   .. only:: not texinfo
 
-   .. math::
+      .. math::
 
-      I = \int_a^b dx f(x)
-      \left\{
-      \begin{array}{c}
-      \sin{(\omega x)} \\
-      \cos{(\omega x)}
-      \end{array}
-      \right\}
+         I = \int_a^b dx f(x)
+         \left\{
+         \begin{array}{c}
+         \sin{(\omega x)} \\
+         \cos{(\omega x)}
+         \end{array}
+         \right\}
+
+   .. only:: texinfo
+
+      | I = \int_a^b dx f(x) sin(omega x)
+      | I = \int_a^b dx f(x) cos(omega x)
 
    The results are extrapolated using the epsilon-algorithm to accelerate
    the convergence of the integral.  The function returns the final
@@ -521,15 +536,24 @@ QAWF adaptive integration for Fourier integrals
    This function attempts to compute a Fourier integral of the function
    :data:`f` over the semi-infinite interval :math:`[a,+\infty)`
 
-   .. math::
+   .. only:: not texinfo
 
-      I = \int_a^{+\infty} dx f(x)
-      \left\{
-      \begin{array}{c}
-      \sin{(\omega x)} \\
-      \cos{(\omega x)}
-      \end{array}
-      \right\}
+      .. math::
+
+         I = \int_a^{+\infty} dx f(x)
+         \left\{
+         \begin{array}{c}
+         \sin{(\omega x)} \\
+         \cos{(\omega x)}
+         \end{array}
+         \right\}
+
+   .. only:: texinfo
+
+      ::
+
+        I = \int_a^{+\infty} dx f(x) sin(omega x)
+        I = \int_a^{+\infty} dx f(x) cos(omega x)
 
    The parameter :math:`\omega` and choice of :math:`\sin` or :math:`\cos` is
    taken from the table :data:`wf` (the length :data:`L` can take any value,
@@ -537,12 +561,23 @@ QAWF adaptive integration for Fourier integrals
    Fourier integration).  The integral is computed using the QAWO algorithm
    over each of the subintervals,
 
-   .. math::
+   .. only:: not texinfo
 
-      C_1 &= [a,a+c] \\
-      C_2 &= [a+c,a+2c] \\
-      \dots &= \dots \\
-      C_k &= [a+(k-1)c,a+kc]
+      .. math::
+
+         C_1 &= [a,a+c] \\
+         C_2 &= [a+c,a+2c] \\
+         \dots &= \dots \\
+         C_k &= [a+(k-1)c,a+kc]
+
+   .. only:: texinfo
+
+      ::
+
+        C_1 = [a, a + c]
+        C_2 = [a + c, a + 2 c]
+        ... = ...
+        C_k = [a + (k-1) c, a + k c]
 
    where 
    :math:`c = (2 floor(|\omega|) + 1) \pi/|\omega|`.  The width :math:`c` is
@@ -555,9 +590,7 @@ QAWF adaptive integration for Fourier integrals
    :data:`abserr`.  The following strategy is used: on each interval
    :math:`C_k` the algorithm tries to achieve the tolerance
 
-   .. math::
-
-      TOL_k = u_k \hbox{\it abserr}
+   .. math:: TOL_k = u_k abserr
 
    where 
    :math:`u_k = (1 - p)p^{k-1}` and :math:`p = 9/10`.
@@ -567,9 +600,13 @@ QAWF adaptive integration for Fourier integrals
    If the integration of a subinterval leads to difficulties then the
    accuracy requirement for subsequent intervals is relaxed,
 
-   .. math::
+   .. only:: not texinfo
 
-      TOL_k = u_k \max(\hbox{\it abserr}, \max_{i<k}\{E_i\})
+      .. math:: TOL_k = u_k \max{(abserr, \max_{i<k}{(E_i)})}
+
+   .. only:: texinfo
+
+      .. math:: TOL_k = u_k max(abserr, max_{i<k}(E_i))
 
    where :math:`E_k` is the estimated error on the interval :math:`C_k`.
 
@@ -646,7 +683,7 @@ Gauss-Legendre integration
 The fixed-order Gauss-Legendre integration routines are provided for fast
 integration of smooth functions with known polynomial order.  The
 :math:`n`-point Gauss-Legendre rule is exact for polynomials of order
-:math:`2n-1` or less.  For example, these rules are useful when integrating
+:math:`2n - 1` or less.  For example, these rules are useful when integrating
 basis functions to form mass matrices for the Galerkin method.  Unlike other
 numerical integration routines within the library, these routines do not accept
 absolute or relative error bounds.
@@ -689,9 +726,7 @@ Fixed point quadratures
 
 The routines in this section are designed to efficiently evaluate integrals of the form
 
-.. math::
-
-   \int_a^b w(x) f(x) dx
+.. math:: \int_a^b w(x) f(x) dx
 
 where the weight function :math:`w(x)` takes certain forms which allow solutions based
 on interpolating quadratures. The table below lists the specialized integrals that
@@ -700,8 +735,8 @@ can be solved with this method:
 ============ =============================== ===============================================================
 Name         Interval                        Weighting function :math:`w(x)`
 ============ =============================== ===============================================================
-Laguerre     :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{\left( -b (x - a)\right)}`
-Hermite      :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{\left( -b (x-a)^2 \right)}`
+Laguerre     :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{( -b (x - a) )}`
+Hermite      :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)^2 )}`
 ============ =============================== ===============================================================
 
 .. function:: gsl_integration_fixed_workspace * gsl_integration_fixed_alloc(const gsl_integration_fixed_type * T, const size_t n, const double a, const double b, const double alpha, const double beta)
@@ -755,9 +790,7 @@ The integrator :code:`QAGS` will handle a large class of definite
 integrals.  For example, consider the following integral, which has an
 algebraic-logarithmic singularity at the origin,
 
-.. math::
-
-   \int_0^1 x^{-1/2} \log(x) \,dx = -4
+.. math:: \int_0^1 x^{-1/2} \log(x) dx = -4
 
 The program below computes this integral to a relative accuracy bound of
 :code:`1e-7`.
