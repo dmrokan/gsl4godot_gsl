@@ -124,25 +124,23 @@ accuracy.
 
 Airy Functions and Derivatives
 ==============================
-
 .. include:: specfunc-airy.rst
 
 Bessel Functions
 ================
-
 .. include:: specfunc-bessel.rst
 
 Clausen Functions
 =================
-@include specfunc-clausen.texi
+.. include:: specfunc-clausen.rst
 
 Coulomb Functions
 =================
-@include specfunc-coulomb.texi
+.. include:: specfunc-coulomb.rst
 
 Coupling Coefficients
 =====================
-@include specfunc-coupling.texi
+.. include:: specfunc-coupling.rst
 
 Dawson Function
 ===============
@@ -200,9 +198,11 @@ Hypergeometric Functions
 ========================
 @include specfunc-hyperg.texi
 
+.. _laguerre-functions:
+
 Laguerre Functions
 ==================
-@include specfunc-laguerre.texi
+.. include:: specfunc-laguerre.rst
 
 Lambert W Functions
 ===================

@@ -1,9 +1,10 @@
 ***********
 Polynomials
 ***********
-
 .. index::
    single: polynomials, roots of 
+
+.. include:: include.rst
 
 This chapter describes functions for evaluating and solving polynomials.
 There are routines for finding real and complex roots of quadratic and
@@ -19,8 +20,18 @@ Polynomial Evaluation
    single: evaluation of polynomials
 
 The functions described here evaluate the polynomial 
-:math:`P(x) = c[0] + c[1] x + c[2] x^2 + \dots + c[len-1] x^{len-1}` using
-Horner's method for stability. @inlinefns{}
+
+.. only:: not texinfo
+
+   .. math::
+
+      P(x) = c[0] + c[1] x + c[2] x^2 + \dots + c[len-1] x^{len-1}
+
+.. only:: texinfo
+
+   P(x) = c[0] + c[1] x + c[2] x^2 + ... + c[len-1] x^{len-1}
+   
+using Horner's method for stability. |inlinefns|
 
 .. function:: double gsl_poly_eval (const double c[], const int len, const double x)
 
@@ -65,9 +76,7 @@ form known as Newton's divided-difference representation
 
 .. only:: texinfo
 
-   .. math::
-
-      P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) ... (x-x_{k-1})
+   P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) ... (x-x_{k-1})
 
 where the divided differences :math:`[x_0,x_1,...,x_k]` are defined in section 25.1.4 of
 Abramowitz and Stegun. Additionally, it is possible to construct an interpolating
@@ -75,9 +84,15 @@ polynomial of degree :math:`2n+1` which also matches the first derivatives of :m
 at the points :math:`x_0,x_1,...,x_n`. This is called the Hermite interpolating
 polynomial and is defined as
 
-.. math::
+.. only:: not texinfo
 
-   H_{2n+1}(x) = f(z_0) + \sum_{k=1}^{2n+1} [z_0,z_1,...,z_k] (x-z_0)(x-z_1) \cdots (x-z_{k-1})
+   .. math::
+
+      H_{2n+1}(x) = f(z_0) + \sum_{k=1}^{2n+1} [z_0,z_1,...,z_k] (x-z_0)(x-z_1) \cdots (x-z_{k-1})
+
+.. only:: texinfo
+
+   H_{2n+1}(x) = f(z_0) + \sum_{k=1}^{2n+1} [z_0,z_1,...,z_k] (x-z_0)(x-z_1) ... (x-z_{k-1})
 
 where the elements of :math:`z = \{x_0,x_0,x_1,x_1,...,x_n,x_n\}` are defined by
 :math:`z_{2k} = z_{2k+1} = x_k`. The divided-differences :math:`[z_0,z_1,...,z_k]`
@@ -96,7 +111,7 @@ are discussed in Burden and Faires, section 3.4.
 
    This function evaluates the polynomial stored in divided-difference form
    in the arrays :data:`dd` and :data:`xa` of length :data:`size` at the point
-   :data:`x`.  @inlinefn{}
+   :data:`x`. |inlinefn|
 
 .. function:: int gsl_poly_dd_taylor (double c[], double xp, const double dd[], const double xa[], size_t size, double w[])
 
@@ -236,7 +251,13 @@ approximate locations of roots of higher order polynomials.
 
    This function computes the roots of the general polynomial 
 
-   .. math::
+   .. only:: not texinfo
+
+      .. math::
+
+         P(x) = a_0 + a_1 x + a_2 x^2 + \cdots + a_{n-1} x^{n-1}
+
+   .. only:: texinfo
 
       P(x) = a_0 + a_1 x + a_2 x^2 + ... + a_{n-1} x^{n-1}
       
@@ -263,9 +284,15 @@ Examples
 To demonstrate the use of the general polynomial solver we will take the
 polynomial :math:`P(x) = x^5 - 1` which has these roots:
 
-.. math::
+.. only:: not texinfo
 
-   1, e^{2\pi i /5}, e^{4\pi i /5}, e^{6\pi i /5}, e^{8\pi i /5}
+   .. math::
+
+      1, e^{2\pi i / 5}, e^{4\pi i / 5}, e^{6\pi i / 5}, e^{8\pi i / 5}
+
+.. only:: texinfo
+
+   1, e^{2*pi i / 5}, e^{4*pi i / 5}, e^{6*pi i / 5}, e^{8*pi i / 5}
 
 The following program will find these roots.
 

@@ -5,10 +5,17 @@
 The Airy functions :math:`Ai(x)` and :math:`Bi(x)` are defined by the
 integral representations,
 
-.. math::
+.. only:: not texinfo
 
-   Ai(x) & = {1\over\pi} \int_0^\infty \cos(t^3/3 + xt ) \,dt \\
-   Bi(x) & = {1\over\pi} \int_0^\infty (e^{-t^3/3 + xt} + \sin(t^3/3 + xt)) \,dt
+   .. math::
+
+      Ai(x) & = {1\over\pi} \int_0^\infty \cos(t^3/3 + xt ) \,dt \\
+      Bi(x) & = {1\over\pi} \int_0^\infty (e^{-t^3/3 + xt} + \sin(t^3/3 + xt)) \,dt
+
+.. only:: texinfo
+
+   | Ai(x) = (1/\pi) \int_0^\infty \cos((1/3) t^3 + xt) dt
+   | Bi(x) = (1/\pi) \int_0^\infty (e^(-(1/3) t^3 + xt) + \sin((1/3) t^3 + xt)) dt
 
 For further information see Abramowitz & Stegun, Section 10.4. The Airy
 functions are defined in the header file :file:`gsl_sf_airy.h`.
@@ -32,16 +39,16 @@ Airy Functions
               int gsl_sf_airy_Ai_scaled_e (double x, gsl_mode_t mode, gsl_sf_result * result)
 
    These routines compute a scaled version of the Airy function
-   :math:`S_A(x) Ai(x)`.  For :math:`x>0` the scaling factor :math:`S_A(x)` is
+   :math:`S_A(x) Ai(x)`.  For :math:`x > 0` the scaling factor :math:`S_A(x)` is
    :math:`\exp(+(2/3) x^{3/2})`, 
-   and is 1 for :math:`x<0`.
+   and is 1 for :math:`x < 0`.
 
 .. function:: double gsl_sf_airy_Bi_scaled (double x, gsl_mode_t mode)
               int gsl_sf_airy_Bi_scaled_e (double x, gsl_mode_t mode, gsl_sf_result * result)
 
    These routines compute a scaled version of the Airy function
-   :math:`S_B(x) Bi(x)`.  For :math:`x>0` the scaling factor :math:`S_B(x)` is
-   :math:`exp(-(2/3) x^{3/2})`, and is 1 for :math:`x<0`.
+   :math:`S_B(x) Bi(x)`.  For :math:`x > 0` the scaling factor :math:`S_B(x)` is
+   :math:`exp(-(2/3) x^{3/2})`, and is 1 for :math:`x < 0`.
 
 
 Derivatives of Airy Functions
@@ -64,16 +71,16 @@ Derivatives of Airy Functions
 
    These routines compute the scaled Airy function derivative 
    :math:`S_A(x) Ai'(x)`.  
-   For :math:`x>0` the scaling factor :math:`S_A(x)` is
-   :math:`\exp(+(2/3) x^{3/2})`, and is 1 for :math:`x<0`.
+   For :math:`x > 0` the scaling factor :math:`S_A(x)` is
+   :math:`\exp(+(2/3) x^{3/2})`, and is 1 for :math:`x < 0`.
 
 .. function:: double gsl_sf_airy_Bi_deriv_scaled (double x, gsl_mode_t mode)
               int gsl_sf_airy_Bi_deriv_scaled_e (double x, gsl_mode_t mode, gsl_sf_result * result)
 
    These routines compute the scaled Airy function derivative 
    :math:`S_B(x) Bi'(x)`.
-   For :math:`x>0` the scaling factor :math:`S_B(x)` is
-   :math:`exp(-(2/3) x^{3/2})`, and is 1 for :math:`x<0`.
+   For :math:`x > 0` the scaling factor :math:`S_B(x)` is
+   :math:`exp(-(2/3) x^{3/2})`, and is 1 for :math:`x < 0`.
 
 Zeros of Airy Functions
 -----------------------
