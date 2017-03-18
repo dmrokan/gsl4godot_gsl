@@ -10,7 +10,7 @@ The Clausen function is defined by the following integral,
 
    Cl_2(x) = - \int_0^x dt log( 2 \sin(t/2) )
 
-It is related to the dilogarithm by 
+It is related to the :ref:`dilogarithm <dilog-function>` by 
 :math:`Cl_2(\theta) = \Im Li_2(\exp(i\theta))`.
 The Clausen functions are declared in the header file
 :file:`gsl_sf_clausen.h`.

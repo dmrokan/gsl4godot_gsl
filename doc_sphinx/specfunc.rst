@@ -144,15 +144,17 @@ Coupling Coefficients
 
 Dawson Function
 ===============
-@include specfunc-dawson.texi
+.. include:: specfunc-dawson.rst
 
 Debye Functions
 ===============
-@include specfunc-debye.texi
+.. include:: specfunc-debye.rst
+
+.. _dilog-function:
 
 Dilogarithm
 ===========
-@include specfunc-dilog.texi
+.. include:: specfunc-dilog.rst
 
 Elementary Operations
 =====================
