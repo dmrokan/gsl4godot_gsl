@@ -158,31 +158,31 @@ Dilogarithm
 
 Elementary Operations
 =====================
-@include specfunc-elementary.texi
+.. include:: specfunc-elementary.rst
 
 Elliptic Integrals
 ==================
-@include specfunc-ellint.texi
+.. include:: specfunc-ellint.rst
 
 Elliptic Functions (Jacobi)
 ===========================
-@include specfunc-elljac.texi
+.. include:: specfunc-elljac.rst
 
 Error Functions
 ===============
-@include specfunc-erf.texi
+.. include:: specfunc-erf.rst
 
 Exponential Functions
 =====================
-@include specfunc-exp.texi
+.. include:: specfunc-exp.rst
 
 Exponential Integrals
 =====================
-@include specfunc-expint.texi
+.. include:: specfunc-expint.rst
 
 Fermi-Dirac Function
 ====================
-@include specfunc-fermi-dirac.texi
+.. include:: specfunc-fermi-dirac.rst
 
 Gamma and Beta Functions
 ========================
