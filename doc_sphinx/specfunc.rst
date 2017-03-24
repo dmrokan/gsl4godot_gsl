@@ -186,7 +186,7 @@ Fermi-Dirac Function
 
 Gamma and Beta Functions
 ========================
-@include specfunc-gamma.texi
+.. include:: specfunc-gamma.rst
 
 Gegenbauer Functions
 ====================
