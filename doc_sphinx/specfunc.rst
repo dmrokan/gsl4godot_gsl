@@ -190,7 +190,7 @@ Gamma and Beta Functions
 
 Gegenbauer Functions
 ====================
-@include specfunc-gegenbauer.texi
+.. include:: specfunc-gegenbauer.rst
 
 Hermite Polynomials and Functions
 =================================
