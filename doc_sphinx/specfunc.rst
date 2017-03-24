@@ -194,7 +194,7 @@ Gegenbauer Functions
 
 Hermite Polynomials and Functions
 =================================
-@include specfunc-hermite.texi
+.. include:: specfunc-hermite.rst
 
 Hypergeometric Functions
 ========================
