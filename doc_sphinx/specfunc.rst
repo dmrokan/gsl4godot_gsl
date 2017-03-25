@@ -198,7 +198,7 @@ Hermite Polynomials and Functions
 
 Hypergeometric Functions
 ========================
-@include specfunc-hyperg.texi
+.. include:: specfunc-hyperg.rst
 
 .. _laguerre-functions:
 
@@ -208,7 +208,7 @@ Laguerre Functions
 
 Lambert W Functions
 ===================
-@include specfunc-lambert.texi
+.. include:: specfunc-lambert.rst
 
 Legendre Functions and Spherical Harmonics
 ==========================================
@@ -216,35 +216,35 @@ Legendre Functions and Spherical Harmonics
 
 Logarithm and Related Functions
 ===============================
-@include specfunc-log.texi
+.. include:: specfunc-log.rst
 
 Mathieu Functions
 =================
-@include specfunc-mathieu.texi
+.. include:: specfunc-mathieu.rst
 
 Power Function
 ==============
-@include specfunc-pow-int.texi
+.. include:: specfunc-pow-int.rst
 
 Psi (Digamma) Function
 ======================
-@include specfunc-psi.texi
+.. include:: specfunc-psi.rst
 
 Synchrotron Functions
 =====================
-@include specfunc-synchrotron.texi
+.. include:: specfunc-synchrotron.rst
 
 Transport Functions
 ===================
-@include specfunc-transport.texi
+.. include:: specfunc-transport.rst
 
 Trigonometric Functions
 =======================
-@include specfunc-trig.texi
+.. include:: specfunc-trig.rst
 
 Zeta Functions
 ==============
-@include specfunc-zeta.texi
+.. include:: specfunc-zeta.rst
 
 Examples
 ========

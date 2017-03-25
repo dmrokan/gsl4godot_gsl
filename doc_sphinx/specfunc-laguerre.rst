@@ -14,7 +14,7 @@ hypergeometric functions as
 
    L^a_n(x) = ((a+1)_n / n!) 1F1(-n,a+1,x)
    
-where :math:`(a)_n` is the Pochhammer symbol (rising factorial).
+where :math:`(a)_n` is the :ref:`Pochhammer symbol <pochhammer-symbol>` (rising factorial).
 They are related to the plain
 Laguerre polynomials :math:`L_n(x)` by :math:`L^0_n(x) = L_n(x)` and 
 :math:`L^k_n(x) = (-1)^k (d^k/dx^k) L_{(n+k)}(x)`

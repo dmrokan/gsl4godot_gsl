@@ -176,6 +176,8 @@ maintained in hardcoded tables.
    :math:`x \ge 0`, :math:`n \ge 0`
 .. exceptions: GSL_EDOM, GSL_EOVRFLW, GSL_EUNDRFLW
 
+.. _pochhammer-symbol:
+
 Pochhammer Symbol
 -----------------
 
