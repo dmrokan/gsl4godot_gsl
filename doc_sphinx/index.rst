@@ -16,6 +16,7 @@ GNU Scientific Library
    complex.rst
    poly.rst
    specfunc.rst
+   vectors.rst
 
    integration.rst
 

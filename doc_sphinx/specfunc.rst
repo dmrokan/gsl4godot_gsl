@@ -24,12 +24,12 @@ Usage
 =====
 
 The special functions are available in two calling conventions, a
-@dfn{natural form} which returns the numerical value of the function and
-an @dfn{error-handling form} which returns an error code.  The two types
+*natural form* which returns the numerical value of the function and
+an *error-handling form* which returns an error code.  The two types
 of function provide alternative ways of accessing the same underlying
 code.
 
-The @dfn{natural form} returns only the value of the function and can be
+The *natural form* returns only the value of the function and can be
 used directly in mathematical expressions.  For example, the following
 function call will compute the value of the Bessel function
 :math:`J_0(x)`::
@@ -212,7 +212,7 @@ Lambert W Functions
 
 Legendre Functions and Spherical Harmonics
 ==========================================
-@include specfunc-legendre.texi
+.. include:: specfunc-legendre.rst
 
 Logarithm and Related Functions
 ===============================
