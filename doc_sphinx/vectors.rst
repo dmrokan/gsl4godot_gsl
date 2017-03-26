@@ -12,7 +12,7 @@ arrays is implemented using a single underlying type, known as a
 block. By writing your functions in terms of vectors and matrices you
 can pass a single structure containing both data and dimensions as an
 argument without needing additional function parameters.  The structures
-are compatible with the vector and matrix formats used by @sc{blas}
+are compatible with the vector and matrix formats used by BLAS
 routines.
 
 Data types
@@ -219,10 +219,10 @@ then it isn't necessary to check every :code:`alloc`.
 
 .. function:: gsl_vector * gsl_vector_alloc (size_t n)
 
-   This function creates a vector of length :data:`n`, returning a pointer to
+   This function creates a vector of length n, returning a pointer to
    a newly initialized vector struct. A new block is allocated for the
    elements of the vector, and stored in the :data:`block` component of the
-   vector struct.  The block is ``owned'' by the vector, and will be
+   vector struct.  The block is "owned" by the vector, and will be
    deallocated when the vector is deallocated.
    Zero-sized requests are valid and return a non-null result.
 
@@ -249,11 +249,8 @@ Accessing vector elements
    single: Fortran range checking, equivalent in gcc
 
 Unlike Fortran compilers, C compilers do not usually provide
-support for range checking of vectors and matrices.@footnote{Range
-checking is available in the GNU C Compiler bounds-checking extension,
-but it is not part of the default installation of GCC. Memory accesses
-can also be checked with Valgrind or the :code:`gcc -fmudflap`
-memory protection option.}  The functions :func:`gsl_vector_get` and
+support for range checking of vectors and matrices. [#f1]_
+The functions :func:`gsl_vector_get` and
 :func:`gsl_vector_set` can perform portable range checking for you and
 report an error if you attempt to access elements outside the allowed
 range.
@@ -458,7 +455,7 @@ vector.
    A vector view can be passed to any subroutine which takes a vector
    argument just as a directly allocated vector would be, using
    :code:`&view.vector`.  For example, the following code
-   computes the norm of the odd elements of :data:`v` using the @sc{blas}
+   computes the norm of the odd elements of :data:`v` using the BLAS
    routine :code:`dnrm2`::
 
       gsl_vector_view v_odd = gsl_vector_subvector_with_stride (v, 1, 2, n/2);
@@ -605,9 +602,9 @@ Copying vectors
 ---------------
 
 Common operations on vectors such as addition and multiplication are
-available in the @sc{blas} part of the library (@pxref{BLAS
+available in the BLAS part of the library (@pxref{BLAS
 Support}).  However, it is useful to have a small number of utility
-functions which do not require the full @sc{blas} code.  The following
+functions which do not require the full BLAS code.  The following
 functions fall into this category.
 
 .. function:: int gsl_vector_memcpy (gsl_vector * dest, const gsl_vector * src)
@@ -786,37 +783,34 @@ Matrices are defined by a :type:`gsl_matrix` structure which describes a
 generalized slice of a block.  Like a vector it represents a set of
 elements in an area of memory, but uses two indices instead of one.
 
-@tindex gsl_matrix
-The :type:`gsl_matrix` structure contains six components, the two
-dimensions of the matrix, a physical dimension, a pointer to the memory
-where the elements of the matrix are stored, :data:`data`, a pointer to
-the block owned by the matrix :data:`block`, if any, and an ownership
-flag, :data:`owner`.  The physical dimension determines the memory layout
-and can differ from the matrix dimension to allow the use of
-submatrices.  The :type:`gsl_matrix` structure is very simple and looks
-like this,
+.. type:: gsl_matrix
 
-@example
-typedef struct
-@{
-  size_t size1;
-  size_t size2;
-  size_t tda;
-  double * data;
-  gsl_block * block;
-  int owner;
-@} gsl_matrix;
-@end example
-..
+   The :type:`gsl_matrix` structure contains six components, the two
+   dimensions of the matrix, a physical dimension, a pointer to the memory
+   where the elements of the matrix are stored, :data:`data`, a pointer to
+   the block owned by the matrix :data:`block`, if any, and an ownership
+   flag, :data:`owner`.  The physical dimension determines the memory layout
+   and can differ from the matrix dimension to allow the use of
+   submatrices.  The :type:`gsl_matrix` structure is very simple and looks
+   like this::
 
-@noindent
+      typedef struct
+      {
+        size_t size1;
+        size_t size2;
+        size_t tda;
+        double * data;
+        gsl_block * block;
+        int owner;
+      } gsl_matrix;
+
 Matrices are stored in row-major order, meaning that each row of
 elements forms a contiguous block in memory.  This is the standard
-``C-language ordering'' of two-dimensional arrays. Note that @sc{fortran}
+"C-language ordering" of two-dimensional arrays. Note that Fortran
 stores arrays in column-major order. The number of rows is :data:`size1`.
-The range of valid row indices runs from 0 to :code:`size1-1`.  Similarly
+The range of valid row indices runs from 0 to :code:`size1 - 1`.  Similarly
 :data:`size2` is the number of columns.  The range of valid column indices
-runs from 0 to :code:`size2-1`.  The physical row dimension :data:`tda`, or
+runs from 0 to :code:`size2 - 1`.  The physical row dimension :data:`tda`, or
 *trailing dimension*, specifies the size of a row of the matrix as
 laid out in memory.
 
@@ -825,16 +819,13 @@ and :data:`tda` is 8.  The physical memory layout of the matrix begins in
 the top left hand-corner and proceeds from left to right along each row
 in turn.
 
-@example
-@group
-00 01 02 03 XX XX XX XX
-10 11 12 13 XX XX XX XX
-20 21 22 23 XX XX XX XX
-@end group
-@end example
+::
 
-@noindent
-Each unused memory location is represented by ``:code:`XX`''.  The
+   00 01 02 03 XX XX XX XX
+   10 11 12 13 XX XX XX XX
+   20 21 22 23 XX XX XX XX
+
+Each unused memory location is represented by ":code:`XX`".  The
 pointer :data:`data` gives the location of the first element of the matrix
 in memory.  The pointer :data:`block` stores the location of the memory
 block in which the elements of the matrix are located (if any).  If the
@@ -857,27 +848,27 @@ then the functions call the GSL error handler (with an error number of
 use the library error handler to abort your program then it isn't
 necessary to check every :code:`alloc`.
 
-@deftypefun {gsl_matrix *} gsl_matrix_alloc (size_t n1, size_t n2)
-This function creates a matrix of size :data:`n1` rows by :data:`n2` columns,
-returning a pointer to a newly initialized matrix struct. A new block is
-allocated for the elements of the matrix, and stored in the :data:`block`
-component of the matrix struct.  The block is ``owned'' by the matrix,
-and will be deallocated when the matrix is deallocated.  Requesting zero
-for :data:`n1` or :data:`n2` is valid and returns a non-null result.
-@end deftypefun
+.. function:: gsl_matrix * gsl_matrix_alloc (size_t n1, size_t n2)
 
-@deftypefun {gsl_matrix *} gsl_matrix_calloc (size_t n1, size_t n2)
-This function allocates memory for a matrix of size :data:`n1` rows by
-:data:`n2` columns and initializes all the elements of the matrix to zero.
-@end deftypefun
+   This function creates a matrix of size :data:`n1` rows by :data:`n2` columns,
+   returning a pointer to a newly initialized matrix struct. A new block is
+   allocated for the elements of the matrix, and stored in the :data:`block`
+   component of the matrix struct.  The block is "owned" by the matrix,
+   and will be deallocated when the matrix is deallocated.  Requesting zero
+   for :data:`n1` or :data:`n2` is valid and returns a non-null result.
 
-@deftypefun void gsl_matrix_free (gsl_matrix * m)
-This function frees a previously allocated matrix :data:`m`.  If the
-matrix was created using :func:`gsl_matrix_alloc` then the block
-underlying the matrix will also be deallocated.  If the matrix has
-been created from another object then the memory is still owned by
-that object and will not be deallocated.
-@end deftypefun
+.. function:: gsl_matrix * gsl_matrix_calloc (size_t n1, size_t n2)
+
+   This function allocates memory for a matrix of size :data:`n1` rows by
+   :data:`n2` columns and initializes all the elements of the matrix to zero.
+
+.. function:: void gsl_matrix_free (gsl_matrix * m)
+
+   This function frees a previously allocated matrix :data:`m`.  If the
+   matrix was created using :func:`gsl_matrix_alloc` then the block
+   underlying the matrix will also be deallocated.  If the matrix has
+   been created from another object then the memory is still owned by
+   that object and will not be deallocated.
 
 Accessing matrix elements
 -------------------------
@@ -890,40 +881,36 @@ checking system as vectors.  You can turn off range checking by recompiling
 your program with the preprocessor definition
 :macro:`GSL_RANGE_CHECK_OFF`.
 
-The elements of the matrix are stored in ``C-order'', where the second
+The elements of the matrix are stored in "C-order", where the second
 index moves continuously through memory.  More precisely, the element
 accessed by the function :code:`gsl_matrix_get(m,i,j)` and
-:code:`gsl_matrix_set(m,i,j,x)` is 
+:code:`gsl_matrix_set(m,i,j,x)` is::
 
-@example
-m->data[i * m->tda + j]
-@end example
-.. 
+   m->data[i * m->tda + j]
 
-@noindent
 where :data:`tda` is the physical row-length of the matrix.
 
-@deftypefun double gsl_matrix_get (const gsl_matrix * m, const size_t i, const size_t j)
-This function returns the @math{(i,j)}-th element of a matrix
-:data:`m`.  If :data:`i` or :data:`j` lie outside the allowed range of 0 to
-@math{:data:`n1`-1} and 0 to @math{:data:`n2`-1} then the error handler is invoked and 0
-is returned.  @inlinefn{}
-@end deftypefun
+.. function:: double gsl_matrix_get (const gsl_matrix * m, const size_t i, const size_t j)
 
-@deftypefun void gsl_matrix_set (gsl_matrix * m, const size_t i, const size_t j, double x)
-This function sets the value of the @math{(i,j)}-th element of a
-matrix :data:`m` to :data:`x`.  If :data:`i` or :data:`j` lies outside the
-allowed range of 0 to @math{:data:`n1`-1} and 0 to @math{:data:`n2`-1} then the error
-handler is invoked.  @inlinefn{}
-@end deftypefun
+   This function returns the :math:`(i,j)`-th element of a matrix
+   :data:`m`.  If :data:`i` or :data:`j` lie outside the allowed range of 0 to
+   :code:`n1 - 1` and 0 to :code:`n2 - 1` then the error handler is invoked and 0
+   is returned. |inlinefn|
 
-@deftypefun {double *} gsl_matrix_ptr (gsl_matrix * m, size_t i, size_t j)
-@deftypefunx {const double *} gsl_matrix_const_ptr (const gsl_matrix * m, size_t i, size_t j)
-These functions return a pointer to the @math{(i,j)}-th element of a
-matrix :data:`m`.  If :data:`i` or :data:`j` lie outside the allowed range of
-0 to @math{:data:`n1`-1} and 0 to @math{:data:`n2`-1} then the error handler is invoked
-and a null pointer is returned.  @inlinefns{}
-@end deftypefun
+.. function:: void gsl_matrix_set (gsl_matrix * m, const size_t i, const size_t j, double x)
+
+   This function sets the value of the :math:`(i,j)`-th element of a
+   matrix :data:`m` to :data:`x`.  If :data:`i` or :data:`j` lies outside the
+   allowed range of 0 to :code:`n1 - 1` and 0 to :code:`n2 - 1` then the error
+   handler is invoked. |inlinefn|
+
+.. function:: double * gsl_matrix_ptr (gsl_matrix * m, size_t i, size_t j)
+              const double * gsl_matrix_const_ptr (const gsl_matrix * m, size_t i, size_t j)
+
+   These functions return a pointer to the :math:`(i,j)`-th element of a
+   matrix :data:`m`.  If :data:`i` or :data:`j` lie outside the allowed range of
+   0 to :code:`n1 - 1` and 0 to :code:`n2 - 1` then the error handler is invoked
+   and a null pointer is returned. |inlinefns|
 
 Initializing matrix elements
 ----------------------------
@@ -937,21 +924,21 @@ Initializing matrix elements
    single: constant matrix
    single: matrix, constant
 
-@deftypefun void gsl_matrix_set_all (gsl_matrix * m, double x)
-This function sets all the elements of the matrix :data:`m` to the value
-:data:`x`.
-@end deftypefun
+.. function:: void gsl_matrix_set_all (gsl_matrix * m, double x)
 
-@deftypefun void gsl_matrix_set_zero (gsl_matrix * m)
-This function sets all the elements of the matrix :data:`m` to zero.
-@end deftypefun
+   This function sets all the elements of the matrix :data:`m` to the value
+   :data:`x`.
 
-@deftypefun void gsl_matrix_set_identity (gsl_matrix * m)
-This function sets the elements of the matrix :data:`m` to the
-corresponding elements of the identity matrix, @math{m(i,j) =
-\delta(i,j)}, i.e. a unit diagonal with all off-diagonal elements zero.
-This applies to both square and rectangular matrices.
-@end deftypefun
+.. function:: void gsl_matrix_set_zero (gsl_matrix * m)
+
+   This function sets all the elements of the matrix :data:`m` to zero.
+
+.. function:: void gsl_matrix_set_identity (gsl_matrix * m)
+
+   This function sets the elements of the matrix :data:`m` to the
+   corresponding elements of the identity matrix, :math:`m(i,j) = \delta(i,j)`,
+   i.e. a unit diagonal with all off-diagonal elements zero.
+   This applies to both square and rectangular matrices.
 
 Reading and writing matrices
 ----------------------------
@@ -959,204 +946,186 @@ Reading and writing matrices
 The library provides functions for reading and writing matrices to a file
 as binary data or formatted text.
 
-@deftypefun int gsl_matrix_fwrite (FILE * stream, const gsl_matrix * m)
-This function writes the elements of the matrix :data:`m` to the stream
-:data:`stream` in binary format.  The return value is 0 for success and
-:macro:`GSL_EFAILED` if there was a problem writing to the file.  Since the
-data is written in the native binary format it may not be portable
-between different architectures.
-@end deftypefun
+.. function:: int gsl_matrix_fwrite (FILE * stream, const gsl_matrix * m)
 
-@deftypefun int gsl_matrix_fread (FILE * stream, gsl_matrix * m)
-This function reads into the matrix :data:`m` from the open stream
-:data:`stream` in binary format.  The matrix :data:`m` must be preallocated
-with the correct dimensions since the function uses the size of :data:`m` to
-determine how many bytes to read.  The return value is 0 for success and
-:macro:`GSL_EFAILED` if there was a problem reading from the file.  The
-data is assumed to have been written in the native binary format on the
-same architecture.
-@end deftypefun
+   This function writes the elements of the matrix :data:`m` to the stream
+   :data:`stream` in binary format.  The return value is 0 for success and
+   :macro:`GSL_EFAILED` if there was a problem writing to the file.  Since the
+   data is written in the native binary format it may not be portable
+   between different architectures.
 
-@deftypefun int gsl_matrix_fprintf (FILE * stream, const gsl_matrix * m, const char * format)
-This function writes the elements of the matrix :data:`m` line-by-line to
-the stream :data:`stream` using the format specifier :data:`format`, which
-should be one of the :code:`%g`, :code:`%e` or :code:`%f` formats for
-floating point numbers and :code:`%d` for integers.  The function returns
-0 for success and :macro:`GSL_EFAILED` if there was a problem writing to
-the file.
-@end deftypefun
+.. function:: int gsl_matrix_fread (FILE * stream, gsl_matrix * m)
 
-@deftypefun int gsl_matrix_fscanf (FILE * stream, gsl_matrix * m)
-This function reads formatted data from the stream :data:`stream` into the
-matrix :data:`m`.  The matrix :data:`m` must be preallocated with the correct
-dimensions since the function uses the size of :data:`m` to determine how many
-numbers to read.  The function returns 0 for success and
-:macro:`GSL_EFAILED` if there was a problem reading from the file.
-@end deftypefun
+   This function reads into the matrix :data:`m` from the open stream
+   :data:`stream` in binary format.  The matrix :data:`m` must be preallocated
+   with the correct dimensions since the function uses the size of :data:`m` to
+   determine how many bytes to read.  The return value is 0 for success and
+   :macro:`GSL_EFAILED` if there was a problem reading from the file.  The
+   data is assumed to have been written in the native binary format on the
+   same architecture.
+
+.. function:: int gsl_matrix_fprintf (FILE * stream, const gsl_matrix * m, const char * format)
+
+   This function writes the elements of the matrix :data:`m` line-by-line to
+   the stream :data:`stream` using the format specifier :data:`format`, which
+   should be one of the :code:`%g`, :code:`%e` or :code:`%f` formats for
+   floating point numbers and :code:`%d` for integers.  The function returns
+   0 for success and :macro:`GSL_EFAILED` if there was a problem writing to
+   the file.
+
+.. function:: int gsl_matrix_fscanf (FILE * stream, gsl_matrix * m)
+
+   This function reads formatted data from the stream :data:`stream` into the
+   matrix :data:`m`.  The matrix :data:`m` must be preallocated with the correct
+   dimensions since the function uses the size of :data:`m` to determine how many
+   numbers to read.  The function returns 0 for success and
+   :macro:`GSL_EFAILED` if there was a problem reading from the file.
 
 Matrix views
 ------------
-@tindex gsl_matrix_view
-@tindex gsl_matrix_const_view
 
-A matrix view is a temporary object, stored on the stack, which can be
-used to operate on a subset of matrix elements.  Matrix views can be
-defined for both constant and non-constant matrices using separate types
-that preserve constness.  A matrix view has the type
-:type:`gsl_matrix_view` and a constant matrix view has the type
-:type:`gsl_matrix_const_view`.  In both cases the elements of the view
-can by accessed using the :code:`matrix` component of the view object.  A
-pointer :code:`gsl_matrix *` or :code:`const gsl_matrix *` can be obtained
-by taking the address of the :code:`matrix` component with the :code:`&`
-operator.  In addition to matrix views it is also possible to create
-vector views of a matrix, such as row or column views.
+.. type:: gsl_matrix_view
+          gsl_matrix_const_view
 
-@deftypefun gsl_matrix_view gsl_matrix_submatrix (gsl_matrix * m, size_t k1, size_t k2, size_t n1, size_t n2)
-@deftypefunx gsl_matrix_const_view gsl_matrix_const_submatrix (const gsl_matrix * m, size_t k1, size_t k2, size_t n1, size_t n2)
-These functions return a matrix view of a submatrix of the matrix
-:data:`m`.  The upper-left element of the submatrix is the element
-(:data:`k1`, :data:`k2`) of the original matrix.  The submatrix has :data:`n1`
-rows and :data:`n2` columns.  The physical number of columns in memory
-given by :data:`tda` is unchanged.  Mathematically, the
-@math{(i,j)}-th element of the new matrix is given by,
+   A matrix view is a temporary object, stored on the stack, which can be
+   used to operate on a subset of matrix elements.  Matrix views can be
+   defined for both constant and non-constant matrices using separate types
+   that preserve constness.  A matrix view has the type
+   :type:`gsl_matrix_view` and a constant matrix view has the type
+   :type:`gsl_matrix_const_view`.  In both cases the elements of the view
+   can by accessed using the :code:`matrix` component of the view object.  A
+   pointer :code:`gsl_matrix *` or :code:`const gsl_matrix *` can be obtained
+   by taking the address of the :code:`matrix` component with the :code:`&`
+   operator.  In addition to matrix views it is also possible to create
+   vector views of a matrix, such as row or column views.
 
-@example
-m'(i,j) = m->data[(k1*m->tda + k2) + i*m->tda + j]
-@end example
+.. function:: gsl_matrix_view gsl_matrix_submatrix (gsl_matrix * m, size_t k1, size_t k2, size_t n1, size_t n2)
+              gsl_matrix_const_view gsl_matrix_const_submatrix (const gsl_matrix * m, size_t k1, size_t k2, size_t n1, size_t n2)
 
-@noindent
-where the index :data:`i` runs from 0 to :code:`n1-1` and the index :data:`j`
-runs from 0 to :code:`n2-1`.
+   These functions return a matrix view of a submatrix of the matrix
+   :data:`m`.  The upper-left element of the submatrix is the element
+   (:data:`k1`, :data:`k2`) of the original matrix.  The submatrix has :data:`n1`
+   rows and :data:`n2` columns.  The physical number of columns in memory
+   given by :data:`tda` is unchanged.  Mathematically, the
+   :math:`(i,j)`-th element of the new matrix is given by::
 
-The :code:`data` pointer of the returned matrix struct is set to null if
-the combined parameters (:data:`i`, :data:`j`, :data:`n1`, :data:`n2`, :data:`tda`)
-overrun the ends of the original matrix.
+      m'(i,j) = m->data[(k1*m->tda + k2) + i*m->tda + j]
 
-The new matrix view is only a view of the block underlying the existing
-matrix, :data:`m`.  The block containing the elements of :data:`m` is not
-owned by the new matrix view.  When the view goes out of scope the
-original matrix :data:`m` and its block will continue to exist.  The
-original memory can only be deallocated by freeing the original matrix.
-Of course, the original matrix should not be deallocated while the view
-is still in use.
+   where the index :data:`i` runs from 0 to :code:`n1 - 1` and the index :data:`j`
+   runs from 0 to :code:`n2 - 1`.
 
-The function :func:`gsl_matrix_const_submatrix` is equivalent to
-:func:`gsl_matrix_submatrix` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+   The :code:`data` pointer of the returned matrix struct is set to null if
+   the combined parameters (:data:`i`, :data:`j`, :data:`n1`, :data:`n2`, :data:`tda`)
+   overrun the ends of the original matrix.
 
+   The new matrix view is only a view of the block underlying the existing
+   matrix, :data:`m`.  The block containing the elements of :data:`m` is not
+   owned by the new matrix view.  When the view goes out of scope the
+   original matrix :data:`m` and its block will continue to exist.  The
+   original memory can only be deallocated by freeing the original matrix.
+   Of course, the original matrix should not be deallocated while the view
+   is still in use.
 
-@deftypefun gsl_matrix_view gsl_matrix_view_array (double * base, size_t n1, size_t n2)
-@deftypefunx gsl_matrix_const_view gsl_matrix_const_view_array (const double * base, size_t n1, size_t n2)
-These functions return a matrix view of the array :data:`base`.  The
-matrix has :data:`n1` rows and :data:`n2` columns.  The physical number of
-columns in memory is also given by :data:`n2`.  Mathematically, the
-@math{(i,j)}-th element of the new matrix is given by,
+   The function :func:`gsl_matrix_const_submatrix` is equivalent to
+   :func:`gsl_matrix_submatrix` but can be used for matrices which are
+   declared :code:`const`.
 
-@example
-m'(i,j) = base[i*n2 + j]
-@end example
+.. function:: gsl_matrix_view gsl_matrix_view_array (double * base, size_t n1, size_t n2)
+              gsl_matrix_const_view gsl_matrix_const_view_array (const double * base, size_t n1, size_t n2)
 
-@noindent
-where the index :data:`i` runs from 0 to :code:`n1-1` and the index :data:`j`
-runs from 0 to :code:`n2-1`.
+   These functions return a matrix view of the array :data:`base`.  The
+   matrix has :data:`n1` rows and :data:`n2` columns.  The physical number of
+   columns in memory is also given by :data:`n2`.  Mathematically, the
+   :math:`(i,j)`-th element of the new matrix is given by::
 
-The new matrix is only a view of the array :data:`base`.  When the view
-goes out of scope the original array :data:`base` will continue to exist.
-The original memory can only be deallocated by freeing the original
-array.  Of course, the original array should not be deallocated while
-the view is still in use.
+      m'(i,j) = base[i*n2 + j]
 
-The function :func:`gsl_matrix_const_view_array` is equivalent to
-:func:`gsl_matrix_view_array` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+   where the index :data:`i` runs from 0 to :code:`n1 - 1` and the index :data:`j`
+   runs from 0 to :code:`n2 - 1`.
 
+   The new matrix is only a view of the array :data:`base`.  When the view
+   goes out of scope the original array :data:`base` will continue to exist.
+   The original memory can only be deallocated by freeing the original
+   array.  Of course, the original array should not be deallocated while
+   the view is still in use.
 
-@deftypefun gsl_matrix_view gsl_matrix_view_array_with_tda (double * base, size_t n1, size_t n2, size_t tda)
-@deftypefunx gsl_matrix_const_view gsl_matrix_const_view_array_with_tda (const double * base, size_t n1, size_t n2, size_t tda)
-These functions return a matrix view of the array :data:`base` with a
-physical number of columns :data:`tda` which may differ from the corresponding
-dimension of the matrix.  The matrix has :data:`n1` rows and :data:`n2`
-columns, and the physical number of columns in memory is given by
-:data:`tda`.  Mathematically, the @math{(i,j)}-th element of the new
-matrix is given by,
+   The function :func:`gsl_matrix_const_view_array` is equivalent to
+   :func:`gsl_matrix_view_array` but can be used for matrices which are
+   declared :code:`const`.
 
-@example
-m'(i,j) = base[i*tda + j]
-@end example
+.. function:: gsl_matrix_view gsl_matrix_view_array_with_tda (double * base, size_t n1, size_t n2, size_t tda)
+              gsl_matrix_const_view gsl_matrix_const_view_array_with_tda (const double * base, size_t n1, size_t n2, size_t tda)
 
-@noindent
-where the index :data:`i` runs from 0 to :code:`n1-1` and the index :data:`j`
-runs from 0 to :code:`n2-1`.
+   These functions return a matrix view of the array :data:`base` with a
+   physical number of columns :data:`tda` which may differ from the corresponding
+   dimension of the matrix.  The matrix has :data:`n1` rows and :data:`n2`
+   columns, and the physical number of columns in memory is given by
+   :data:`tda`.  Mathematically, the :math:`(i,j)`-th element of the new
+   matrix is given by::
 
-The new matrix is only a view of the array :data:`base`.  When the view
-goes out of scope the original array :data:`base` will continue to exist.
-The original memory can only be deallocated by freeing the original
-array.  Of course, the original array should not be deallocated while
-the view is still in use.
+      m'(i,j) = base[i*tda + j]
 
-The function :func:`gsl_matrix_const_view_array_with_tda` is equivalent
-to :func:`gsl_matrix_view_array_with_tda` but can be used for matrices
-which are declared :code:`const`.
-@end deftypefun
+   where the index :data:`i` runs from 0 to :code:`n1 - 1` and the index :data:`j`
+   runs from 0 to :code:`n2 - 1`.
 
-@deftypefun gsl_matrix_view gsl_matrix_view_vector (gsl_vector * v, size_t n1, size_t n2)
-@deftypefunx gsl_matrix_const_view gsl_matrix_const_view_vector (const gsl_vector * v, size_t n1, size_t n2)
-These functions return a matrix view of the vector :data:`v`.  The matrix
-has :data:`n1` rows and :data:`n2` columns. The vector must have unit
-stride. The physical number of columns in memory is also given by
-:data:`n2`.  Mathematically, the @math{(i,j)}-th element of the new
-matrix is given by,
+   The new matrix is only a view of the array :data:`base`.  When the view
+   goes out of scope the original array :data:`base` will continue to exist.
+   The original memory can only be deallocated by freeing the original
+   array.  Of course, the original array should not be deallocated while
+   the view is still in use.
 
-@example
-m'(i,j) = v->data[i*n2 + j]
-@end example
+   The function :func:`gsl_matrix_const_view_array_with_tda` is equivalent
+   to :func:`gsl_matrix_view_array_with_tda` but can be used for matrices
+   which are declared :code:`const`.
 
-@noindent
-where the index :data:`i` runs from 0 to :code:`n1-1` and the index :data:`j`
-runs from 0 to :code:`n2-1`.
+.. function:: gsl_matrix_view gsl_matrix_view_vector (gsl_vector * v, size_t n1, size_t n2)
+              gsl_matrix_const_view gsl_matrix_const_view_vector (const gsl_vector * v, size_t n1, size_t n2)
 
-The new matrix is only a view of the vector :data:`v`.  When the view
-goes out of scope the original vector :data:`v` will continue to exist.
-The original memory can only be deallocated by freeing the original
-vector.  Of course, the original vector should not be deallocated while
-the view is still in use.
+   These functions return a matrix view of the vector :data:`v`.  The matrix
+   has :data:`n1` rows and :data:`n2` columns. The vector must have unit
+   stride. The physical number of columns in memory is also given by
+   :data:`n2`.  Mathematically, the :math:`(i,j)`-th element of the new
+   matrix is given by::
 
-The function :func:`gsl_matrix_const_view_vector` is equivalent to
-:func:`gsl_matrix_view_vector` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+      m'(i,j) = v->data[i*n2 + j]
 
+   where the index :data:`i` runs from 0 to :code:`n1 - 1` and the index :data:`j`
+   runs from 0 to :code:`n2 - 1`.
 
-@deftypefun gsl_matrix_view gsl_matrix_view_vector_with_tda (gsl_vector * v, size_t n1, size_t n2, size_t tda)
-@deftypefunx gsl_matrix_const_view gsl_matrix_const_view_vector_with_tda (const gsl_vector * v, size_t n1, size_t n2, size_t tda)
-These functions return a matrix view of the vector :data:`v` with a
-physical number of columns :data:`tda` which may differ from the
-corresponding matrix dimension.  The vector must have unit stride. The
-matrix has :data:`n1` rows and :data:`n2` columns, and the physical number
-of columns in memory is given by :data:`tda`.  Mathematically, the
-@math{(i,j)}-th element of the new matrix is given by,
+   The new matrix is only a view of the vector :data:`v`.  When the view
+   goes out of scope the original vector :data:`v` will continue to exist.
+   The original memory can only be deallocated by freeing the original
+   vector.  Of course, the original vector should not be deallocated while
+   the view is still in use.
 
-@example
-m'(i,j) = v->data[i*tda + j]
-@end example
+   The function :func:`gsl_matrix_const_view_vector` is equivalent to
+   :func:`gsl_matrix_view_vector` but can be used for matrices which are
+   declared :code:`const`.
 
-@noindent
-where the index :data:`i` runs from 0 to :code:`n1-1` and the index :data:`j`
-runs from 0 to :code:`n2-1`.
+.. function:: gsl_matrix_view gsl_matrix_view_vector_with_tda (gsl_vector * v, size_t n1, size_t n2, size_t tda)
+              gsl_matrix_const_view gsl_matrix_const_view_vector_with_tda (const gsl_vector * v, size_t n1, size_t n2, size_t tda)
 
-The new matrix is only a view of the vector :data:`v`.  When the view
-goes out of scope the original vector :data:`v` will continue to exist.
-The original memory can only be deallocated by freeing the original
-vector.  Of course, the original vector should not be deallocated while
-the view is still in use.
+   These functions return a matrix view of the vector :data:`v` with a
+   physical number of columns :data:`tda` which may differ from the
+   corresponding matrix dimension.  The vector must have unit stride. The
+   matrix has :data:`n1` rows and :data:`n2` columns, and the physical number
+   of columns in memory is given by :data:`tda`.  Mathematically, the
+   :math:`(i,j)`-th element of the new matrix is given by::
 
-The function :func:`gsl_matrix_const_view_vector_with_tda` is equivalent
-to :func:`gsl_matrix_view_vector_with_tda` but can be used for matrices
-which are declared :code:`const`.
-@end deftypefun
+      m'(i,j) = v->data[i*tda + j]
 
+   where the index :data:`i` runs from 0 to :code:`n1 - 1` and the index :data:`j`
+   runs from 0 to :code:`n2 - 1`.
+
+   The new matrix is only a view of the vector :data:`v`.  When the view
+   goes out of scope the original vector :data:`v` will continue to exist.
+   The original memory can only be deallocated by freeing the original
+   vector.  Of course, the original vector should not be deallocated while
+   the view is still in use.
+
+   The function :func:`gsl_matrix_const_view_vector_with_tda` is equivalent
+   to :func:`gsl_matrix_view_vector_with_tda` but can be used for matrices
+   which are declared :code:`const`.
 
 .. @node Modifying matrix views
 .. @subsection Modifying matrix views
@@ -1247,97 +1216,97 @@ Modifying elements of the view is equivalent to modifying the matrix,
 since both the vector view and the matrix point to the same memory
 block.
 
-@deftypefun gsl_vector_view gsl_matrix_row (gsl_matrix * m, size_t i)
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_row (const gsl_matrix * m, size_t i)
-These functions return a vector view of the :data:`i`-th row of the matrix
-:data:`m`.  The :code:`data` pointer of the new vector is set to null if
-:data:`i` is out of range.
+.. function:: gsl_vector_view gsl_matrix_row (gsl_matrix * m, size_t i)
+              gsl_vector_const_view gsl_matrix_const_row (const gsl_matrix * m, size_t i)
 
-The function :func:`gsl_vector_const_row` is equivalent to
-:func:`gsl_matrix_row` but can be used for matrices which are declared
-:code:`const`.
-@end deftypefun
+   These functions return a vector view of the :data:`i`-th row of the matrix
+   :data:`m`.  The :code:`data` pointer of the new vector is set to null if
+   :data:`i` is out of range.
 
-@deftypefun gsl_vector_view gsl_matrix_column (gsl_matrix * m, size_t j)
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_column (const gsl_matrix * m, size_t j)
-These functions return a vector view of the :data:`j`-th column of the
-matrix :data:`m`.  The :code:`data` pointer of the new vector is set to
-null if :data:`j` is out of range.
+   The function :func:`gsl_matrix_const_row` is equivalent to
+   :func:`gsl_matrix_row` but can be used for matrices which are declared
+   :code:`const`.
 
-The function :func:`gsl_vector_const_column` is equivalent to
-:func:`gsl_matrix_column` but can be used for matrices which are declared
-:code:`const`.
-@end deftypefun
+.. function:: gsl_vector_view gsl_matrix_column (gsl_matrix * m, size_t j)
+              gsl_vector_const_view gsl_matrix_const_column (const gsl_matrix * m, size_t j)
 
-@deftypefun gsl_vector_view gsl_matrix_subrow (gsl_matrix * m, size_t i, size_t offset, size_t n)
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_subrow (const gsl_matrix * m, size_t i, size_t offset, size_t n)
-These functions return a vector view of the :data:`i`-th row of the matrix
-:data:`m` beginning at :data:`offset` elements past the first column and
-containing :data:`n` elements. The :code:`data` pointer of the new vector
-is set to null if :data:`i`, :data:`offset`, or :data:`n` are out of range.
+   These functions return a vector view of the :data:`j`-th column of the
+   matrix :data:`m`.  The :code:`data` pointer of the new vector is set to
+   null if :data:`j` is out of range.
 
-The function :func:`gsl_vector_const_subrow` is equivalent to
-:func:`gsl_matrix_subrow` but can be used for matrices which are declared
-:code:`const`.
-@end deftypefun
+   The function :func:`gsl_matrix_const_column` is equivalent to
+   :func:`gsl_matrix_column` but can be used for matrices which are declared
+   :code:`const`.
 
-@deftypefun gsl_vector_view gsl_matrix_subcolumn (gsl_matrix * m, size_t j, size_t offset, size_t n)
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_subcolumn (const gsl_matrix * m, size_t j, size_t offset, size_t n)
-These functions return a vector view of the :data:`j`-th column of the matrix
-:data:`m` beginning at :data:`offset` elements past the first row and
-containing :data:`n` elements. The :code:`data` pointer of the new vector
-is set to null if :data:`j`, :data:`offset`, or :data:`n` are out of range.
+.. function:: gsl_vector_view gsl_matrix_subrow (gsl_matrix * m, size_t i, size_t offset, size_t n)
+              gsl_vector_const_view gsl_matrix_const_subrow (const gsl_matrix * m, size_t i, size_t offset, size_t n)
 
-The function :func:`gsl_vector_const_subcolumn` is equivalent to
-:func:`gsl_matrix_subcolumn` but can be used for matrices which are declared
-:code:`const`.
-@end deftypefun
+   These functions return a vector view of the :data:`i`-th row of the matrix
+   :data:`m` beginning at :data:`offset` elements past the first column and
+   containing :data:`n` elements. The :code:`data` pointer of the new vector
+   is set to null if :data:`i`, :data:`offset`, or :data:`n` are out of range.
+
+   The function :func:`gsl_matrix_const_subrow` is equivalent to
+   :func:`gsl_matrix_subrow` but can be used for matrices which are declared
+   :code:`const`.
+
+.. function:: gsl_vector_view gsl_matrix_subcolumn (gsl_matrix * m, size_t j, size_t offset, size_t n)
+              gsl_vector_const_view gsl_matrix_const_subcolumn (const gsl_matrix * m, size_t j, size_t offset, size_t n)
+
+   These functions return a vector view of the :data:`j`-th column of the matrix
+   :data:`m` beginning at :data:`offset` elements past the first row and
+   containing :data:`n` elements. The :code:`data` pointer of the new vector
+   is set to null if :data:`j`, :data:`offset`, or :data:`n` are out of range.
+
+   The function :func:`gsl_matrix_const_subcolumn` is equivalent to
+   :func:`gsl_matrix_subcolumn` but can be used for matrices which are declared
+   :code:`const`.
 
 .. index::
    single: matrix diagonal
    single: diagonal, of a matrix
 
-@deftypefun gsl_vector_view gsl_matrix_diagonal (gsl_matrix * m)
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_diagonal (const gsl_matrix * m)
-These functions return a vector view of the diagonal of the matrix
-:data:`m`. The matrix :data:`m` is not required to be square. For a
-rectangular matrix the length of the diagonal is the same as the smaller
-dimension of the matrix.
+.. function:: gsl_vector_view gsl_matrix_diagonal (gsl_matrix * m)
+              gsl_vector_const_view gsl_matrix_const_diagonal (const gsl_matrix * m)
 
-The function :func:`gsl_matrix_const_diagonal` is equivalent to
-:func:`gsl_matrix_diagonal` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+   These functions return a vector view of the diagonal of the matrix
+   :data:`m`. The matrix :data:`m` is not required to be square. For a
+   rectangular matrix the length of the diagonal is the same as the smaller
+   dimension of the matrix.
+
+   The function :func:`gsl_matrix_const_diagonal` is equivalent to
+   :func:`gsl_matrix_diagonal` but can be used for matrices which are
+   declared :code:`const`.
 
 .. index::
    single: matrix subdiagonal
    single: subdiagonal, of a matrix
 
-@deftypefun gsl_vector_view gsl_matrix_subdiagonal (gsl_matrix * m, size_t k) 
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_subdiagonal (const gsl_matrix * m, size_t k)
-These functions return a vector view of the :data:`k`-th subdiagonal of
-the matrix :data:`m`. The matrix :data:`m` is not required to be square.
-The diagonal of the matrix corresponds to @math{k = 0}.
+.. function:: gsl_vector_view gsl_matrix_subdiagonal (gsl_matrix * m, size_t k) 
+              gsl_vector_const_view gsl_matrix_const_subdiagonal (const gsl_matrix * m, size_t k)
 
-The function :func:`gsl_matrix_const_subdiagonal` is equivalent to
-:func:`gsl_matrix_subdiagonal` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+   These functions return a vector view of the :data:`k`-th subdiagonal of
+   the matrix :data:`m`. The matrix :data:`m` is not required to be square.
+   The diagonal of the matrix corresponds to :math:`k = 0`.
+
+   The function :func:`gsl_matrix_const_subdiagonal` is equivalent to
+   :func:`gsl_matrix_subdiagonal` but can be used for matrices which are
+   declared :code:`const`.
 
 .. index::
    single: matrix superdiagonal
    single: superdiagonal, matrix
 
-@deftypefun gsl_vector_view gsl_matrix_superdiagonal (gsl_matrix * m, size_t k) 
-@deftypefunx {gsl_vector_const_view} gsl_matrix_const_superdiagonal (const gsl_matrix * m, size_t k)
-These functions return a vector view of the :data:`k`-th superdiagonal of
-the matrix :data:`m`. The matrix :data:`m` is not required to be square. The
-diagonal of the matrix corresponds to @math{k = 0}.
+.. function:: gsl_vector_view gsl_matrix_superdiagonal (gsl_matrix * m, size_t k) 
+              gsl_vector_const_view gsl_matrix_const_superdiagonal (const gsl_matrix * m, size_t k)
 
-The function :func:`gsl_matrix_const_superdiagonal` is equivalent to
-:func:`gsl_matrix_superdiagonal` but can be used for matrices which are
-declared :code:`const`.
-@end deftypefun
+   These functions return a vector view of the :data:`k`-th superdiagonal of
+   the matrix :data:`m`. The matrix :data:`m` is not required to be square. The
+   diagonal of the matrix corresponds to :math:`k = 0`.
+
+   The function :func:`gsl_matrix_const_superdiagonal` is equivalent to
+   :func:`gsl_matrix_superdiagonal` but can be used for matrices which are
+   declared :code:`const`.
 
 .. @deftypefun {gsl_vector *} gsl_vector_alloc_row_from_matrix (gsl_matrix * m, size_t i)
 .. This function allocates a new :type:`gsl_vector` struct which points to
@@ -1352,15 +1321,15 @@ declared :code:`const`.
 Copying matrices
 ----------------
 
-@deftypefun int gsl_matrix_memcpy (gsl_matrix * dest, const gsl_matrix * src)
-This function copies the elements of the matrix :data:`src` into the
-matrix :data:`dest`.  The two matrices must have the same size.
-@end deftypefun
+.. function:: int gsl_matrix_memcpy (gsl_matrix * dest, const gsl_matrix * src)
 
-@deftypefun int gsl_matrix_swap (gsl_matrix * m1, gsl_matrix * m2)
-This function exchanges the elements of the matrices :data:`m1` and
-:data:`m2` by copying.  The two matrices must have the same size.
-@end deftypefun
+   This function copies the elements of the matrix :data:`src` into the
+   matrix :data:`dest`.  The two matrices must have the same size.
+
+.. function:: int gsl_matrix_swap (gsl_matrix * m1, gsl_matrix * m2)
+
+   This function exchanges the elements of the matrices :data:`m1` and
+   :data:`m2` by copying.  The two matrices must have the same size.
 
 Copying rows and columns
 ------------------------
@@ -1372,29 +1341,29 @@ to overlapping regions of memory then the result will be undefined.  The
 same effect can be achieved with more generality using
 :func:`gsl_vector_memcpy` with vector views of rows and columns.
 
-@deftypefun int gsl_matrix_get_row (gsl_vector * v, const gsl_matrix * m, size_t i)
-This function copies the elements of the :data:`i`-th row of the matrix
-:data:`m` into the vector :data:`v`.  The length of the vector must be the
-same as the length of the row.
-@end deftypefun
+.. function:: int gsl_matrix_get_row (gsl_vector * v, const gsl_matrix * m, size_t i)
 
-@deftypefun int gsl_matrix_get_col (gsl_vector * v, const gsl_matrix * m, size_t j)
-This function copies the elements of the :data:`j`-th column of the matrix
-:data:`m` into the vector :data:`v`.  The length of the vector must be the
-same as the length of the column.
-@end deftypefun
+   This function copies the elements of the :data:`i`-th row of the matrix
+   :data:`m` into the vector :data:`v`.  The length of the vector must be the
+   same as the length of the row.
 
-@deftypefun int gsl_matrix_set_row (gsl_matrix * m, size_t i, const gsl_vector * v)
-This function copies the elements of the vector :data:`v` into the
-:data:`i`-th row of the matrix :data:`m`.  The length of the vector must be
-the same as the length of the row.
-@end deftypefun
+.. function:: int gsl_matrix_get_col (gsl_vector * v, const gsl_matrix * m, size_t j)
 
-@deftypefun int gsl_matrix_set_col (gsl_matrix * m, size_t j, const gsl_vector * v)
-This function copies the elements of the vector :data:`v` into the
-:data:`j`-th column of the matrix :data:`m`.  The length of the vector must be
-the same as the length of the column.
-@end deftypefun
+   This function copies the elements of the :data:`j`-th column of the matrix
+   :data:`m` into the vector :data:`v`.  The length of the vector must be the
+   same as the length of the column.
+
+.. function:: int gsl_matrix_set_row (gsl_matrix * m, size_t i, const gsl_vector * v)
+
+   This function copies the elements of the vector :data:`v` into the
+   :data:`i`-th row of the matrix :data:`m`.  The length of the vector must be
+   the same as the length of the row.
+
+.. function:: int gsl_matrix_set_col (gsl_matrix * m, size_t j, const gsl_vector * v)
+
+   This function copies the elements of the vector :data:`v` into the
+   :data:`j`-th column of the matrix :data:`m`.  The length of the vector must be
+   the same as the length of the column.
 
 Exchanging rows and columns
 ---------------------------
@@ -1402,119 +1371,119 @@ Exchanging rows and columns
 The following functions can be used to exchange the rows and columns of
 a matrix.
 
-@deftypefun int gsl_matrix_swap_rows (gsl_matrix * m, size_t i, size_t j)
-This function exchanges the :data:`i`-th and :data:`j`-th rows of the matrix
-:data:`m` in-place.
-@end deftypefun
+.. function:: int gsl_matrix_swap_rows (gsl_matrix * m, size_t i, size_t j)
 
-@deftypefun int gsl_matrix_swap_columns (gsl_matrix * m, size_t i, size_t j)
-This function exchanges the :data:`i`-th and :data:`j`-th columns of the
-matrix :data:`m` in-place.
-@end deftypefun
+   This function exchanges the :data:`i`-th and :data:`j`-th rows of the matrix
+   :data:`m` in-place.
 
-@deftypefun int gsl_matrix_swap_rowcol (gsl_matrix * m, size_t i, size_t j)
-This function exchanges the :data:`i`-th row and :data:`j`-th column of the
-matrix :data:`m` in-place.  The matrix must be square for this operation to
-be possible.
-@end deftypefun
+.. function:: int gsl_matrix_swap_columns (gsl_matrix * m, size_t i, size_t j)
 
-@deftypefun int gsl_matrix_transpose_memcpy (gsl_matrix * dest, const gsl_matrix * src)
-This function makes the matrix :data:`dest` the transpose of the matrix
-:data:`src` by copying the elements of :data:`src` into :data:`dest`.  This
-function works for all matrices provided that the dimensions of the matrix
-:data:`dest` match the transposed dimensions of the matrix :data:`src`.
-@end deftypefun
+   This function exchanges the :data:`i`-th and :data:`j`-th columns of the
+   matrix :data:`m` in-place.
 
-@deftypefun int gsl_matrix_transpose (gsl_matrix * m)
-This function replaces the matrix :data:`m` by its transpose by copying
-the elements of the matrix in-place.  The matrix must be square for this
-operation to be possible.
-@end deftypefun
+.. function:: int gsl_matrix_swap_rowcol (gsl_matrix * m, size_t i, size_t j)
+
+   This function exchanges the :data:`i`-th row and :data:`j`-th column of the
+   matrix :data:`m` in-place.  The matrix must be square for this operation to
+   be possible.
+
+.. function:: int gsl_matrix_transpose_memcpy (gsl_matrix * dest, const gsl_matrix * src)
+
+   This function makes the matrix :data:`dest` the transpose of the matrix
+   :data:`src` by copying the elements of :data:`src` into :data:`dest`.  This
+   function works for all matrices provided that the dimensions of the matrix
+   :data:`dest` match the transposed dimensions of the matrix :data:`src`.
+
+.. function:: int gsl_matrix_transpose (gsl_matrix * m)
+
+   This function replaces the matrix :data:`m` by its transpose by copying
+   the elements of the matrix in-place.  The matrix must be square for this
+   operation to be possible.
 
 Matrix operations
 -----------------
 
 The following operations are defined for real and complex matrices.
 
-@deftypefun int gsl_matrix_add (gsl_matrix * a, const gsl_matrix * b)
-This function adds the elements of matrix :data:`b` to the elements of
-matrix :data:`a`.  The result @math{a(i,j) \leftarrow a(i,j) + b(i,j)}
-is stored in :data:`a` and :data:`b` remains unchanged. The two matrices
-must have the same dimensions.
-@end deftypefun
+.. function:: int gsl_matrix_add (gsl_matrix * a, const gsl_matrix * b)
 
-@deftypefun int gsl_matrix_sub (gsl_matrix * a, const gsl_matrix * b)
-This function subtracts the elements of matrix :data:`b` from the
-elements of matrix :data:`a`.  The result @math{a(i,j) \leftarrow a(i,j)
-- b(i,j)} is stored in :data:`a` and :data:`b` remains unchanged. The two
-matrices must have the same dimensions.
-@end deftypefun
+   This function adds the elements of matrix :data:`b` to the elements of
+   matrix :data:`a`.  The result :math:`a(i,j) \leftarrow a(i,j) + b(i,j)`
+   is stored in :data:`a` and :data:`b` remains unchanged. The two matrices
+   must have the same dimensions.
 
-@deftypefun int gsl_matrix_mul_elements (gsl_matrix * a, const gsl_matrix * b)
-This function multiplies the elements of matrix :data:`a` by the
-elements of matrix :data:`b`.  The result @math{a(i,j) \leftarrow a(i,j)
-* b(i,j)} is stored in :data:`a` and :data:`b` remains unchanged.  The two
-matrices must have the same dimensions.
-@end deftypefun
+.. function:: int gsl_matrix_sub (gsl_matrix * a, const gsl_matrix * b)
 
-@deftypefun int gsl_matrix_div_elements (gsl_matrix * a, const gsl_matrix * b)
-This function divides the elements of matrix :data:`a` by the elements
-of matrix :data:`b`.  The result @math{a(i,j) \leftarrow a(i,j) /
-b(i,j)} is stored in :data:`a` and :data:`b` remains unchanged. The two
-matrices must have the same dimensions.
-@end deftypefun
+   This function subtracts the elements of matrix :data:`b` from the
+   elements of matrix :data:`a`.  The result :math:`a(i,j) \leftarrow a(i,j) - b(i,j)`
+   is stored in :data:`a` and :data:`b` remains unchanged. The two
+   matrices must have the same dimensions.
 
-@deftypefun int gsl_matrix_scale (gsl_matrix * a, const double x)
-This function multiplies the elements of matrix :data:`a` by the
-constant factor :data:`x`.  The result @math{a(i,j) \leftarrow x a(i,j)}
-is stored in :data:`a`.
-@end deftypefun
+.. function:: int gsl_matrix_mul_elements (gsl_matrix * a, const gsl_matrix * b)
 
-@deftypefun int gsl_matrix_add_constant (gsl_matrix * a, const double x)
-This function adds the constant value :data:`x` to the elements of the
-matrix :data:`a`.  The result @math{a(i,j) \leftarrow a(i,j) + x} is
-stored in :data:`a`.
-@end deftypefun
+   This function multiplies the elements of matrix :data:`a` by the
+   elements of matrix :data:`b`.  The result :math:`a(i,j) \leftarrow a(i,j) * b(i,j)`
+   is stored in :data:`a` and :data:`b` remains unchanged.  The two
+   matrices must have the same dimensions.
+
+.. function:: int gsl_matrix_div_elements (gsl_matrix * a, const gsl_matrix * b)
+
+   This function divides the elements of matrix :data:`a` by the elements
+   of matrix :data:`b`.  The result :math:`a(i,j) \leftarrow a(i,j) / b(i,j)`
+   is stored in :data:`a` and :data:`b` remains unchanged. The two
+   matrices must have the same dimensions.
+
+.. function:: int gsl_matrix_scale (gsl_matrix * a, const double x)
+
+   This function multiplies the elements of matrix :data:`a` by the
+   constant factor :data:`x`.  The result :math:`a(i,j) \leftarrow x a(i,j)`
+   is stored in :data:`a`.
+
+.. function:: int gsl_matrix_add_constant (gsl_matrix * a, const double x)
+
+   This function adds the constant value :data:`x` to the elements of the
+   matrix :data:`a`.  The result :math:`a(i,j) \leftarrow a(i,j) + x` is
+   stored in :data:`a`.
 
 Finding maximum and minimum elements of matrices
 ------------------------------------------------
 
 The following operations are only defined for real matrices.
 
-@deftypefun double gsl_matrix_max (const gsl_matrix * m)
-This function returns the maximum value in the matrix :data:`m`.
-@end deftypefun
+.. function:: double gsl_matrix_max (const gsl_matrix * m)
 
-@deftypefun double gsl_matrix_min (const gsl_matrix * m)
-This function returns the minimum value in the matrix :data:`m`.
-@end deftypefun
+   This function returns the maximum value in the matrix :data:`m`.
 
-@deftypefun void gsl_matrix_minmax (const gsl_matrix * m, double * min_out, double * max_out)
-This function returns the minimum and maximum values in the matrix
-:data:`m`, storing them in :data:`min_out` and :data:`max_out`.
-@end deftypefun
+.. function:: double gsl_matrix_min (const gsl_matrix * m)
 
-@deftypefun void gsl_matrix_max_index (const gsl_matrix * m, size_t * imax, size_t * jmax)
-This function returns the indices of the maximum value in the matrix
-:data:`m`, storing them in :data:`imax` and :data:`jmax`.  When there are
-several equal maximum elements then the first element found is returned,
-searching in row-major order.
-@end deftypefun
+   This function returns the minimum value in the matrix :data:`m`.
 
-@deftypefun void gsl_matrix_min_index (const gsl_matrix * m, size_t * imin, size_t * jmin)
-This function returns the indices of the minimum value in the matrix
-:data:`m`, storing them in :data:`imin` and :data:`jmin`.  When there are
-several equal minimum elements then the first element found is returned,
-searching in row-major order.
-@end deftypefun
+.. function:: void gsl_matrix_minmax (const gsl_matrix * m, double * min_out, double * max_out)
 
-@deftypefun void gsl_matrix_minmax_index (const gsl_matrix * m, size_t * imin, size_t * jmin, size_t * imax, size_t * jmax)
-This function returns the indices of the minimum and maximum values in
-the matrix :data:`m`, storing them in (:data:`imin`, :data:`jmin`) and
-(:data:`imax`, :data:`jmax`). When there are several equal minimum or maximum
-elements then the first elements found are returned, searching in
-row-major order.
-@end deftypefun
+   This function returns the minimum and maximum values in the matrix
+   :data:`m`, storing them in :data:`min_out` and :data:`max_out`.
+
+.. function:: void gsl_matrix_max_index (const gsl_matrix * m, size_t * imax, size_t * jmax)
+
+   This function returns the indices of the maximum value in the matrix
+   :data:`m`, storing them in :data:`imax` and :data:`jmax`.  When there are
+   several equal maximum elements then the first element found is returned,
+   searching in row-major order.
+
+.. function:: void gsl_matrix_min_index (const gsl_matrix * m, size_t * imin, size_t * jmin)
+
+   This function returns the indices of the minimum value in the matrix
+   :data:`m`, storing them in :data:`imin` and :data:`jmin`.  When there are
+   several equal minimum elements then the first element found is returned,
+   searching in row-major order.
+
+.. function:: void gsl_matrix_minmax_index (const gsl_matrix * m, size_t * imin, size_t * jmin, size_t * imax, size_t * jmax)
+
+   This function returns the indices of the minimum and maximum values in
+   the matrix :data:`m`, storing them in (:data:`imin`, :data:`jmin`) and
+   (:data:`imax`, :data:`jmax`). When there are several equal minimum or maximum
+   elements then the first elements found are returned, searching in
+   row-major order.
 
 Matrix properties
 -----------------
@@ -1523,22 +1492,21 @@ The following functions are defined for real and complex matrices.
 For complex matrices both the real and imaginary parts must satisfy
 the conditions.
 
-@deftypefun int gsl_matrix_isnull (const gsl_matrix * m)
-@deftypefunx int gsl_matrix_ispos (const gsl_matrix * m)
-@deftypefunx int gsl_matrix_isneg (const gsl_matrix * m)
-@deftypefunx int gsl_matrix_isnonneg (const gsl_matrix * m)
-These functions return 1 if all the elements of the matrix :data:`m` are
-zero, strictly positive, strictly negative, or non-negative
-respectively, and 0 otherwise. To test whether a matrix is
-positive-definite, use the Cholesky decomposition (@pxref{Cholesky
-Decomposition}).
-@end deftypefun
+.. function:: int gsl_matrix_isnull (const gsl_matrix * m)
+              int gsl_matrix_ispos (const gsl_matrix * m)
+              int gsl_matrix_isneg (const gsl_matrix * m)
+              int gsl_matrix_isnonneg (const gsl_matrix * m)
 
-@deftypefun int gsl_matrix_equal (const gsl_matrix * a, const gsl_matrix * b)
-This function returns 1 if the matrices :data:`a` and :data:`b` are equal
-(by comparison of element values) and 0 otherwise.
-@end deftypefun
+   These functions return 1 if all the elements of the matrix :data:`m` are
+   zero, strictly positive, strictly negative, or non-negative
+   respectively, and 0 otherwise. To test whether a matrix is
+   positive-definite, use the Cholesky decomposition (@pxref{Cholesky
+   Decomposition}).
 
+.. function:: int gsl_matrix_equal (const gsl_matrix * a, const gsl_matrix * b)
+
+   This function returns 1 if the matrices :data:`a` and :data:`b` are equal
+   (by comparison of element values) and 0 otherwise.
 
 Example programs for matrices
 -----------------------------
@@ -1547,38 +1515,33 @@ The program below shows how to allocate, initialize and read from a matrix
 using the functions :func:`gsl_matrix_alloc`, :func:`gsl_matrix_set` and
 :func:`gsl_matrix_get`.
 
-@example
-@verbatiminclude examples/matrix.c
-@end example
+.. include:: examples/matrix.c
+   :code:
 
-@noindent
 Here is the output from the program.  The final loop attempts to read
 outside the range of the matrix :code:`m`, and the error is trapped by
 the range-checking code in :func:`gsl_matrix_get`.
 
-@example
-$ ./a.out
-m(0,0) = 0.23
-m(0,1) = 1.23
-m(0,2) = 2.23
-m(1,0) = 100.23
-m(1,1) = 101.23
-m(1,2) = 102.23
-...
-m(9,2) = 902.23
-gsl: matrix_source.c:13: ERROR: first index out of range
-Default GSL error handler invoked.
-Aborted (core dumped)
-@end example
+::
 
-@noindent
+   $ ./a.out
+   m(0,0) = 0.23
+   m(0,1) = 1.23
+   m(0,2) = 2.23
+   m(1,0) = 100.23
+   m(1,1) = 101.23
+   m(1,2) = 102.23
+   ...
+   m(9,2) = 902.23
+   gsl: matrix_source.c:13: ERROR: first index out of range
+   Default GSL error handler invoked.
+   Aborted (core dumped)
+
 The next program shows how to write a matrix to a file.
 
-@example
-@verbatiminclude examples/matrixw.c
-@end example
+.. include:: examples/matrixw.c
+   :code:
 
-@noindent
 After running this program the file :file:`test.dat` should contain the
 elements of :code:`m`, written in binary format.  The matrix which is read
 back in using the function :func:`gsl_matrix_fread` should be exactly
@@ -1587,32 +1550,24 @@ equal to the original matrix.
 The following program demonstrates the use of vector views.  The program
 computes the column norms of a matrix.
 
-@example
-@verbatiminclude examples/vectorview.c
-@end example
+.. include:: examples/vectorview.c
+   :code:
 
-@noindent
 Here is the output of the program, 
 
-@example
-$ ./a.out
-@verbatiminclude examples/vectorview.txt
-@end example
+.. include:: examples/vectorview.txt
+   :code:
 
-@noindent
-The results can be confirmed using @sc{gnu octave},
+The results can be confirmed using GNU octave::
 
-@example
-$ octave
-GNU Octave, version 2.0.16.92
-octave> m = sin(0:9)' * ones(1,10) 
-               + ones(10,1) * cos(0:9); 
-octave> sqrt(sum(m.^2))
-ans =
-  4.3146  3.1205  2.1932  3.2611  2.5342  2.5728
-  4.2047  3.6520  2.0852  3.0731
-@end example
-
+   $ octave
+   GNU Octave, version 2.0.16.92
+   octave> m = sin(0:9)' * ones(1,10) 
+                  + ones(10,1) * cos(0:9); 
+   octave> sqrt(sum(m.^2))
+   ans =
+     4.3146  3.1205  2.1932  3.2611  2.5342  2.5728
+     4.2047  3.6520  2.0852  3.0731
 
 References and Further Reading
 ------------------------------
@@ -1621,10 +1576,12 @@ The block, vector and matrix objects in GSL follow the :code:`valarray`
 model of C++.  A description of this model can be found in the following
 reference,
 
-@itemize @w{}
-@item
-B. Stroustrup,
-@cite{The C++ Programming Language} (3rd Ed), 
-Section 22.4 Vector Arithmetic.
-Addison-Wesley 1997, ISBN 0-201-88954-4.
-@end itemize
+* B. Stroustrup, The C++ Programming Language (3rd Ed), 
+  Section 22.4 Vector Arithmetic. Addison-Wesley 1997, ISBN 0-201-88954-4.
+
+.. rubric:: Footnotes
+
+.. [#f1] Range checking is available in the GNU C Compiler bounds-checking extension,
+         but it is not part of the default installation of GCC. Memory accesses
+         can also be checked with Valgrind or the :code:`gcc -fmudflap`
+         memory protection option.
