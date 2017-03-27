@@ -17,6 +17,7 @@ GNU Scientific Library
    poly.rst
    specfunc.rst
    vectors.rst
+   permutation.rst
 
    integration.rst
 
