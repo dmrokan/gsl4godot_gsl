@@ -1,8 +1,8 @@
+.. index:: complex numbers
+
 ***************
 Complex Numbers
 ***************
-
-.. index:: complex numbers
 
 The functions described in this chapter provide support for complex
 numbers.  The algorithms take care to avoid unnecessary intermediate

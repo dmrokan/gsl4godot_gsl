@@ -2,8 +2,6 @@
 Vectors and Matrices
 ********************
 
-.. index:: blocks, vectors, matrices
-
 .. include:: include.rst
 
 The functions described in this chapter provide a simple vector and
@@ -47,6 +45,8 @@ gsl_block_complex_long_double   complex long double
 
 Corresponding types exist for the :code:`gsl_vector` and
 :code:`gsl_matrix` functions.
+
+.. index:: blocks
 
 Blocks
 ======
@@ -161,11 +161,12 @@ Here is the output from the program,
 .. include:: examples/block.txt
    :code:
 
-Vectors
-=======
 .. index::
    single: vectors
    single: stride, of vector index
+
+Vectors
+=======
 
 Vectors are defined by a :type:`gsl_vector` structure which describes a
 slice of a block.  Different vectors can be created which point to the
@@ -239,14 +240,15 @@ then it isn't necessary to check every :code:`alloc`.
    been created from another object then the memory is still owned by
    that object and will not be deallocated.
 
-Accessing vector elements
--------------------------
 .. index::
    single: vectors, range-checking
    single: range-checking for vectors
    single: bounds checking, extension to GCC
    single: gcc extensions, range-checking
    single: Fortran range checking, equivalent in gcc
+
+Accessing vector elements
+-------------------------
 
 Unlike Fortran compilers, C compilers do not usually provide
 support for range checking of vectors and matrices. [#f1]_
@@ -311,11 +313,12 @@ functions.
    :data:`v`.  If :data:`i` lies outside the allowed range of 0 to :code:`size - 1`
    then the error handler is invoked and a null pointer is returned. |inlinefns|
 
-Initializing vector elements
-----------------------------
 .. index::
    single: vectors, initializing
    single: initializing vectors
+
+Initializing vector elements
+----------------------------
 
 .. function:: void gsl_vector_set_all (gsl_vector * v, double x)
 
@@ -770,14 +773,15 @@ elements of :code:`v`, written using the format specifier
 .. include:: examples/vectorr.c
    :code:
 
-Matrices
-========
 .. index::
    single: matrices
    single: physical dimension, matrices
    single: trailing dimension, matrices
    single: leading dimension, matrices
    single: ordering, matrix elements
+
+Matrices
+========
 
 Matrices are defined by a :type:`gsl_matrix` structure which describes a
 generalized slice of a block.  Like a vector it represents a set of
@@ -870,11 +874,12 @@ necessary to check every :code:`alloc`.
    been created from another object then the memory is still owned by
    that object and will not be deallocated.
 
-Accessing matrix elements
--------------------------
 .. index::
    single: matrices, range-checking
    single: range-checking for matrices
+
+Accessing matrix elements
+-------------------------
 
 The functions for accessing the elements of a matrix use the same range
 checking system as vectors.  You can turn off range checking by recompiling
@@ -912,8 +917,6 @@ where :data:`tda` is the physical row-length of the matrix.
    0 to :code:`n1 - 1` and 0 to :code:`n2 - 1` then the error handler is invoked
    and a null pointer is returned. |inlinefns|
 
-Initializing matrix elements
-----------------------------
 .. index::
    single: matrices, initializing
    single: initializing matrices
@@ -923,6 +926,9 @@ Initializing matrix elements
    single: matrix, zero
    single: constant matrix
    single: matrix, constant
+
+Initializing matrix elements
+----------------------------
 
 .. function:: void gsl_matrix_set_all (gsl_matrix * m, double x)
 

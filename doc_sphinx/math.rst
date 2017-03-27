@@ -1,9 +1,10 @@
-**********************
-Mathematical Functions
-**********************
 .. index::
    single: elementary functions
    single: mathematical functions, elementary
+
+**********************
+Mathematical Functions
+**********************
 
 This chapter describes basic mathematical functions.  Some of these
 functions are present in system libraries, but the alternative versions
@@ -89,7 +90,6 @@ Infinities and Not-a-number
 
    This function returns 1 if :data:`x` is a real number, and 0 if it is
    infinite or not-a-number.
-
 
 Elementary Functions
 ====================

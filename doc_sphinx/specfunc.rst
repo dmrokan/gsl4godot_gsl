@@ -1,8 +1,8 @@
+.. index:: special functions
+
 *****************
 Special Functions
 *****************
-
-.. index:: special functions
 
 This chapter describes the GSL special function library.  The library
 includes routines for calculating the values of Airy functions, Bessel

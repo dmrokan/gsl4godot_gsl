@@ -1,12 +1,12 @@
-*****************
-Using the Library
-*****************
-
 .. index::
    single: standards conformance, ANSI C
    single: ANSI C, use of
    single: C extensions, compatible use of
    single: compatibility
+
+*****************
+Using the Library
+*****************
 
 This chapter describes how to compile programs that use GSL, and
 introduces its conventions.  

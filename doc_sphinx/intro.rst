@@ -1,10 +1,10 @@
-************
-Introduction
-************
-
 .. index::
    license of GSL
    GNU General Public License
+
+************
+Introduction
+************
 
 The GNU Scientific Library (GSL) is a collection of routines for
 numerical computing.  The routines have been written from scratch in C,

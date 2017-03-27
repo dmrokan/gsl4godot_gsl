@@ -1,7 +1,8 @@
+.. index:: error handling
+
 **************
 Error Handling
 **************
-.. index:: error handling
 
 This chapter describes the way that GSL functions report and handle
 errors.  By examining the status information returned by every function

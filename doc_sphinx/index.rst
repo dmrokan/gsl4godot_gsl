@@ -18,6 +18,9 @@ GNU Scientific Library
    specfunc.rst
    vectors.rst
    permutation.rst
+   combination.rst
+   multiset.rst
+   sort.rst
 
    integration.rst
 

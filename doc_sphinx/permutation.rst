@@ -1,8 +1,8 @@
+.. index:: permutations
+
 ************
 Permutations
 ************
-
-.. index:: permutations
 
 .. include:: include.rst
 

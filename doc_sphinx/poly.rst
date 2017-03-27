@@ -1,8 +1,9 @@
+.. index::
+   single: polynomials, roots of
+
 ***********
 Polynomials
 ***********
-.. index::
-   single: polynomials, roots of 
 
 .. include:: include.rst
 

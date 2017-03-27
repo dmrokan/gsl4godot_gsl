@@ -1,12 +1,12 @@
-*********************
-Numerical Integration
-*********************
-
 .. index::
    single: quadrature
    single: numerical integration (quadrature)
    single: integration, numerical (quadrature)
    single: QUADPACK
+
+*********************
+Numerical Integration
+*********************
 
 This chapter describes routines for performing numerical integration
 (quadrature) of a function in one dimension.  There are routines for
