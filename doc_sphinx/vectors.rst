@@ -1564,7 +1564,7 @@ Here is the output of the program,
 .. include:: examples/vectorview.txt
    :code:
 
-The results can be confirmed using GNU octave::
+The results can be confirmed using |octave|::
 
    $ octave
    GNU Octave, version 2.0.16.92

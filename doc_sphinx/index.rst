@@ -22,6 +22,7 @@ GNU Scientific Library
    multiset.rst
    sort.rst
    blas.rst
+   linalg.rst
 
    integration.rst
 
