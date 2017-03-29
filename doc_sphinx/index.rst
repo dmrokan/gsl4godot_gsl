@@ -23,6 +23,7 @@ GNU Scientific Library
    sort.rst
    blas.rst
    linalg.rst
+   eigen.rst
 
    integration.rst
 

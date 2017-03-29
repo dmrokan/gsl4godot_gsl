@@ -1541,6 +1541,8 @@ Triangular Systems
 
 .. index:: balancing matrices
 
+.. _balancing:
+
 Balancing
 =========
 
