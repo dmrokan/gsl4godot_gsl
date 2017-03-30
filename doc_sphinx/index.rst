@@ -24,6 +24,7 @@ GNU Scientific Library
    blas.rst
    linalg.rst
    eigen.rst
+   fft.rst
 
    integration.rst
 
