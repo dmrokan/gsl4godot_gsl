@@ -25,7 +25,9 @@ GNU Scientific Library
    linalg.rst
    eigen.rst
    fft.rst
-
    integration.rst
+   rng.rst
+   qrng.rst
+
 
 * :ref:`genindex`

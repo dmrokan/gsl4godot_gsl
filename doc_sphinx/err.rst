@@ -18,7 +18,7 @@ Error Reporting
 ===============
 
 The library follows the thread-safe error reporting conventions of the
-@sc{posix} Threads library.  Functions return a non-zero error code to
+POSIX Threads library.  Functions return a non-zero error code to
 indicate an error and :code:`0` to indicate success::
 
     int status = gsl_function (...)
@@ -56,10 +56,11 @@ where a breakpoint can be set that will catch library errors when
 running under the debugger.  It is not intended for use in production
 programs, which should handle any errors using the return codes.
 
-Error Codes
-===========
 .. index::
    single: error codes, reserved
+
+Error Codes
+===========
 
 The error code numbers returned by library functions are defined in
 the file :file:`gsl_errno.h`.  They all have the prefix :code:`GSL_` and
@@ -109,9 +110,10 @@ function :func:`gsl_strerror`.
    would print an error message like :code:`error: output range error` for a
    status value of :data:`GSL_ERANGE`.
 
+.. index:: error handlers
+
 Error Handlers
 ==============
-.. index:: error handlers
 
 The default behavior of the GSL error handler is to print a short
 message and call :func:`abort`.  When this default is in use programs
@@ -187,9 +189,10 @@ The error behavior can be changed for specific applications by
 recompiling the library with a customized definition of the
 :code:`GSL_ERROR` macro in the file :file:`gsl_errno.h`.
 
+.. index:: error handling macros
+
 Using GSL error reporting in your own functions
 ===============================================
-.. index:: error handling macros
 
 If you are writing numerical functions in a program which also uses GSL
 code you may find it convenient to adopt the same error reporting

@@ -16,19 +16,20 @@ For multiple-valued functions the branch cuts have been chosen to follow
 the conventions of Abramowitz and Stegun.
 The functions return principal values which are
 the same as those in GNU Calc, which in turn are the same as those in
-@cite{Common Lisp, The Language (Second Edition)} [#f1]_
+"Common Lisp, The Language (Second Edition)" [#f1]_
 and the HP-28/48 series of calculators.
 
 The complex types are defined in the header file :file:`gsl_complex.h`,
 while the corresponding complex functions and arithmetic operations are
 defined in :file:`gsl_complex_math.h`.
 
-Representation of complex numbers
-=================================
 .. index::
    single: representations of complex numbers
    single: polar form of complex numbers
    single: gsl_complex
+
+Representation of complex numbers
+=================================
 
 Complex numbers are represented using the type :code:`gsl_complex`. The
 internal representation of this type may vary across platforms and
@@ -88,13 +89,15 @@ be mapped correctly onto packed complex arrays.
 Properties of complex numbers
 =============================
 
-.. index:: argument of complex number 
+.. index:: argument of complex number
+
 .. function:: double gsl_complex_arg (gsl_complex z)
 
    This function returns the argument of the complex number :data:`z`,
    :math:`\arg(z)`, where :math:`-\pi < \arg(z) <= \pi`.
 
-.. index:: magnitude of complex number 
+.. index:: magnitude of complex number
+
 .. function:: double gsl_complex_abs (gsl_complex z)
 
    This function returns the magnitude of the complex number :data:`z`, :math:`|z|`.
@@ -112,10 +115,10 @@ Properties of complex numbers
    evaluation of :code:`log(gsl_complex_abs(z))` would lead to a loss of
    precision in this case.
 
+.. index:: complex arithmetic
 
 Complex arithmetic operators
 ============================
-.. index:: complex arithmetic
 
 .. function:: gsl_complex gsl_complex_add (gsl_complex a, gsl_complex b)
 
@@ -178,6 +181,7 @@ Complex arithmetic operators
    imaginary number :math:`iy`, :math:`z=a/(iy)`.
 
 .. index:: conjugate of complex number
+
 .. function:: gsl_complex gsl_complex_conjugate (gsl_complex z)
 
    This function returns the complex conjugate of the complex number
@@ -198,6 +202,7 @@ Elementary Complex Functions
 ============================
 
 .. index:: square root of complex number
+
 .. function:: gsl_complex gsl_complex_sqrt (gsl_complex z)
 
    This function returns the square root of the complex number :data:`z`,
@@ -212,6 +217,7 @@ Elementary Complex Functions
 .. index::
    single: power of complex number
    single: exponentiation of complex number
+
 .. function:: gsl_complex gsl_complex_pow (gsl_complex z, gsl_complex a)
 
    The function returns the complex number :data:`z` raised to the complex
@@ -229,6 +235,7 @@ Elementary Complex Functions
    :data:`z`, :math:`\exp(z)`.
 
 .. index:: logarithm of complex number
+
 .. function:: gsl_complex gsl_complex_log (gsl_complex z)
 
    This function returns the complex natural logarithm (base :math:`e`) of
@@ -246,25 +253,28 @@ Elementary Complex Functions
    number :data:`z`, :math:`\log_b(z)`. This quantity is computed as the ratio
    :math:`\log(z)/\log(b)`.
 
+.. index:: trigonometric functions of complex numbers
 
 Complex Trigonometric Functions
 ===============================
-.. index:: trigonometric functions of complex numbers
 
 .. index::
    single: sin, of complex number
+
 .. function:: gsl_complex gsl_complex_sin (gsl_complex z)
 
    This function returns the complex sine of the complex number :data:`z`,
    :math:`\sin(z) = (\exp(iz) - \exp(-iz))/(2i)`.
 
 .. index:: cosine of complex number
+
 .. function:: gsl_complex gsl_complex_cos (gsl_complex z)
 
    This function returns the complex cosine of the complex number :data:`z`,
    :math:`\cos(z) = (\exp(iz) + \exp(-iz))/2`.
 
 .. index:: tangent of complex number
+
 .. function:: gsl_complex gsl_complex_tan (gsl_complex z)
 
    This function returns the complex tangent of the complex number :data:`z`,
@@ -285,10 +295,10 @@ Complex Trigonometric Functions
    This function returns the complex cotangent of the complex number :data:`z`,
    :math:`\cot(z) = 1/\tan(z)`.
 
+.. index:: inverse complex trigonometric functions
 
 Inverse Complex Trigonometric Functions
 =======================================
-.. index:: inverse complex trigonometric functions
 
 .. function:: gsl_complex gsl_complex_arcsin (gsl_complex z)
 
@@ -351,11 +361,11 @@ Inverse Complex Trigonometric Functions
    This function returns the complex arccotangent of the complex number :data:`z`,
    :math:`\arccot(z) = \arctan(1/z)`.
 
+.. index::
+   single: hyperbolic functions, complex numbers
 
 Complex Hyperbolic Functions
 ============================
-.. index::
-   single: hyperbolic functions, complex numbers
 
 .. function:: gsl_complex gsl_complex_sinh (gsl_complex z)
 
@@ -387,11 +397,11 @@ Complex Hyperbolic Functions
    This function returns the complex hyperbolic cotangent of the complex
    number :data:`z`, :math:`\coth(z) = 1/\tanh(z)`.
 
+.. index::
+   single: inverse hyperbolic functions, complex numbers
 
 Inverse Complex Hyperbolic Functions
 ====================================
-.. index::
-   single: inverse hyperbolic functions, complex numbers
 
 .. function:: gsl_complex gsl_complex_arcsinh (gsl_complex z)
 

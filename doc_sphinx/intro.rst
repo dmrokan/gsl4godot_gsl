@@ -43,10 +43,11 @@ Where possible the routines have been based on reliable public-domain
 packages such as FFTPACK and QUADPACK, which the developers of GSL
 have reimplemented in C with modern coding conventions.
 
-GSL is Free Software
-====================
 .. index::
    single: free software, explanation of
+
+GSL is Free Software
+====================
 
 The subroutines in the GNU Scientific Library are "free software";
 this means that everyone is free to use them, and to redistribute them
@@ -90,16 +91,17 @@ The Free Software Foundation also operates a license consulting
 service for commercial users (contact details available from
 http://www.fsf.org.
 
-Obtaining GSL
-=============
 .. index::
    obtaining GSL
    downloading GSL
    mailing list for GSL announcements
    info-gsl mailing list
 
+Obtaining GSL
+=============
+
 The source code for the library can be obtained in different ways, by
-copying it from a friend, purchasing it on @sc{cdrom} or downloading it
+copying it from a friend, purchasing it on CDROM or downloading it
 from the internet. A list of public ftp servers which carry the source
 code can be found on the GNU website, http://www.gnu.org/software/gsl/.
 
@@ -118,10 +120,11 @@ low-volume list, send an email of the following form::
 You will receive a response asking you to reply in order to confirm
 your subscription.
 
-No Warranty
-===========
 .. index::
    warranty (none)
+
+No Warranty
+===========
 
 The software described in this manual has no warranty, it is provided
 "as is".  It is your responsibility to validate the behavior of the
@@ -130,17 +133,18 @@ purchase support and warranties from commercial redistributors.  Consult the
 `GNU General Public License <https://www.gnu.org/software/gsl/manual/html_node/GNU-General-Public-License.html#GNU-General-Public-License>`_
 for further details.
 
-Reporting Bugs
-==============
 .. index::
    reporting bugs in GSL
    bugs, how to report
    bug-gsl mailing list
    mailing list, bug-gsl
 
-A list of known bugs can be found in the @file{BUGS} file included in
+Reporting Bugs
+==============
+
+A list of known bugs can be found in the :file:`BUGS` file included in
 the GSL distribution or online in the GSL bug tracker. [#f1]_
-Details of compilation problems can be found in the @file{INSTALL} file.
+Details of compilation problems can be found in the :file:`INSTALL` file.
 
 If you find a bug which is not listed in these files, please report it to
 bug-gsl@gnu.org.
@@ -159,12 +163,13 @@ library is compiled without optimization.  Thank you.
 Any errors or omissions in this manual can also be reported to the
 same address.
 
-Further Information
-===================
 .. index::
    mailing list archives
    single: website, developer information
    contacting the GSL developers
+
+Further Information
+===================
 
 Additional information, including online copies of this manual, links to
 related projects, and mailing list archives are available from the
@@ -188,21 +193,22 @@ e.g.::
 
 If you want to give a url, use "http://www.gnu.org/software/gsl/".
 
-Conventions used in this manual
-===============================
 .. index::
    single: conventions, used in manual
    single: examples, conventions used in
    single: shell prompt
    single: $, shell prompt
 
+Conventions used in this manual
+===============================
+
+.. index::
+   single: dollar sign $, shell prompt
+
 This manual contains many examples which can be typed at the keyboard.
 A command entered at the terminal is shown like this::
 
     $ command
-
-.. index::
-   single: dollar sign $, shell prompt
 
 The first character on the line is the terminal prompt, and should not
 be typed.  The dollar sign $ is used as the standard prompt in
@@ -211,7 +217,7 @@ this manual, although some systems may use a different character.
 The examples assume the use of the GNU operating system.  There may be
 minor differences in the output on other systems.  The commands for
 setting environment variables use the Bourne shell syntax of the
-standard GNU shell (@code{bash}).
+standard GNU shell (:code:`bash`).
 
 .. rubric:: Footnotes
 

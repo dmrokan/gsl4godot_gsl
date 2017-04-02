@@ -219,7 +219,7 @@ The output of the example program is plotted in :numref:`fig_fft-complex-radix2`
 
 .. _fig_fft-complex-radix2:
 
-.. figure:: images/fft-complex-radix2.png
+.. figure:: /images/fft-complex-radix2.png
    :scale: 60%
 
    A pulse and its discrete Fourier transform, output from
@@ -352,17 +352,6 @@ numerical error. The wavetable structure is declared in the header file
    This function frees the memory associated with the workspace
    :data:`workspace`. The workspace can be freed if no further FFTs of the
    same length will be needed.
-
-.. @deftp {Data Type} gsl_fft_complex_workspace
-.. This is a structure that holds the workspace for the mixed radix fft
-.. algorithm.  It has the following components:
-..
-.. @table @code
-.. @item gsl_complex * scratch
-.. This is a pointer to a workspace of :code:`n` complex elements,
-.. capable of holding intermediate copies of the original data set.
-.. @end table
-.. @end deftp
 
 The following functions compute the transform,
 
@@ -746,7 +735,7 @@ The program output is shown in :numref:`fig_fft-real-mixedradix`.
 
 .. _fig_fft-real-mixedradix:
 
-.. figure:: images/fft-real-mixedradix.png
+.. figure:: /images/fft-real-mixedradix.png
    :scale: 100%
 
    Low-pass filtered version of a real pulse, output from the example program.
@@ -805,16 +794,6 @@ algorithms,
 * Digital Signal Processing Committee and IEEE Acoustics, Speech, and Signal
   Processing Committee, editors.
   Programs for Digital Signal Processing. IEEE Press, 1979.
-
-..  @noindent
-..  There is also an annotated bibliography of papers on the FFT and related
-..  topics by Burrus,
-
-..  @itemize @w{} 
-..  @item C. S. Burrus.  Notes on the FFT.
-..  @end itemize
-..  @noindent
-.. The notes are available from @url{http://www-dsp.rice.edu/res/fft/fftnote.asc}.
 
 For large-scale FFT work we recommend the use of the dedicated FFTW library
 by Frigo and Johnson.  The FFTW library is self-optimizing---it

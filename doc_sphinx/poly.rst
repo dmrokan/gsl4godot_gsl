@@ -14,11 +14,12 @@ is also available for finding the roots of general polynomials with real
 coefficients (of any order).  The functions are declared in the header
 file :file:`gsl_poly.h`.
 
-Polynomial Evaluation
-=====================
 .. index::
    single: polynomial evaluation
    single: evaluation of polynomials
+
+Polynomial Evaluation
+=====================
 
 The functions described here evaluate the polynomial 
 
@@ -53,11 +54,12 @@ using Horner's method for stability. |inlinefns|
    contains the values of :math:`d^k P(x)/d x^k` for the specified value of
    :data:`x` starting with :math:`k = 0`.
 
-Divided Difference Representation of Polynomials
-================================================
 .. index::
    single: divided differences, polynomials
    single: evaluation of polynomials, in divided difference form
+
+Divided Difference Representation of Polynomials
+================================================
 
 The functions described here manipulate polynomials stored in Newton's
 divided-difference representation.  The use of divided-differences is
@@ -140,10 +142,11 @@ are discussed in Burden and Faires, section 3.4.
    can be evaluated by calling :func:`gsl_poly_dd_eval` and using
    :data:`za` for the input argument :data:`xa`.
 
-Quadratic Equations
-===================
 .. index::
    single: quadratic equation, solving
+
+Quadratic Equations
+===================
 
 .. function:: int gsl_poly_solve_quadratic (double a, double b, double c, double * x0, double * x1)
 
@@ -184,10 +187,11 @@ Quadratic Equations
    and then by their imaginary components.  If only one real root is found
    (i.e. if :math:`a=0`) then it is stored in :data:`z0`.
 
-Cubic Equations
-===============
 .. index::
    single: cubic equation, solving
+
+Cubic Equations
+===============
 
 .. function:: int gsl_poly_solve_cubic (double a, double b, double c, double * x0, double * x1, double * x2)
 
@@ -221,17 +225,20 @@ Cubic Equations
    are returned in ascending order, sorted first by their real components
    and then by their imaginary components.
 
-General Polynomial Equations
-============================
 .. index::
    single: general polynomial equations, solving
+
+General Polynomial Equations
+============================
 
 The roots of polynomial equations cannot be found analytically beyond
 the special cases of the quadratic, cubic and quartic equation.  The
 algorithm described in this section uses an iterative method to find the
 approximate locations of roots of higher order polynomials.
 
-.. index:: gsl_poly_complex_workspace
+.. type:: gsl_poly_complex_workspace
+
+   This workspace contains parameters used for finding roots of general polynomials
 
 .. function:: gsl_poly_complex_workspace * gsl_poly_complex_workspace_alloc (size_t n)
 

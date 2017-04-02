@@ -14,15 +14,16 @@ available.
 The functions and macros described in this chapter are defined in the
 header file :file:`gsl_math.h`.
 
-Mathematical Constants
-======================
 .. index::
    single: mathematical constants, defined as macros
    single: numerical constants, defined as macros
    single: constants, mathematical (defined as macros)
    single: macros for mathematical constants
 
-The library ensures that the standard @sc{bsd} mathematical constants
+Mathematical Constants
+======================
+
+The library ensures that the standard BSD mathematical constants
 are defined. For reference, here is a list of the constants:
 
 .. index::
@@ -50,12 +51,12 @@ are defined. For reference, here is a list of the constants:
 :macro:`M_EULER`      Euler's constant, :math:`\gamma`
 ===================== ===================================
 
-Infinities and Not-a-number
-===========================
-
 .. index::
    single: infinity, defined as a macro
    single: IEEE infinity, defined as a macro
+
+Infinities and Not-a-number
+===========================
 
 .. macro:: GSL_POSINF
 
@@ -71,6 +72,7 @@ Infinities and Not-a-number
    single: NaN, defined as a macro
    single: Not-a-number, defined as a macro
    single: IEEE NaN, defined as a macro
+
 .. macro:: GSL_NAN
 
    This macro contains the IEEE representation of the Not-a-Number symbol,
@@ -103,6 +105,7 @@ application (see :ref:`portability-functions`).
 .. index::
    single: log1p
    single: logarithm, computed accurately near 1
+
 .. function:: double gsl_log1p (const double x)
 
    This function computes the value of :math:`\log(1+x)` in a way that is
@@ -112,6 +115,7 @@ application (see :ref:`portability-functions`).
 .. index::
    single: expm1
    single: exponential, difference from 1 computed accurately
+
 .. function:: double gsl_expm1 (const double x)
 
    This function computes the value of :math:`\exp(x)-1` in a way that is
@@ -122,6 +126,7 @@ application (see :ref:`portability-functions`).
    single: hypot
    single: euclidean distance function, hypot
    single: length, computed accurately using hypot
+
 .. function:: double gsl_hypot (const double x, const double y)
 
    This function computes the value of
@@ -131,6 +136,7 @@ application (see :ref:`portability-functions`).
 .. index::
    single: euclidean distance function, hypot3
    single: length, computed accurately using hypot3
+
 .. function:: double gsl_hypot3 (const double x, const double y, const double z)
 
    This function computes the value of
@@ -140,6 +146,7 @@ application (see :ref:`portability-functions`).
    single: acosh
    single: hyperbolic cosine, inverse
    single: inverse hyperbolic cosine
+
 .. function:: double gsl_acosh (const double x)
 
    This function computes the value of :math:`\arccosh{(x)}`. It provides an
@@ -149,6 +156,7 @@ application (see :ref:`portability-functions`).
    single: asinh
    single: hyperbolic sine, inverse
    single: inverse hyperbolic sine
+
 .. function:: double gsl_asinh (const double x)
 
    This function computes the value of :math:`\arcsinh{(x)}`. It provides an
@@ -158,18 +166,21 @@ application (see :ref:`portability-functions`).
    single: atanh
    single: hyperbolic tangent, inverse
    single: inverse hyperbolic tangent
+
 .. function:: double gsl_atanh (const double x)
 
    This function computes the value of :math:`\arctanh{(x)}`. It provides an
    alternative to the standard math function :code:`atanh(x)`.
 
 .. index:: ldexp
+
 .. function:: double gsl_ldexp (double x, int e)
 
    This function computes the value of :math:`x * 2^e`. It provides an
    alternative to the standard math function :code:`ldexp(x,e)`.
 
 .. index:: frexp
+
 .. function:: double gsl_frexp (double x, int * e)
 
    This function splits the number :data:`x` into its normalized fraction
@@ -223,7 +234,7 @@ Testing the Sign of Numbers
 
    This macro returns the sign of :data:`x`. It is defined as :code:`((x) >= 0
    ? 1 : -1)`. Note that with this definition the sign of zero is positive
-   (regardless of its @sc{ieee} sign bit).
+   (regardless of its IEEE sign bit).
 
 Testing for Odd and Even Numbers
 ================================
@@ -247,12 +258,14 @@ arguments, so they should not be used with arguments that have side
 effects (such as a call to a random number generator).
 
 .. index:: maximum of two numbers
+
 .. macro:: GSL_MAX (a, b)
 
    This macro returns the maximum of :data:`a` and :data:`b`. It is defined
    as :code:`((a) > (b) ? (a):(b))`.
 
 .. index:: minimum of two numbers
+
 .. macro:: GSL_MIN (a, b)
 
    This macro returns the minimum of :data:`a` and :data:`b`. It is defined as 
@@ -298,13 +311,14 @@ Approximate Comparison of Floating Point Numbers
 It is sometimes useful to be able to compare two floating point numbers
 approximately, to allow for rounding and truncation errors.  The following
 function implements the approximate floating-point comparison algorithm
-proposed by D.E. Knuth in Section 4.2.2 of @cite{Seminumerical
-Algorithms} (3rd edition).
+proposed by D.E. Knuth in Section 4.2.2 of "Seminumerical
+Algorithms" (3rd edition).
 
 .. index::
    single: approximate comparison of floating point numbers
    single: safe comparison of floating point numbers
    single: floating point numbers, approximate comparison
+
 .. function:: int gsl_fcmp (double x, double y, double epsilon)
 
    This function determines whether :data:`x` and :data:`y` are approximately

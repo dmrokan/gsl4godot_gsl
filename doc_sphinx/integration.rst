@@ -8,6 +8,8 @@
 Numerical Integration
 *********************
 
+.. include:: include.rst
+
 This chapter describes routines for performing numerical integration
 (quadrature) of a function in one dimension.  There are routines for
 adaptive and non-adaptive integration of general functions, with
@@ -15,8 +17,8 @@ specialised routines for specific cases.  These include integration over
 infinite and semi-infinite ranges, singular integrals, including
 logarithmic singularities, computation of Cauchy principal values and
 oscillatory integrals.  The library reimplements the algorithms used in
-@sc{quadpack}, a numerical integration package written by Piessens,
-de Doncker-Kapenga, Ueberhuber and Kahaner.  Fortran code for @sc{quadpack} is
+|quadpack|, a numerical integration package written by Piessens,
+de Doncker-Kapenga, Ueberhuber and Kahaner.  Fortran code for |quadpack| is
 available on Netlib.  Also included are non-adaptive, fixed-order
 Gauss-Legendre integration routines with high precision coefficients
 by Pavel Holoborodko.
@@ -69,7 +71,7 @@ The routines will fail to converge if the error bounds are too
 stringent, but always return the best approximation obtained up to
 that stage.
 
-The algorithms in @sc{quadpack} use a naming convention based on the
+The algorithms in |quadpack| use a naming convention based on the
 following letters::
 
   Q - quadrature routine
@@ -131,16 +133,15 @@ Integrands with singular weight functions
 
 The presence of singularities (or other behavior) in the integrand can
 cause slow convergence in the Chebyshev approximation.  The modified
-Clenshaw-Curtis rules used in @sc{quadpack} separate out several common
+Clenshaw-Curtis rules used in |quadpack| separate out several common
 weight functions which cause slow convergence.  
 
 These weight functions are integrated analytically against the Chebyshev
-polynomials to precompute @dfn{modified Chebyshev moments}.  Combining
+polynomials to precompute *modified Chebyshev moments*.  Combining
 the moments with the Chebyshev approximation to the function gives the
 desired integral.  The use of analytic integration for the singular part
 of the function allows exact cancellations and substantially improves
 the overall convergence behavior of the integration.
-
 
 QNG non-adaptive Gauss-Kronrod integration
 ==========================================
@@ -363,11 +364,13 @@ singularities at the end-points of an integration region.  In order to
 work efficiently the algorithm requires a precomputed table of
 Chebyshev moments.
 
-.. index:: gsl_integration_qaws_table
+.. type:: gsl_integration_qaws_table
+
+   This structure contains precomputed quantities for the QAWS algorithm.
 
 .. function:: gsl_integration_qaws_table * gsl_integration_qaws_table_alloc (double alpha, double beta, int mu, int nu)
 
-   This function allocates space for a @code{gsl_integration_qaws_table}
+   This function allocates space for a :type:`gsl_integration_qaws_table`
    struct describing a singular weight function
    :math:`w(x)` with the parameters :math:`(\alpha, \beta, \mu, \nu)`,
 
@@ -621,12 +624,12 @@ CQUAD doubly-adaptive integration
 .. index::
    single: cquad, doubly-adaptive integration
 
-@sc{cquad} is a new doubly-adaptive general-purpose quadrature
+|cquad| is a new doubly-adaptive general-purpose quadrature
 routine which can handle most types of singularities,
 non-numerical function values such as :code:`Inf` or :code:`NaN`,
 as well as some divergent integrals. It generally requires more
 function evaluations than the integration routines in
-@sc{quadpack}, yet fails less often for difficult integrands.
+|quadpack|, yet fails less often for difficult integrands.
 
 The underlying algorithm uses a doubly-adaptive scheme in which
 Clenshaw-Curtis quadrature rules of increasing degree are used
@@ -655,12 +658,12 @@ rules is too large or a rule of maximum degree has been reached.
 
    This function computes the integral of :math:`f` over :math:`(a,b)`
    within the desired absolute and relative error limits, :data:`epsabs`
-   and :data:`epsrel` using the @sc{cquad} algorithm.  The function returns
+   and :data:`epsrel` using the |cquad| algorithm.  The function returns
    the final approximation, :data:`result`, an estimate of the absolute
    error, :data:`abserr`, and the number of function evaluations required,
    :data:`nevals`.
 
-   The @sc{cquad} algorithm divides the integration region into
+   The |cquad| algorithm divides the integration region into
    subintervals, and in each iteration, the subinterval with the largest
    estimated error is processed.  The algorithm uses Clenshaw-Curits
    quadrature rules of degree 4, 8, 16 and 32 over 5, 9, 17 and 33 nodes
@@ -764,24 +767,12 @@ Error codes
 In addition to the standard error codes for invalid arguments the
 functions can return the following values,
 
-.. macro:: GSL_EMAXITER
-
-   the maximum number of subdivisions was exceeded.
-
-.. macro:: GSL_EROUND
-
-   cannot reach tolerance because of roundoff error,
-   or roundoff error was detected in the extrapolation table.
-
-.. macro:: GSL_ESING  
-
-   a non-integrable singularity or other bad integrand behavior was found
-   in the integration interval.
-
-.. macro:: GSL_EDIVERGE
-
-   the integral is divergent, or too slowly convergent to be integrated
-   numerically.
+===================== ============================================================================================================
+:macro:`GSL_EMAXITER` the maximum number of subdivisions was exceeded.
+:macro:`GSL_EROUND`   cannot reach tolerance because of roundoff error, or roundoff error was detected in the extrapolation table.
+:macro:`GSL_ESING`    a non-integrable singularity or other bad integrand behavior was found in the integration interval.
+:macro:`GSL_EDIVERGE` the integral is divergent, or too slowly convergent to be integrated numerically.
+===================== ============================================================================================================
 
 Examples
 ========
@@ -813,17 +804,17 @@ margin of safety of one order of magnitude.
 References and Further Reading
 ==============================
 
-The following book is the definitive reference for @sc{quadpack}, and was
+The following book is the definitive reference for |quadpack|, and was
 written by the original authors.  It provides descriptions of the
 algorithms, program listings, test programs and examples.  It also
 includes useful advice on numerical integration and many references to
-the numerical integration literature used in developing @sc{quadpack}.
+the numerical integration literature used in developing |quadpack|.
 
 * R. Piessens, E. de Doncker-Kapenga, C.W. Ueberhuber, D.K. Kahaner.
-  @sc{quadpack} A subroutine package for automatic integration
+  |quadpack| A subroutine package for automatic integration
   Springer Verlag, 1983.
 
-The @sc{cquad} integration algorithm is described in the following paper:
+The |cquad| integration algorithm is described in the following paper:
 
 * P. Gonnet, "Increasing the Reliability of Adaptive Quadrature Using
   Explicit Interpolants", ACM Transactions on Mathematical

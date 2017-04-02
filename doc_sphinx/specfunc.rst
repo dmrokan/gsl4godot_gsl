@@ -58,8 +58,6 @@ These structures are declared in the header file :file:`gsl_sf_result.h`.
 
 The following struct contains value and error fields.
 
-.. index:: gsl_sf_result
-
 .. type:: gsl_sf_result
 
    ::
@@ -80,8 +78,6 @@ exceeding the dynamic range of the built-in types.  The
 following struct contains value and error fields as well
 as an exponent field such that the actual result is obtained as
 :code:`result * 10^(e10)`.
-
-.. index:: gsl_sf_result_e10
 
 .. type:: gsl_sf_result_e10
 

@@ -6,6 +6,8 @@
    single: CBLAS
    single: Basic Linear Algebra Subroutines (BLAS)
 
+.. _blas-support:
+
 ************
 BLAS Support
 ************
@@ -94,7 +96,7 @@ general matrix-matrix multiply" and ZGEMM stands for
 
 Note that the vector and matrix arguments to BLAS functions must not
 be aliased, as the results are undefined when the underlying arrays
-overlap (@pxref{Aliasing of arrays}). 
+overlap (:ref:`aliasing-of-arrays`).
 
 GSL BLAS Interface
 ==================

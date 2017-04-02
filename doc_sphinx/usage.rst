@@ -8,6 +8,8 @@
 Using the Library
 *****************
 
+.. include:: include.rst
+
 This chapter describes how to compile programs that use GSL, and
 introduces its conventions.  
 
@@ -29,12 +31,13 @@ accuracy [#f1]_,
 The steps needed to compile this program are described
 in the following sections.
 
-Compiling and Linking
-=====================
 .. index::
    single: compiling programs, include paths
    single: including GSL header files
    single: header files, including
+
+Compiling and Linking
+=====================
 
 The library header files are installed in their own :file:`gsl`
 directory.  You should write any preprocessor include statements with a
@@ -56,12 +59,13 @@ include path for :code:`gcc` searches :file:`/usr/local/include` automatically s
 the :code:`-I` option can actually be omitted when GSL is installed 
 in its default location.
 
-Linking programs with the library
----------------------------------
 .. index::
    single: compiling programs, library paths
    single: linking with GSL libraries
    single: libraries, linking with
+
+Linking programs with the library
+---------------------------------
 
 The library is installed as a single file, :file:`libgsl.a`.  A shared
 version of the library :file:`libgsl.so` is also installed on systems
@@ -71,9 +75,9 @@ path of your linker you will also need to provide its location as a
 command line flag.
 
 To link against the library you need to specify
-both the main library and a supporting @sc{cblas} library, which
+both the main library and a supporting |cblas| library, which
 provides standard basic linear algebra subroutines.  A suitable
-@sc{cblas} implementation is provided in the library
+|cblas| implementation is provided in the library
 :file:`libgslcblas.a` if your system does not provide one.  The following
 example shows how to link an application with the library::
 
@@ -87,38 +91,38 @@ The option :code:`-lm` links with the system math library. On some
 systems it is not needed. [#f2]_
 
 For a tutorial introduction to the GNU C Compiler and related programs,
-see http://www.network-theory.co.uk/gcc/intro/, @cite{An Introduction
-to GCC},@cite{An Introduction to GCC}} (ISBN 0954161793). [#f3]_
+see "An Introduction to GCC" (ISBN 0954161793). [#f3]_
 
 Linking with an alternative BLAS library
 ----------------------------------------
 
 The following command line shows how you would link the same application
-with an alternative @sc{cblas} library :file:`libcblas.a`::
+with an alternative |cblas| library :file:`libcblas.a`::
 
     $ gcc example.o -lgsl -lcblas -lm
 
-For the best performance an optimized platform-specific @sc{cblas}
+For the best performance an optimized platform-specific |cblas|
 library should be used for :code:`-lcblas`.  The library must conform to
-the @sc{cblas} standard.  The @sc{atlas} package provides a portable
-high-performance @sc{blas} library with a @sc{cblas} interface.  It is
+the |cblas| standard.  The |atlas| package provides a portable
+high-performance |blas| library with a |cblas| interface.  It is
 free software and should be installed for any work requiring fast vector
 and matrix operations.  The following command line will link with the
-@sc{atlas} library and its @sc{cblas} interface::
+|atlas| library and its |cblas| interface::
 
     $ gcc example.o -lgsl -lcblas -latlas -lm
 
-If the @sc{atlas} library is installed in a non-standard directory use
+If the |atlas| library is installed in a non-standard directory use
 the :code:`-L` option to add it to the search path, as described above.  
 
-For more information about @sc{blas} functions see @ref{BLAS Support}.
+For more information about |blas| functions see :ref:`blas-support`.
 
-Shared Libraries
-================
 .. index::
    single: shared libraries
    single: libraries, shared
    single: LD_LIBRARY_PATH
+
+Shared Libraries
+================
 
 To run a program linked with the shared version of the library the
 operating system must be able to locate the corresponding :file:`.so`
@@ -180,17 +184,15 @@ To avoid namespace conflicts all exported function names and variables
 have the prefix :code:`gsl_`, while exported macros have the prefix
 :code:`GSL_`.
 
-Inline functions
-================
-@vindex :code:`HAVE_INLINE`
-@vindex :code:`GSL_C99_INLINE`
-
 .. index::
    single: inline functions
    single: HAVE_INLINE
    single: GSL_C99_INLINE
    single: C99, inline keyword
    single: extern inline
+
+Inline functions
+================
 
 The :code:`inline` keyword is not part of the original ANSI C standard
 (C89) so the library does not export any inline function definitions
@@ -292,12 +294,12 @@ since this allows your application to take advantage of any
 platform-specific optimizations in the system library.  This is the
 strategy used within GSL itself.
 
-Alternative optimized functions
-===============================
-
 .. index::
    single: alternative optimized functions
    single: optimized functions, alternatives
+
+Alternative optimized functions
+===============================
 
 The main implementation of some functions in the library will not be
 optimal on all architectures.  For example, there are several ways to
@@ -391,11 +393,12 @@ header file, or any other specific type, use its individual filename::
     #include <gsl/gsl_foo_char.h>          char          
     #include <gsl/gsl_foo_uchar.h>         unsigned char 
 
-Compatibility with C++
-======================
 .. index::
    single: C++, compatibility
    single: exceptions, C++
+
+Compatibility with C++
+======================
 
 The library header files automatically define functions to have
 :code:`extern "C"` linkage when included in C++ programs.  This allows
@@ -403,11 +406,14 @@ the functions to be called directly from C++.
 
 To use C++ exception handling within user-defined functions passed to
 the library as parameters, the library must be built with the
-additional :code:`CFLAGS` compilation option @option{-fexceptions}.
+additional :code:`CFLAGS` compilation option :code:`-fexceptions`.
+
+.. index:: aliasing of arrays
+
+.. _aliasing-of-arrays:
 
 Aliasing of arrays
 ==================
-.. index:: aliasing of arrays
 
 The library assumes that arrays, vectors and matrices passed as
 modifiable arguments are not aliased and do not overlap with each other.
@@ -425,9 +431,9 @@ Thread-safety
 The library can be used in multi-threaded programs.  All the functions
 are thread-safe, in the sense that they do not use static variables.
 Memory is always associated with objects and not with functions.  For
-functions which use @dfn{workspace} objects as temporary storage the
+functions which use *workspace* objects as temporary storage the
 workspaces should be allocated on a per-thread basis.  For functions
-which use @dfn{table} objects as read-only memory the tables can be used
+which use *table* objects as read-only memory the tables can be used
 by multiple threads simultaneously.  Table arguments are always declared
 :code:`const` in function prototypes, to indicate that they may be
 safely accessed by different threads.
@@ -438,23 +444,25 @@ range-checking, the function to call on fatal error, etc).  These
 variables are set directly by the user, so they should be initialized
 once at program startup and not modified by different threads.
 
+.. index:: deprecated functions
+
 Deprecated Functions
 ====================
-.. index:: deprecated functions
 
 From time to time, it may be necessary for the definitions of some
 functions to be altered or removed from the library.  In these
-circumstances the functions will first be declared @dfn{deprecated} and
+circumstances the functions will first be declared *deprecated* and
 then removed from subsequent versions of the library.  Functions that
 are deprecated can be disabled in the current release by setting the
 preprocessor definition :code:`GSL_DISABLE_DEPRECATED`.  This allows
 existing code to be tested for forwards compatibility.
 
-Code Reuse
-==========
 .. index::
    single: code reuse in applications
    single: source code, reuse in applications
+
+Code Reuse
+==========
 
 Where possible the routines in the library have been written to avoid
 dependencies between modules and files.  This should make it possible to

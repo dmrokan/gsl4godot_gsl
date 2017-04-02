@@ -30,8 +30,8 @@ The Legendre forms of elliptic integrals :math:`F(\phi,k)`,
 The complete Legendre forms are denoted by :math:`K(k) = F(\pi/2, k)` and
 :math:`E(k) = E(\pi/2, k)`.  
 
-The notation used here is based on Carlson, @cite{Numerische
-Mathematik} 33 (1979) 1 and differs slightly from that used by
+The notation used here is based on Carlson, "Numerische
+Mathematik" 33 (1979) 1 and differs slightly from that used by
 Abramowitz & Stegun, where the functions are given in terms of the
 parameter :math:`m = k^2` and :math:`n` is replaced by :math:`-n`.
 

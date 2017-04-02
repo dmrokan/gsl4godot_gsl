@@ -292,7 +292,7 @@ Regular Spherical Bessel Functions
    :math:`lmax \geq 0` and
    :math:`x \geq 0`, storing the results in the array
    :data:`result_array`.
-   The Steed/Barnett algorithm is described in @cite{Comp. Phys. Comm.} 21,
+   The Steed/Barnett algorithm is described in Comp. Phys. Comm. 21,
    297 (1981).  Steed's method is more stable than the
    recurrence used in the other functions but is also slower.
 .. Domain: lmax >= 0 

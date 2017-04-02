@@ -3,6 +3,7 @@
 .. index::
    single: Hermite polynomials
    single: Hermite functions
+
 .. :math:`He_n(x)`
 .. @math{H_n(x)}
 .. how can you get greek characters in the index in Texinfo?!?
