@@ -28,6 +28,7 @@ GNU Scientific Library
    integration.rst
    rng.rst
    qrng.rst
+   randist.rst
 
 
 * :ref:`genindex`

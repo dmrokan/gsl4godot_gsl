@@ -8,3 +8,7 @@
 .. |blas| replace:: BLAS
 .. |cblas| replace:: CBLAS
 .. |atlas| replace:: ATLAS
+
+.. |newpage| raw:: latex
+
+   \newpage
