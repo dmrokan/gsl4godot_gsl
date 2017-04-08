@@ -29,6 +29,7 @@ GNU Scientific Library
    rng.rst
    qrng.rst
    randist.rst
+   statistics.rst
 
 
 * :ref:`genindex`
