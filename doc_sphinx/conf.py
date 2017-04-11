@@ -125,7 +125,8 @@ my_latex_preamble = '\\DeclareMathOperator\\arccosh{arccosh} \
                      \\DeclareMathOperator\\erf{erf} \
                      \\DeclareMathOperator\\erfc{erfc} \
                      \\DeclareMathOperator\\sgn{sgn} \
-                     \\DeclareMathOperator\\sinc{sinc}'
+                     \\DeclareMathOperator\\sinc{sinc} \
+                     \\DeclareMathOperator\\Var{Var}'
 
 my_latex_authors = 'Mark Galassi \\\\ \
                     Jim Davies \\\\ \

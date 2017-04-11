@@ -30,6 +30,10 @@ GNU Scientific Library
    qrng.rst
    randist.rst
    statistics.rst
+   rstat.rst
+   histogram.rst
+   ntuple.rst
+   montecarlo.rst
 
 
 * :ref:`genindex`
