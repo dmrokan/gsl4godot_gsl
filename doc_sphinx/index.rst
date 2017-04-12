@@ -34,6 +34,7 @@ GNU Scientific Library
    histogram.rst
    ntuple.rst
    montecarlo.rst
+   siman.rst
 
 
 * :ref:`genindex`
