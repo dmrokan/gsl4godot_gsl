@@ -1774,6 +1774,7 @@ The following program generates a random walk in two dimensions.
 .. _fig_rand-walk:
 
 .. figure:: /images/random-walk.png
+   :scale: 60%
 
    Four 10-step random walks from the origin.
 

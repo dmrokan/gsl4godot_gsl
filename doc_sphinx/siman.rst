@@ -201,6 +201,7 @@ minimum.
 .. _fig_siman-test:
 
 .. figure:: /images/siman-test.png
+   :scale: 60%
 
    Example of a simulated annealing run: at higher temperatures (early in
    the plot) you see that the solution can fluctuate, but at lower
@@ -209,6 +210,7 @@ minimum.
 .. _fig_siman-energy:
 
 .. figure:: /images/siman-energy.png
+   :scale: 60%
 
    Simulated annealing energy vs generation
 
@@ -291,10 +293,12 @@ The optimal route turns out to be::
   ###final_city_coord: -105.95 35.68 Santa Fe
 
 .. figure:: /images/siman-initial-route.png
+   :scale: 60%
 
    Initial route for the 12 southwestern cities Flying Salesman Problem.
 
 .. figure:: /images/siman-final-route.png
+   :scale: 60%
 
    Final (optimal) route for the 12 southwestern cities Flying Salesman Problem.
 
@@ -302,6 +306,7 @@ Here's a plot of the cost function (energy) versus generation (point in
 the calculation at which a new temperature is set) for this problem:
 
 .. figure:: /images/siman-12-cities.png
+   :scale: 60%
 
    Example of a simulated annealing run for the 12 southwestern cities
    Flying Salesman Problem.

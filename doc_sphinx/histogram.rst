@@ -602,6 +602,7 @@ size.
 .. _fig_histogram:
 
 .. figure:: /images/histogram.png
+   :scale: 60%
 
    Histogram output from example program
 

@@ -177,6 +177,7 @@ Note the cut-off at the lower bound.
 .. _fig_ntuples:
 
 .. figure:: /images/ntuple.png
+   :scale: 60%
 
    Distribution of selected events
 
