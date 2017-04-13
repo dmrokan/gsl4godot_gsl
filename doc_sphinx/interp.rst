@@ -284,6 +284,7 @@ The output is designed to be used with the GNU plotutils
 .. _fig_interp:
 
 .. figure:: /images/interp.png
+   :scale: 60%
 
    Cubic spline interpolation
 
@@ -306,6 +307,7 @@ The output can be plotted with GNU :code:`graph`::
 .. _fig_interpp:
 
 .. figure:: /images/interpp.png
+   :scale: 60%
 
    Periodic cubic spline interpolation
 
@@ -322,8 +324,9 @@ Akima, and Steffen interpolation types on a difficult dataset.
 .. _fig_interp-compare:
 
 .. figure:: /images/interp_compare.png
+   :scale: 60%
 
-   Comparison of different interpolation methods
+   Comparison of different 1D interpolation methods
 
 The output is shown in :numref:`fig_interp-compare`.
 The cubic method exhibits a local maxima between the 6th and 7th data points
@@ -585,6 +588,7 @@ where the corners are labeled with their fixed :math:`z` values.
 .. _fig_interp2d:
 
 .. figure:: /images/interp2d.png
+   :scale: 60%
 
    2D interpolation example
 

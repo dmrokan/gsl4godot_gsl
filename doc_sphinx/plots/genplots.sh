@@ -1,5 +1,7 @@
 #!/bin/sh
 
+./plot_cheb.gp
+./plot_dwt.gp
 ./plot_fft.gp
 ./plot_histogram.gp
 ./plot_interp_compare.gp

@@ -37,6 +37,11 @@ GNU Scientific Library
    siman.rst
    ode-initval.rst
    interp.rst
+   diff.rst
+   cheb.rst
+   sum.rst
+   dwt.rst
+   dht.rst
 
 
 * :ref:`genindex`
