@@ -36,6 +36,7 @@ GNU Scientific Library
    montecarlo.rst
    siman.rst
    ode-initval.rst
+   interp.rst
 
 
 * :ref:`genindex`
