@@ -167,6 +167,8 @@ Initializing the Solver
 .. index::
    single: root finding, providing a function to solve
 
+.. _providing-function-to-solve:
+
 Providing the function to solve
 ===============================
 

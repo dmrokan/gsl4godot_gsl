@@ -4,6 +4,7 @@
 .. |octave| replace:: GNU octave
 .. |fftpack| replace:: FFTPACK
 .. |quadpack| replace:: QUADPACK
+.. |minpack| replace:: MINPACK
 .. |cquad| replace:: CQUAD
 .. |blas| replace:: BLAS
 .. |cblas| replace:: CBLAS

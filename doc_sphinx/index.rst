@@ -43,6 +43,8 @@ GNU Scientific Library
    dwt.rst
    dht.rst
    roots.rst
+   min.rst
+   multiroots.rst
 
 
 * :ref:`genindex`
