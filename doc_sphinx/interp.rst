@@ -264,8 +264,8 @@ defined in the header file :file:`gsl_spline.h`.
 .. function:: double gsl_spline_eval_integ (const gsl_spline * spline, double a, double b, gsl_interp_accel * acc)
               int gsl_spline_eval_integ_e (const gsl_spline * spline, double a, double b, gsl_interp_accel * acc, double * result)
 
-Examples of 1D Interpolation
-============================
+1D Interpolation Example Programs
+=================================
 
 The following program demonstrates the use of the interpolation and
 spline functions.  It computes a cubic spline interpolation of the

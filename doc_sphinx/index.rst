@@ -42,6 +42,7 @@ GNU Scientific Library
    sum.rst
    dwt.rst
    dht.rst
+   roots.rst
 
 
 * :ref:`genindex`
