@@ -791,6 +791,7 @@ functions can return the following values,
 :macro:`GSL_EROUND`   cannot reach tolerance because of roundoff error, or roundoff error was detected in the extrapolation table.
 :macro:`GSL_ESING`    a non-integrable singularity or other bad integrand behavior was found in the integration interval.
 :macro:`GSL_EDIVERGE` the integral is divergent, or too slowly convergent to be integrated numerically.
+:macro:`GSL_EDOM`     error in the values of the input arguments
 ===================== ============================================================================================================
 
 Examples

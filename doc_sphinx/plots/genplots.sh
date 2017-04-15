@@ -6,6 +6,7 @@
 ./plot_histogram.gp
 ./plot_interp_compare.gp
 ./plot_min.gp
+./plot_multimin.gp
 ./plot_ntuples.gp
 ./plot_ode.gp
 ./plot_qrng.gp
