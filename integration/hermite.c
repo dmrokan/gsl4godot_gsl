@@ -30,6 +30,25 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
+hermite_check(const size_t n, const gsl_integration_fixed_params * params)
+{
+  (void) n;
+
+  if (params->b <= 0.0)
+    {
+      GSL_ERROR("b must be positive", GSL_EDOM);
+    }
+  else if (params->alpha <= -1.0)
+    {
+      GSL_ERROR("alpha must be > -1", GSL_EDOM);
+    }
+  else
+    {
+      return GSL_SUCCESS;
+    }
+}
+
+static int
 hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
   size_t i;
@@ -52,6 +71,7 @@ hermite_init(const size_t n, double * diag, double * subdiag, gsl_integration_fi
 
 static const gsl_integration_fixed_type hermite_type =
 {
+  hermite_check,
   hermite_init
 };
 

@@ -1,6 +1,7 @@
 /* integration/test.c
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Brian Gough
+ * Copyright (C) 2017 Patrick Alken, Konrad Griessinger
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_ieee_utils.h>
+#include <gsl/gsl_sf_hyperg.h>
 
 #include "tests.h"
 
@@ -2463,6 +2465,139 @@ main (void)
     w = gsl_integration_fixed_alloc(T, n, a, b, alpha, 0.0);
     gsl_integration_fixed(&f, &result, w);
     gsl_test_rel (result, exact, 1e-12, "laguerre myfn1");
+    gsl_integration_fixed_free(w);
+  }
+
+  /* test Chebyshev quadrature */
+  {
+    const gsl_integration_fixed_type *T = gsl_integration_fixed_chebyshev;
+    size_t n;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    double a, b;
+    gsl_integration_fixed_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( b = 1.0; b <= 2.1; b += 0.1)
+      {
+        a = b - 0.53;
+        exact = GSL_SIGN(b-a)*M_PI*pow(0.5*(a+b),params.degree)*gsl_sf_hyperg_2F1(0.5*(1-params.degree),-0.5*params.degree,1.0,(b-a)*(b-a)/((b+a)*(b+a)));
+
+        w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+
+        gsl_integration_fixed(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "chebyshev monomial a=%g b=%g", a, b);
+
+        gsl_integration_fixed_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 2.6;
+    n = 200;
+    exact = 0.0582346516219999;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "chebyshev myfn1");
+    gsl_integration_fixed_free(w);
+  }
+
+  /* test Chebyshev2 quadrature */
+  {
+    const gsl_integration_fixed_type *T = gsl_integration_fixed_chebyshev2;
+    size_t n;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    double a, b;
+    gsl_integration_fixed_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( b = 1.0; b <= 2.1; b += 0.1)
+      {
+        a = b - 0.53;
+        exact = GSL_SIGN(b-a)*M_PI_2*pow(0.5*(a+b),params.degree)*gsl_sf_hyperg_2F1(0.5*(1-params.degree),-0.5*params.degree,2.0,(b-a)*(b-a)/((b+a)*(b+a)))*0.25*(b-a)*(b-a);
+
+        w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+
+        gsl_integration_fixed(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "chebyshev2 monomial a=%g b=%g", a, b);
+
+        gsl_integration_fixed_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 2.6;
+    n = 200;
+    exact = 0.0081704088896491;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "chebyshev2 myfn1");
+    gsl_integration_fixed_free(w);
+  }
+  
+  /* test Legendre quadrature */
+  {
+    const gsl_integration_fixed_type *T = gsl_integration_fixed_legendre;
+    size_t n;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    double a, b;
+    gsl_integration_fixed_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( b = 1.0; b <= 2.1; b += 0.1)
+      {
+        a = b - 0.53;
+        //a = b + 2.0;
+        exact = (pow(b,params.degree+1.0) - pow(a,params.degree+1.0))/(params.degree+1.0);
+
+        w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+
+        gsl_integration_fixed(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "legendre monomial a=%g b=%g", a, b);
+
+        gsl_integration_fixed_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 1.6;
+    n = 200;
+    exact = 0.01505500344456001;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, 0.0, 0.0);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "legendre myfn1");
     gsl_integration_fixed_free(w);
   }
 

@@ -334,6 +334,7 @@ typedef struct
 
 typedef struct
 {
+  int (*check)(const size_t n, const gsl_integration_fixed_params * params);
   int (*init)(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params);
 } gsl_integration_fixed_type;
 
@@ -348,6 +349,9 @@ typedef struct
 } gsl_integration_fixed_workspace;
 
 /* IQPACK integral types */
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_legendre;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev2;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_laguerre;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_hermite;
 

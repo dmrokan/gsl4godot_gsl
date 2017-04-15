@@ -33,17 +33,13 @@ gsl_integration_fixed_workspace *
 gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_t n,
                             const double a, const double b, const double alpha, const double beta)
 {
+  int status;
   gsl_integration_fixed_workspace *w;
 
   /* check inputs */
   if (n < 1)
     {
       GSL_ERROR_VAL ("workspace size n must be at least 1", GSL_EDOM, 0);
-    }
-
-  if (b <= 0.0)
-    {
-      GSL_ERROR_VAL ("b must be greater than 0", GSL_EDOM, 0);
     }
 
   w = calloc(1, sizeof(gsl_integration_fixed_workspace));
@@ -84,7 +80,12 @@ gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_
   w->type = type;
 
   /* compute quadrature weights and nodes */
-  fixed_compute(a, b, alpha, beta, w);
+  status = fixed_compute(a, b, alpha, beta, w);
+  if (status)
+    {
+      gsl_integration_fixed_free(w);
+      GSL_ERROR_VAL ("error in integration parameters", GSL_EDOM, 0);
+    }
 
   return w;
 }
@@ -139,6 +140,10 @@ fixed_compute(const double a, const double b, const double alpha, const double b
   params.b = b;
   params.alpha = alpha;
   params.beta = beta;
+
+  s = (w->type->check)(n, &params);
+  if (s)
+    return s;
 
   s = (w->type->init)(n, w->diag, w->subdiag, &params);
   if (s)
