@@ -732,15 +732,19 @@ The routines in this section are designed to efficiently evaluate integrals of t
 .. math:: \int_a^b w(x) f(x) dx
 
 where the weight function :math:`w(x)` takes certain forms which allow solutions based
-on interpolating quadratures. The table below lists the specialized integrals that
-can be solved with this method:
+on interpolating quadratures. The user specifies ahead of time how many quadrature nodes
+will be used, in contrast the adaptive methods described previously. The table below lists
+the specialized integrals that can be solved with this method:
 
-============ =============================== ===============================================================
-Name         Interval                        Weighting function :math:`w(x)`
-============ =============================== ===============================================================
-Laguerre     :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{( -b (x - a) )}`
-Hermite      :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)^2 )}`
-============ =============================== ===============================================================
+================ =============================== ===============================================================
+Name             Interval                        Weighting function :math:`w(x)`
+================ =============================== ===============================================================
+Legendre         :math:`(a,b)`                   :math:`1.0`
+Chebyshev Type 1 :math:`(a,b)`                   :math:`1 / \sqrt{(b - x) (x - a)}`
+Laguerre         :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{( -b (x - a) )}`
+Hermite          :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)^2 )}`
+Chebyshev Type 2 :math:`(a,b)`                   :math:`\sqrt{(b - x) (x - a)}`
+================ =============================== ===============================================================
 
 .. function:: gsl_integration_fixed_workspace * gsl_integration_fixed_alloc(const gsl_integration_fixed_type * T, const size_t n, const double a, const double b, const double alpha, const double beta)
 
@@ -749,13 +753,28 @@ Hermite      :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)
    interval and/or weighting function for the various quadrature types. The type of quadrature used is specified by
    :data:`T` which can be set to the following choices:
 
-   * .. type:: gsl_integration_fixed_laguerre
+   .. type:: gsl_integration_fixed_legendre
 
-        This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
+      This specifies Legendre quadrature integration. The parameters :data:`alpha` and
+      :data:`beta` are ignored for this type.
 
-   * .. type:: gsl_integration_fixed_hermite
+   .. type:: gsl_integration_fixed_chebyshev
 
-        This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
+      This specifies Chebyshev type 1 quadrature integration. The parameters :data:`alpha` and
+      :data:`beta` are ignored for this type.
+
+   .. type:: gsl_integration_fixed_laguerre
+
+      This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
+
+   .. type:: gsl_integration_fixed_hermite
+
+      This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
+
+   .. type:: gsl_integration_fixed_chebyshev2
+
+      This specifies Chebyshev type 2 quadrature integration. The parameters :data:`alpha` and
+      :data:`beta` are ignored for this type.
 
 .. function:: void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w)
 
