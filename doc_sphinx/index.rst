@@ -46,6 +46,7 @@ GNU Scientific Library
    min.rst
    multiroots.rst
    multimin.rst
+   lls.rst
 
 
 * :ref:`genindex`
