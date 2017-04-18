@@ -9,6 +9,7 @@
 .. |blas| replace:: BLAS
 .. |cblas| replace:: CBLAS
 .. |atlas| replace:: ATLAS
+.. |More| replace:: Moré
 
 .. |newpage| raw:: latex
 

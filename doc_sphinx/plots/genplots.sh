@@ -8,6 +8,7 @@
 ./plot_lls.gp
 ./plot_min.gp
 ./plot_multimin.gp
+./plot_nls.gp
 ./plot_ntuples.gp
 ./plot_ode.gp
 ./plot_qrng.gp

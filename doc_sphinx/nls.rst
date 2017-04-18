@@ -6,6 +6,8 @@
 Nonlinear Least-Squares Fitting
 *******************************
 
+.. include:: include.rst
+
 This chapter describes functions for multidimensional nonlinear
 least-squares fitting.  There are generally two classes of
 algorithms for solving nonlinear least squares problems, which
@@ -541,7 +543,7 @@ Each of these parameters is discussed in further detail below.
    .. var:: gsl_multifit_nlinear_scale_more
             gsl_multilarge_nlinear_scale_more
 
-      This damping strategy was suggested by More, and
+      This damping strategy was suggested by |More|, and
       corresponds to :math:`D^T D = \max(\diag(J^T J))`,
       in other words the maximum elements of
       :math:`\diag(J^T J)` encountered thus far in the iteration.
@@ -572,7 +574,7 @@ Each of these parameters is discussed in further detail below.
       This damping strategy was suggested by Marquardt, and
       corresponds to :math:`D^T D = \diag(J^T J)`. This
       method is scale-invariant, but it is generally considered
-      inferior to both the Levenberg and More strategies, though
+      inferior to both the Levenberg and |More| strategies, though
       may work well on certain classes of problems.
 
 .. type:: gsl_multifit_nlinear_solver
@@ -673,9 +675,9 @@ Each of these parameters is discussed in further detail below.
             J_ij = 1 / \Delta_j ( f_i(x + \Delta_j e_j) - f_i(x) )
 
       where :math:`\Delta_j = h |x_j|` and :math:`e_j` is the standard
-      :math:`j`th Cartesian unit basis vector so that
+      :math:`j`-th Cartesian unit basis vector so that
       :math:`x + \Delta_j e_j` represents a small (forward) perturbation of
-      the :math:`j`th parameter by an amount :math:`\Delta_j`. The perturbation
+      the :math:`j`-th parameter by an amount :math:`\Delta_j`. The perturbation
       :math:`\Delta_j` is proportional to the current value :math:`|x_j|` which
       helps to calculate an accurate Jacobian when the various parameters have
       different scale sizes. The value of :math:`h` is specified by the :code:`h_df`
@@ -1101,7 +1103,7 @@ These quantities can be accessed with the following functions,
      subproblem, the matrix which is factored is :math:`J D^{-1}`, instead of
      :math:`J` itself. The resulting singular values are used to provide
      the 2-norm reciprocal condition number, as :math:`rcond = \sigma_{min} / \sigma_{max}`.
-     Note that when using More scaling, :math:`D \ne I` and the resulting
+     Note that when using |More| scaling, :math:`D \ne I` and the resulting
      :data:`rcond` estimate may be significantly different from the true
      :data:`rcond` of :math:`J` itself.
 
@@ -1486,103 +1488,95 @@ velocity direction,
 :math:`D_v^2 f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha} \partial_{\beta} f_i`.
 The velocity vector :math:`v` is provided by the solver. For this example,
 these derivatives are
-@tex
-\beforedisplay
-$$
-f_{vv} =
-D_v^2
-\left(
-\matrix{
-f_1 \cr
-f_2
-}
-\right) =
-\left(
-\matrix{
--200 v_1^2 \cr
-0
-}
-\right)
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-fvv = [ -200 v1^2 ; 0 ]
-@end example
+.. only:: not texinfo
 
-@end ifinfo
-@noindent
+   .. math::
+
+      f_{vv} =
+      D_v^2
+      \left(
+        \begin{array}{c}
+          f_1 \\
+          f_2
+        \end{array}
+      \right) =
+      \left(
+        \begin{array}{c}
+          -200 v_1^2 \\
+          0
+        \end{array}
+      \right)
+
+.. only:: texinfo
+
+   ::
+
+      fvv = [ -200 v1^2 ]
+            [     0     ]
+
 The solution of this minimization problem is
-@tex
-\beforedisplay
-$$
-\eqalign{
-x^{*} &= \left(
-\matrix{
-1 \cr
-1
-}
-\right) \cr
-\Phi(x^{*}) &= 0
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-x* = [ 1 ; 1 ]
-Phi(x*) = 0
-@end example
+.. only:: not texinfo
 
-@end ifinfo
-@noindent
-The program output is shown below.
+   .. math::
 
-@smallexample
-=== Solving system without acceleration ===
-NITER         = 53
-NFEV          = 56
-NJEV          = 54
-NAEV          = 0
-initial cost  = 2.250225000000e+04
-final cost    = 6.674986031430e-18
-final x       = (9.999999974165e-01, 9.999999948328e-01)
-final cond(J) = 6.000096055094e+02
-=== Solving system with acceleration ===
-NITER         = 15
-NFEV          = 17
-NJEV          = 16
-NAEV          = 16
-initial cost  = 2.250225000000e+04
-final cost    = 7.518932873279e-19
-final x       = (9.999999991329e-01, 9.999999982657e-01)
-final cond(J) = 6.000097233278e+02
-@end smallexample
+      x^{*} &=
+      \left(
+        \begin{array}{c}
+          1 \\
+          1
+        \end{array}
+      \right) \\
+      \Phi(x^{*}) &= 0
 
-@noindent
+.. only:: texinfo
+
+   ::
+
+      x* = [ 1 ; 1 ]
+      Phi(x*) = 0
+
+The program output is shown below::
+
+  === Solving system without acceleration ===
+  NITER         = 53
+  NFEV          = 56
+  NJEV          = 54
+  NAEV          = 0
+  initial cost  = 2.250225000000e+04
+  final cost    = 6.674986031430e-18
+  final x       = (9.999999974165e-01, 9.999999948328e-01)
+  final cond(J) = 6.000096055094e+02
+  === Solving system with acceleration ===
+  NITER         = 15
+  NFEV          = 17
+  NJEV          = 16
+  NAEV          = 16
+  initial cost  = 2.250225000000e+04
+  final cost    = 7.518932873279e-19
+  final x       = (9.999999991329e-01, 9.999999982657e-01)
+  final cond(J) = 6.000097233278e+02
+
+.. _fig_nlfit2:
+
+.. figure:: /images/nlfit2.png
+
+   Paths taken by solver for Rosenbrock function
+
 We can see that enabling geodesic acceleration requires less
 than a third of the number of Jacobian evaluations in order to locate
-the minimum. The path taken by both methods is shown in the
-figure below. The contours show the cost function
+the minimum. The path taken by both methods is shown in :numref:`fig_nlfit2`.
+The contours show the cost function
 :math:`\Phi(x_1,x_2)`. We see that both methods quickly
 find the canyon bottom, but the geodesic acceleration method
 navigates along the bottom to the solution with significantly
 fewer iterations.
 
-@iftex
-@sp 1
-@center @image{nlfit2,6in}
-@end iftex
-
-@noindent
 The program is given below.
 
-@example
-@verbatiminclude examples/nlfit2.c
-@end example
+.. include:: examples/nlfit2.c
+   :code:
 
 Geodesic Acceleration Example 2
 -------------------------------
@@ -1590,187 +1584,162 @@ Geodesic Acceleration Example 2
 The following example fits a set of data to a Gaussian model
 using the Levenberg-Marquardt method with geodesic acceleration.
 The cost function is
-@tex
-\beforedisplay
-$$
-\eqalign{
-\Phi(x) &= {1 \over 2} \sum_i f_i^2 \cr
-f_i &= y_i - Y(a,b,c;t_i)
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-Phi(x) = 1/2 \sum_i f_i^2
-f_i = y_i - Y(a,b,c;t_i)
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      \Phi(x) &= {1 \over 2} \sum_i f_i^2 \\
+      f_i &= y_i - Y(a,b,c;t_i)
+
+.. only:: texinfo
+
+   ::
+
+      Phi(x) = 1/2 \sum_i f_i^2
+      f_i = y_i - Y(a,b,c;t_i)
+
 where :math:`y_i` is the measured data point at time :math:`t_i`, and
 the model is specified by
-@tex
-\beforedisplay
-$$
-Y(a,b,c;t) = a \exp{
-\left[
--{1 \over 2}
-\left(
-{ t - b \over c }
-\right)^2
-\right]
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-Y(a,b,c;t) = a exp(-1/2 ((t-b)/c)^2)
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      Y(a,b,c;t) = a \exp{
+      \left[
+      -{1 \over 2}
+      \left(
+      { t - b \over c }
+      \right)^2
+      \right]
+      }
+
+.. only:: texinfo
+
+   ::
+
+      Y(a,b,c;t) = a exp(-1/2 ((t-b)/c)^2)
+
 The parameters :math:`a,b,c` represent the amplitude, mean, and width of the Gaussian
 respectively. The program below generates the :math:`y_i` data on :math:`[0,1]` using
-the values @math{a = 5}, @math{b = 0.4}, @math{c = 0.15} and adding random noise.
-The :math:`i`th row of the Jacobian is
-@tex
-\beforedisplay
-$$
-J_{i,:} =
-\left(
-\matrix{
-{\partial f_i \over \partial a} & {\partial f_i \over \partial b} & {\partial f_i \over \partial c}
-}
-\right) =
-\left(
-\matrix{
--e_i & -{a \over c} z_i e_i & -{a \over c} z_i^2 e_i
-}
-\right)
-$$
-\afterdisplay
-@end tex
-@ifinfo
+the values :math:`a = 5`, :math:`b = 0.4`, :math:`c = 0.15` and adding random noise.
+The :math:`i`-th row of the Jacobian is
 
-@example
-J(i,:) = ( -e_i  -(a/c)*z_i*e_i  -(a/c)*z_i^2*e_i )
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      J_{i,:} =
+      \left(
+        \begin{array}{ccc}
+          {\partial f_i \over \partial a} & {\partial f_i \over \partial b} & {\partial f_i \over \partial c}
+        \end{array}
+      \right) =
+      \left(
+        \begin{array}{ccc}
+          -e_i & -{a \over c} z_i e_i & -{a \over c} z_i^2 e_i
+        \end{array}
+      \right)
+
+.. only:: texinfo
+
+   ::
+
+      J(i,:) = ( -e_i  -(a/c)*z_i*e_i  -(a/c)*z_i^2*e_i )
+
 where
-@tex
-\beforedisplay
-$$
-\eqalign{
-z_i &= { t_i - b \over c} \cr
-e_i &= \exp{\left( -{1 \over 2} z_i^2 \right)}
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-z_i = (t_i - b) / c
-e_i = \exp(-1/2 z_i^2)
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      z_i &= { t_i - b \over c} \\
+      e_i &= \exp{\left( -{1 \over 2} z_i^2 \right)}
+
+.. only:: texinfo
+
+   ::
+
+      z_i = (t_i - b) / c
+      e_i = \exp(-1/2 z_i^2)
+
 In order to use geodesic acceleration, we need the second directional derivative
 of the residuals in the velocity direction,
 :math:`D_v^2 f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha} \partial_{\beta} f_i`,
 where :math:`v` is provided by the solver. To compute this, it is helpful to make a table of
 all second derivatives of the residuals with respect to each combination of model parameters. This
 table is
-@tex
-\beforedisplay
-$$
-\matrix{
-& {\partial \over \partial a} & {\partial \over \partial b} & {\partial \over \partial c} \cr
-{\partial \over \partial a} & 0 & -{z_i \over c} e_i & -{z_i^2 \over c} e_i \cr
-{\partial \over \partial b} & & {a \over c^2} \left( 1 - z_i^2 \right) e_i & {a \over c^2} z_i \left( 2 - z_i^2 \right) e_i \cr
-{\partial \over \partial c} & & & {a \over c^2} z_i^2 \left( 3 - z_i^2 \right) e_i
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      \begin{array}{cccc}
+        & {\partial \over \partial a} & {\partial \over \partial b} & {\partial \over \partial c} \cr
+        {\partial \over \partial a} & 0 & -{z_i \over c} e_i & -{z_i^2 \over c} e_i \cr
+        {\partial \over \partial b} & & {a \over c^2} \left( 1 - z_i^2 \right) e_i & {a \over c^2} z_i \left( 2 - z_i^2 \right) e_i \cr
+        {\partial \over \partial c} & & & {a \over c^2} z_i^2 \left( 3 - z_i^2 \right) e_i
+      \end{array}
+
 The lower half of the table is omitted since it is symmetric. Then, the second directional derivative
 of :math:`f_i` is
-@tex
-\beforedisplay
-$$
-\eqalign{
-D_v^2 f_i &= v_a^2 \partial_a^2 f_i + 2 v_a v_b \partial_a \partial_b f_i + 2 v_a v_c \partial_a \partial_c f_i + v_b^2 \partial_b^2 f_i + 2 v_b v_c \partial_b \partial_c f_i + v_c^2 \partial_c^2 f_i
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math:: D_v^2 f_i = v_a^2 \partial_a^2 f_i + 2 v_a v_b \partial_a \partial_b f_i + 2 v_a v_c \partial_a \partial_c f_i + v_b^2 \partial_b^2 f_i + 2 v_b v_c \partial_b \partial_c f_i + v_c^2 \partial_c^2 f_i
+
+.. only:: texinfo
+
+   ::
+
+      D_v^2 f_i = v_a^2 (d/da)^2 f_i + 2 v_a v_b (d/da) (d/db) f_i + 2 v_a v_c (d/da) (d/dc) f_i + v_b^2 (d/db)^2 f_i + 2 v_b v_c (d/db) (d/dc) f_i + v_c^2 (d/dc)^2 f_i
+
 The factors of 2 come from the symmetry of the mixed second partial derivatives.
-The iteration is started using the initial guess @math{a = 1}, @math{b = 0}, @math{c = 1}.
-The program output is shown below.
+The iteration is started using the initial guess :math:`a = 1, b = 0, c = 1`.
+The program output is shown below::
 
-@smallformat
-@verbatim
-iter  0: a = 1.0000, b = 0.0000, c = 1.0000, |a|/|v| = 0.0000 cond(J) =      inf, |f(x)| = 35.4785
-iter  1: a = 1.5708, b = 0.5321, c = 0.5219, |a|/|v| = 0.3093 cond(J) =  29.0443, |f(x)| = 31.1042
-iter  2: a = 1.7387, b = 0.4040, c = 0.4568, |a|/|v| = 0.1199 cond(J) =   3.5256, |f(x)| = 28.7217
-iter  3: a = 2.2340, b = 0.3829, c = 0.3053, |a|/|v| = 0.3308 cond(J) =   4.5121, |f(x)| = 23.8074
-iter  4: a = 3.2275, b = 0.3952, c = 0.2243, |a|/|v| = 0.2784 cond(J) =   8.6499, |f(x)| = 15.6003
-iter  5: a = 4.3347, b = 0.3974, c = 0.1752, |a|/|v| = 0.2029 cond(J) =  15.1732, |f(x)| = 7.5908
-iter  6: a = 4.9352, b = 0.3992, c = 0.1536, |a|/|v| = 0.1001 cond(J) =  26.6621, |f(x)| = 4.8402
-iter  7: a = 5.0716, b = 0.3994, c = 0.1498, |a|/|v| = 0.0166 cond(J) =  34.6922, |f(x)| = 4.7103
-iter  8: a = 5.0828, b = 0.3994, c = 0.1495, |a|/|v| = 0.0012 cond(J) =  36.5422, |f(x)| = 4.7095
-iter  9: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6929, |f(x)| = 4.7095
-iter 10: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6975, |f(x)| = 4.7095
-iter 11: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6976, |f(x)| = 4.7095
-NITER         = 11
-NFEV          = 18
-NJEV          = 12
-NAEV          = 17
-initial cost  = 1.258724737288e+03
-final cost    = 2.217977560180e+01
-final x       = (5.083101559156e+00, 3.994484109594e-01, 1.494898e-01)
-final cond(J) = 3.669757713403e+01
-@end verbatim
-@end smallformat
+  iter  0: a = 1.0000, b = 0.0000, c = 1.0000, |a|/|v| = 0.0000 cond(J) =      inf, |f(x)| = 35.4785
+  iter  1: a = 1.5708, b = 0.5321, c = 0.5219, |a|/|v| = 0.3093 cond(J) =  29.0443, |f(x)| = 31.1042
+  iter  2: a = 1.7387, b = 0.4040, c = 0.4568, |a|/|v| = 0.1199 cond(J) =   3.5256, |f(x)| = 28.7217
+  iter  3: a = 2.2340, b = 0.3829, c = 0.3053, |a|/|v| = 0.3308 cond(J) =   4.5121, |f(x)| = 23.8074
+  iter  4: a = 3.2275, b = 0.3952, c = 0.2243, |a|/|v| = 0.2784 cond(J) =   8.6499, |f(x)| = 15.6003
+  iter  5: a = 4.3347, b = 0.3974, c = 0.1752, |a|/|v| = 0.2029 cond(J) =  15.1732, |f(x)| = 7.5908
+  iter  6: a = 4.9352, b = 0.3992, c = 0.1536, |a|/|v| = 0.1001 cond(J) =  26.6621, |f(x)| = 4.8402
+  iter  7: a = 5.0716, b = 0.3994, c = 0.1498, |a|/|v| = 0.0166 cond(J) =  34.6922, |f(x)| = 4.7103
+  iter  8: a = 5.0828, b = 0.3994, c = 0.1495, |a|/|v| = 0.0012 cond(J) =  36.5422, |f(x)| = 4.7095
+  iter  9: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6929, |f(x)| = 4.7095
+  iter 10: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6975, |f(x)| = 4.7095
+  iter 11: a = 5.0831, b = 0.3994, c = 0.1495, |a|/|v| = 0.0000 cond(J) =  36.6976, |f(x)| = 4.7095
+  NITER         = 11
+  NFEV          = 18
+  NJEV          = 12
+  NAEV          = 17
+  initial cost  = 1.258724737288e+03
+  final cost    = 2.217977560180e+01
+  final x       = (5.083101559156e+00, 3.994484109594e-01, 1.494898e-01)
+  final cond(J) = 3.669757713403e+01
 
-@noindent
 We see the method converges after 11 iterations. For comparison the standard
 Levenberg-Marquardt method requires 26 iterations and so the Gaussian fitting
 problem benefits substantially from the geodesic acceleration correction. The
-column marked @code{|a|/|v|} above shows the ratio of the acceleration term
+column marked :code:`|a|/|v|` above shows the ratio of the acceleration term
 to the velocity term as the iteration progresses. Larger values of this
 ratio indicate that the geodesic acceleration correction term is contributing
 substantial information to the solver relative to the standard LM velocity step.
 
-@noindent
-The data and fitted model are shown below.
+The data and fitted model are shown in :numref:`fig_nlfit2b`.
 
-@iftex
-@sp 1
-@center @image{nlfit2b,6in}
-@end iftex
+.. _fig_nlfit2b:
 
-@noindent
+.. figure:: /images/nlfit2b.png
+
+   Gaussian model fitted to data
+
 The program is given below.
 
-@example
-@verbatiminclude examples/nlfit2b.c
-@end example
+.. include:: examples/nlfit2b.c
+   :code:
 
 Comparing TRS Methods Example
 -----------------------------
@@ -1778,45 +1747,37 @@ Comparing TRS Methods Example
 The following program compares all available nonlinear least squares
 trust-region subproblem (TRS) methods on the Branin function, a common
 optimization test problem. The cost function is
-@tex
-\beforedisplay
-$$
-\eqalign{
-\Phi(x) &= {1 \over 2} (f_1^2 + f_2^2) \cr
-f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3 \cr
-f_2 &= \sqrt{a_4} \sqrt{1 + (1 - a_5) \cos{x_1}}
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-\Phi(x) &= 1/2 (f_1^2 + f_2^2)
-f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3
-f_2 &= sqrt(a_4) sqrt(1 + (1 - a_5) cos(x_1))
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      \Phi(x) &= {1 \over 2} (f_1^2 + f_2^2) \\
+      f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3 \\
+      f_2 &= \sqrt{a_4} \sqrt{1 + (1 - a_5) \cos{x_1}}
+
+.. only:: texinfo
+
+   ::
+
+      \Phi(x) &= 1/2 (f_1^2 + f_2^2)
+      f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3
+      f_2 &= sqrt(a_4) sqrt(1 + (1 - a_5) cos(x_1))
+
 with :math:`a_1 = -{5.1 \over 4 \pi^2}, a_2 = {5 \over \pi}, a_3 = -6, a_4 = 10, a_5 = {1 \over 8\pi}`.
 There are three minima of this function in the range
 :math:`(x_1,x_2) \in [-5,15] \times [-5,15]`. The program
 below uses the starting point :math:`(x_1,x_2) = (6,14.5)`
 and calculates the solution with all available nonlinear
-least squares TRS methods. The program output is shown below.
+least squares TRS methods. The program output is shown below::
 
-@smallformat
-@verbatim
-Method                    NITER  NFEV  NJEV  Initial Cost  Final cost   Final cond(J) Final x        
-levenberg-marquardt       20     27    21    1.9874e+02    3.9789e-01   6.1399e+07    (-3.14e+00, 1.23e+01)
-levenberg-marquardt+accel 27     36    28    1.9874e+02    3.9789e-01   1.4465e+07    (3.14e+00, 2.27e+00)
-dogleg                    23     64    23    1.9874e+02    3.9789e-01   5.0692e+08    (3.14e+00, 2.28e+00)
-double-dogleg             24     69    24    1.9874e+02    3.9789e-01   3.4879e+07    (3.14e+00, 2.27e+00)
-2D-subspace               23     54    24    1.9874e+02    3.9789e-01   2.5142e+07    (3.14e+00, 2.27e+00)
-@end verbatim
-@end smallformat
+  Method                    NITER  NFEV  NJEV  Initial Cost  Final cost   Final cond(J) Final x        
+  levenberg-marquardt       20     27    21    1.9874e+02    3.9789e-01   6.1399e+07    (-3.14e+00, 1.23e+01)
+  levenberg-marquardt+accel 27     36    28    1.9874e+02    3.9789e-01   1.4465e+07    (3.14e+00, 2.27e+00)
+  dogleg                    23     64    23    1.9874e+02    3.9789e-01   5.0692e+08    (3.14e+00, 2.28e+00)
+  double-dogleg             24     69    24    1.9874e+02    3.9789e-01   3.4879e+07    (3.14e+00, 2.27e+00)
+  2D-subspace               23     54    24    1.9874e+02    3.9789e-01   2.5142e+07    (3.14e+00, 2.27e+00)
 
-@noindent
 The first row of output above corresponds to standard Levenberg-Marquardt, while
 the second row includes geodesic acceleration. We see that the standard LM method
 converges to the minimum at :math:`(-\pi,12.275)` and also uses the least number
@@ -1825,22 +1786,21 @@ of iterations and Jacobian evaluations. All other methods converge to the minimu
 We see that :math:`J` is fairly ill-conditioned
 at both minima, indicating that the QR (or SVD) solver is the best choice for this problem.
 Since there are only two parameters in this optimization problem, we can easily
-visualize the paths taken by each method, which are shown in the figure below.
+visualize the paths taken by each method, which are shown in :numref:`fig_nlfit3`.
 The figure shows contours of the cost function :math:`\Phi(x_1,x_2)` which exhibits
 three global minima in the range :math:`[-5,15] \times [-5,15]`. The paths taken
 by each solver are shown as colored lines.
 
-@iftex
-@sp 1
-@center @image{nlfit3,6in}
-@end iftex
+.. _fig_nlfit3:
 
-@noindent
+.. figure:: /images/nlfit3.png
+
+   Paths taken for different TRS methods for the Branin function
+
 The program is given below.
 
-@example
-@verbatiminclude examples/nlfit3.c
-@end example
+.. include:: examples/nlfit3.c
+   :code:
 
 Large Nonlinear Least Squares Example
 -------------------------------------
@@ -1848,164 +1808,128 @@ Large Nonlinear Least Squares Example
 The following program illustrates the large nonlinear least
 squares solvers on a system with significant sparse structure
 in the Jacobian. The cost function is
-@tex
-\beforedisplay
-$$
-\eqalign{
-\Phi(x) &= {1 \over 2} \sum_{i=1}^{p+1} f_i^2 \cr
-f_i &= \sqrt{\alpha} (x_i - 1), \quad 1 \le i \le p \cr
-f_{p+1} &= ||x||^2 - {1 \over 4}
-}
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-\Phi(x) &= 1/2 \sum_@{i=1@}^@{p+1@} f_i^2
-f_i &= \sqrt@{\alpha@} (x_i - 1), 1 \le i \le p
-f_@{p+1@} &= ||x||^2 - 1/4
-@end example
+.. only:: not texinfo
 
-@end ifinfo
-with @math{\alpha = 10^{-5}}. The residual @math{f_{p+1}} imposes a constraint on the :math:`p`
+   .. math::
+
+      \Phi(x) &= {1 \over 2} \sum_{i=1}^{p+1} f_i^2 \\
+      f_i &= \sqrt{\alpha} (x_i - 1), \quad 1 \le i \le p \\
+      f_{p+1} &= ||x||^2 - {1 \over 4}
+
+.. only:: texinfo
+
+   ::
+
+      \Phi(x) &= 1/2 \sum_{i=1}^{p+1} f_i^2
+      f_i &= \sqrt{\alpha} (x_i - 1), 1 \le i \le p
+      f_{p+1} &= ||x||^2 - 1/4
+
+with :math:`\alpha = 10^{-5}`. The residual :math:`f_{p+1}` imposes a constraint on the :math:`p`
 parameters :math:`x`, to ensure that :math:`||x||^2 \approx {1 \over 4}`.
 The :math:`(p+1)`-by-:math:`p` Jacobian for this system is
-@tex
-\beforedisplay
-$$
-J(x) =
-\left(
-\matrix{
-\sqrt{\alpha} I_p \cr
-2 x^T
-}
-\right)
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-J(x) = [ \sqrt@{alpha@} I_p; 2 x^T ]
-@end example
+.. only:: not texinfo
 
-@end ifinfo
+   .. math::
+
+      J(x) =
+      \left(
+        \begin{array}{c}
+          \sqrt{\alpha} I_p \\
+          2 x^T
+        \end{array}
+      \right)
+
+.. only:: texinfo
+
+   ::
+
+     J(x) = [ \sqrt{alpha} I_p; 2 x^T ]
+
 and the normal equations matrix is
-@tex
-\beforedisplay
-$$
-J^T J =
-\alpha I_p + 4 x x^T
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-J^T J = [ \alpha I_p + 4 x x^T ]
-@end example
+.. math:: J^T J = \alpha I_p + 4 x x^T
 
-@end ifinfo
-@noindent
 Finally, the second directional derivative of :math:`f` for the
 geodesic acceleration method is
-@tex
-\beforedisplay
-$$
-f_{vv} = D_v^2 f =
-\left(
-\matrix{
-0 \cr
-2 ||v||^2
-}
-\right)
-$$
-\afterdisplay
-@end tex
-@ifinfo
 
-@example
-fvv = [ 0; 2 ||v||^2 ]
-@end example
+.. only:: not texinfo
 
-@end ifinfo
-@noindent
+   .. math::
+
+      f_{vv} = D_v^2 f =
+      \left(
+        \begin{array}{c}
+          0 \\
+          2 ||v||^2
+        \end{array}
+      \right)
+
+.. only:: texinfo
+
+   ::
+
+      fvv = [     0     ]
+            [ 2 ||v||^2 ]
+
 Since the upper :math:`p`-by-:math:`p` block of :math:`J` is diagonal,
 this sparse structure should be exploited in the nonlinear solver.
 For comparison, the following program solves the system for :math:`p = 2000`
 using the dense direct Cholesky solver based on the normal equations matrix
 :math:`J^T J`, as well as the iterative Steihaug-Toint solver, based on
-sparse matrix-vector products @math{J u} and @math{J^T u}. The
-program output is shown below.
+sparse matrix-vector products :math:`J u` and :math:`J^T u`. The
+program output is shown below::
 
-@smallformat
-@verbatim
-Method                    NITER NFEV NJUEV NJTJEV NAEV Init Cost  Final cost cond(J) Final |x|^2 Time (s)  
-levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  46.28
-levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.92
-dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.59  2.5044e-01  56.05
-double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.62  2.5044e-01  52.65
-2D-subspace               37    88   36    36     0    7.1218e+18 1.9555e-02 447.71  2.5044e-01  59.75
-steihaug-toint            35    88   345   0      0    7.1218e+18 1.9555e-02 inf     2.5044e-01  0.09
-@end verbatim
-@end smallformat
+  Method                    NITER NFEV NJUEV NJTJEV NAEV Init Cost  Final cost cond(J) Final |x|^2 Time (s)  
+  levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  46.28
+  levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.92
+  dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.59  2.5044e-01  56.05
+  double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.62  2.5044e-01  52.65
+  2D-subspace               37    88   36    36     0    7.1218e+18 1.9555e-02 447.71  2.5044e-01  59.75
+  steihaug-toint            35    88   345   0      0    7.1218e+18 1.9555e-02 inf     2.5044e-01  0.09
 
-@noindent
 The first five rows use methods based on factoring the dense :math:`J^T J` matrix
 while the last row uses the iterative Steihaug-Toint method. While the number
 of Jacobian matrix-vector products (NJUEV) is less for the dense methods, the added time
 to construct and factor the :math:`J^T J` matrix (NJTJEV) results in a much larger runtime than the
 iterative method (see last column).
 
-@noindent
 The program is given below.
 
-@example
-@verbatiminclude examples/nlfit4.c
-@end example
+.. include:: examples/nlfit4.c
+   :code:
 
 References and Further Reading
 ==============================
 
-@noindent
 The following publications are relevant to the algorithms described
 in this section,
 
-@itemize @w{}
-@item
-J.J. Mor@'e, @cite{The Levenberg-Marquardt Algorithm: Implementation and
-Theory}, Lecture Notes in Mathematics, v630 (1978), ed G. Watson.
+* J.J. |More|, *The Levenberg-Marquardt Algorithm: Implementation and
+  Theory*, Lecture Notes in Mathematics, v630 (1978), ed G. Watson.
 
-@item
-H. B. Nielsen, "Damping Parameter in Marquardt's Method",
-IMM Department of Mathematical Modeling, DTU, Tech. Report IMM-REP-1999-05
-(1999).
+* H. B. Nielsen, "Damping Parameter in Marquardt's Method",
+  IMM Department of Mathematical Modeling, DTU, Tech. Report IMM-REP-1999-05
+  (1999).
 
-@item
-K. Madsen and H. B. Nielsen, "Introduction to Optimization and Data
-Fitting", IMM Department of Mathematical Modeling, DTU, 2010.
+* K. Madsen and H. B. Nielsen, "Introduction to Optimization and Data
+  Fitting", IMM Department of Mathematical Modeling, DTU, 2010.
 
-@item
-J. E. Dennis and R. B. Schnabel, Numerical Methods for Unconstrained
-Optimization and Nonlinear Equations, SIAM, 1996.
+* J. E. Dennis and R. B. Schnabel, Numerical Methods for Unconstrained
+  Optimization and Nonlinear Equations, SIAM, 1996.
 
-@item
-M. K. Transtrum, B. B. Machta, and J. P. Sethna,
-Geometry of nonlinear least squares with applications to sloppy models and optimization,
-Phys. Rev. E 83, 036701, 2011.
+* M. K. Transtrum, B. B. Machta, and J. P. Sethna,
+  Geometry of nonlinear least squares with applications to sloppy models and optimization,
+  Phys. Rev. E 83, 036701, 2011.
 
-@item
-M. K. Transtrum and J. P. Sethna, Improvements to the Levenberg-Marquardt
-algorithm for nonlinear least-squares minimization, arXiv:1201.5885, 2012.
+* M. K. Transtrum and J. P. Sethna, Improvements to the Levenberg-Marquardt
+  algorithm for nonlinear least-squares minimization, arXiv:1201.5885, 2012.
 
-@item 
-J.J. Mor@'e, B.S. Garbow, K.E. Hillstrom, "Testing Unconstrained
-Optimization Software", ACM Transactions on Mathematical Software, Vol
-7, No 1 (1981), p 17--41.
+* J.J. |More|, B.S. Garbow, K.E. Hillstrom, "Testing Unconstrained
+  Optimization Software", ACM Transactions on Mathematical Software, Vol
+  7, No 1 (1981), p 17--41.
 
-@item 
-H. B. Nielsen, "UCTP Test Problems for Unconstrained Optimization",
-IMM Department of Mathematical Modeling, DTU, Tech. Report IMM-REP-2000-17
-(2000).
-@end itemize
+* H. B. Nielsen, "UCTP Test Problems for Unconstrained Optimization",
+  IMM Department of Mathematical Modeling, DTU, Tech. Report IMM-REP-2000-17
+  (2000).

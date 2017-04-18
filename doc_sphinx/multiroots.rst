@@ -461,7 +461,7 @@ When the conditions are satisfied then convergence is quadratic.
 
       This is a modified version of Powell's Hybrid method as implemented in
       the HYBRJ algorithm in |minpack|.  Minpack was written by Jorge
-      J. More, Burton S. Garbow and Kenneth E. Hillstrom.  The Hybrid
+      J. |More|, Burton S. Garbow and Kenneth E. Hillstrom.  The Hybrid
       algorithm retains the fast convergence of Newton's method but will also
       reduce the residual when Newton's method is unreliable. 
 
