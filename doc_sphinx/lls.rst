@@ -20,6 +20,8 @@ variance-covariance matrix.
 The functions are divided into separate versions for simple one- or
 two-parameter regression and multiple-parameter fits.
 
+.. _sec_lls-overview:
+
 Overview
 ========
 
