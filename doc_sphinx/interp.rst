@@ -1,5 +1,7 @@
 .. index:: interpolation, spline
 
+.. _sec_interpolation:
+
 *************
 Interpolation
 *************

@@ -48,6 +48,7 @@ GNU Scientific Library
    multimin.rst
    lls.rst
    nls.rst
+   bspline.rst
 
 
 * :ref:`genindex`

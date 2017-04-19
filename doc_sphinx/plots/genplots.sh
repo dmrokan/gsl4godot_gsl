@@ -1,5 +1,6 @@
 #!/bin/sh
 
+./plot_bspline.gp
 ./plot_cheb.gp
 ./plot_dwt.gp
 ./plot_fft.gp
