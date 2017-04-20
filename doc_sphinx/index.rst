@@ -49,6 +49,9 @@ GNU Scientific Library
    lls.rst
    nls.rst
    bspline.rst
+   spmatrix.rst
+   spblas.rst
+   splinalg.rst
 
 
 * :ref:`genindex`
