@@ -52,6 +52,7 @@ GNU Scientific Library
    spmatrix.rst
    spblas.rst
    splinalg.rst
+   const.rst
 
 
 * :ref:`genindex`
