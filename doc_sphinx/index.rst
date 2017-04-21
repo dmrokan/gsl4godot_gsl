@@ -53,6 +53,7 @@ GNU Scientific Library
    spblas.rst
    splinalg.rst
    const.rst
+   ieee754.rst
 
 
 * :ref:`genindex`
