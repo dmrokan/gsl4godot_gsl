@@ -1,5 +1,7 @@
 .. index:: IEEE floating point 
 
+.. _chap_ieee:
+
 ******************************
 IEEE floating-point arithmetic
 ******************************

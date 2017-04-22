@@ -55,5 +55,9 @@ GNU Scientific Library
    const.rst
    ieee754.rst
 
+   debug.rst
+   contrib.rst
+   autoconf.rst
+
 
 * :ref:`genindex`
