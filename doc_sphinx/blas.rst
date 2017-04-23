@@ -662,6 +662,8 @@ Here is the output from the program,
 .. include:: examples/blas.txt
    :code:
 
+.. _sec_blas-references:
+
 References and Further Reading
 ==============================
 

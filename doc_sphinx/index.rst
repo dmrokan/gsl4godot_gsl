@@ -58,6 +58,7 @@ GNU Scientific Library
    debug.rst
    contrib.rst
    autoconf.rst
+   cblas.rst
 
 
 * :ref:`genindex`

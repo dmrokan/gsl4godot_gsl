@@ -1423,6 +1423,7 @@ although this particular system is too small to really benefit.
 .. _fig_fit-exp:
 
 .. figure:: /images/fit-exp.png
+   :scale: 60%
 
    Exponential fitted curve with data
 
@@ -1794,6 +1795,7 @@ by each solver are shown as colored lines.
 .. _fig_nlfit3:
 
 .. figure:: /images/nlfit3.png
+   :scale: 60%
 
    Paths taken for different TRS methods for the Branin function
 
