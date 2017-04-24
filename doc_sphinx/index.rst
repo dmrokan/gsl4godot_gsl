@@ -59,6 +59,8 @@ GNU Scientific Library
    contrib.rst
    autoconf.rst
    cblas.rst
+   gpl.rst
+   fdl.rst
 
 
 * :ref:`genindex`
