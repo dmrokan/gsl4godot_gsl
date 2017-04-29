@@ -231,7 +231,7 @@ na.digest@na-net.ornl.gov or freshmeat.net
 ----------- Notes on updating documentation
 
     # sync new html tree in gsl_www CVS area:
-    $ rsync -av doc_sphinx/_build /path/to/www/gsl/doc
+    $ rsync -av doc_sphinx/_build/ /path/to/www/gsl/doc/
 
     # Remove any deleted/renamed files
     $ cd /path/to/www/gsl
@@ -247,6 +247,8 @@ na.digest@na-net.ornl.gov or freshmeat.net
 
     # Commit new html tree
     $ cvs commit
+
+### Old instructions
 
 * edit doc/gsl-ref.texi and make sure copyright years are current
 
