@@ -1242,9 +1242,7 @@ Since the matrix :math:`X^T X` is symmetric, only half of it
 needs to be calculated. Once all of the blocks (:math:`X_i,y_i`)
 have been accumulated into the final :math:`X^T X` and :math:`X^T y`,
 the system can be solved with a Cholesky factorization of the
-:math:`X^T X` matrix. If the Cholesky factorization fails (occasionally
-due to numerical rounding errors), a QR decomposition is then used.
-In both cases, the :math:`X^T X` matrix is first transformed via
+:math:`X^T X` matrix. The :math:`X^T X` matrix is first transformed via
 a diagonal scaling transformation to attempt to reduce its condition
 number as much as possible to recover a more accurate solution vector.
 The normal equations approach is the fastest method for solving the

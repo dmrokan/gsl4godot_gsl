@@ -599,7 +599,6 @@ dht/Makefile                 \
 diff/Makefile                \
 doc/Makefile                 \
 doc/examples/Makefile        \
-doc_sphinx/examples/Makefile \
 eigen/Makefile               \
 err/Makefile                 \
 fit/Makefile                 \

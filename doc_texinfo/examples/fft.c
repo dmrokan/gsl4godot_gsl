@@ -28,7 +28,7 @@ main (void)
       printf ("%d %e %e\n", i, 
               REAL(data,i), IMAG(data,i));
     }
-  printf ("\n\n");
+  printf ("\n");
 
   gsl_fft_complex_radix2_forward (data, 1, 128);
 
