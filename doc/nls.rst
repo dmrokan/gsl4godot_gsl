@@ -1669,8 +1669,8 @@ In order to use geodesic acceleration, we need the second directional derivative
 of the residuals in the velocity direction,
 :math:`D_v^2 f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha} \partial_{\beta} f_i`,
 where :math:`v` is provided by the solver. To compute this, it is helpful to make a table of
-all second derivatives of the residuals with respect to each combination of model parameters. This
-table is
+all second derivatives of the residuals :math:`f_i` with respect to each combination of model parameters.
+This table is
 
 .. only:: not texinfo
 
