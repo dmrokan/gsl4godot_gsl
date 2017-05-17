@@ -53,22 +53,22 @@ Adding Data to the Accumulator
    accumulator, updating calculations of the mean, variance,
    standard deviation, skewness, kurtosis, and median.
 
-.. function:: size_t gsl_rstat_n (gsl_rstat_workspace * w)
+.. function:: size_t gsl_rstat_n (const gsl_rstat_workspace * w)
 
    This function returns the number of data so far added to the accumulator.
 
 Current Statistics
 ==================
 
-.. function:: double gsl_rstat_min (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_min (const gsl_rstat_workspace * w)
 
    This function returns the minimum value added to the accumulator.
 
-.. function:: double gsl_rstat_max (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_max (const gsl_rstat_workspace * w)
 
    This function returns the maximum value added to the accumulator.
 
-.. function:: double gsl_rstat_mean (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_mean (const gsl_rstat_workspace * w)
 
    This function returns the mean of all data added to the accumulator,
    defined as
@@ -83,7 +83,7 @@ Current Statistics
 
          \Hat\mu = (1/N) \sum x_i
 
-.. function:: double gsl_rstat_variance (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_variance (const gsl_rstat_workspace * w)
 
    This function returns the variance of all data added to the accumulator,
    defined as
@@ -98,12 +98,12 @@ Current Statistics
 
          \Hat\sigma^2 = (1/(N-1)) \sum (x_i - \Hat\mu)^2
 
-.. function:: double gsl_rstat_sd (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_sd (const gsl_rstat_workspace * w)
 
    This function returns the standard deviation of all data added to the
    accumulator, defined as the square root of the variance given above.
 
-.. function:: double gsl_rstat_sd_mean (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_sd_mean (const gsl_rstat_workspace * w)
 
    This function returns the standard deviation of the mean, defined as
 
@@ -117,14 +117,14 @@ Current Statistics
 
          sd_mean = \Hat\sigma / \sqrt{N}
 
-.. function:: double gsl_rstat_rms (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_rms (const gsl_rstat_workspace * w)
 
    This function returns the root mean square of all data added to the
    accumulator, defined as
 
    .. math:: rms = \sqrt{{1 \over N} \sum x_i^2}
 
-.. function:: double gsl_rstat_skew (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_skew (const gsl_rstat_workspace * w)
 
    This function returns the skewness of all data added to the accumulator,
    defined as
@@ -142,7 +142,7 @@ Current Statistics
 
          skew = (1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^3
 
-.. function:: double gsl_rstat_kurtosis (gsl_rstat_workspace * w)
+.. function:: double gsl_rstat_kurtosis (const gsl_rstat_workspace * w)
 
    This function returns the kurtosis of all data added to the accumulator,
    defined as
