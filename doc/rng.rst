@@ -98,8 +98,7 @@ Random number generator initialization
 
    The generator is automatically initialized with the default seed,
    :data:`gsl_rng_default_seed`.  This is zero by default but can be changed
-   either directly or by using the environment variable :macro:`GSL_RNG_SEED`
-   (@pxref{Random number environment variables}).
+   either directly or by using the environment variable :macro:`GSL_RNG_SEED`.
 
    The details of the available generator types are
    described later in this chapter.
@@ -135,7 +134,7 @@ Sampling from a random number generator
 
 The following functions return uniformly distributed random numbers,
 either as integers or double precision floating point numbers.  |inlinefns|
-To obtain non-uniform distributions @pxref{Random Number Distributions}.  
+To obtain non-uniform distributions, see :ref:`chap_random-number-distributions`.
 
 .. function:: unsigned long int gsl_rng_get (const gsl_rng * r)
 

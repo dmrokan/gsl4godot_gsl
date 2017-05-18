@@ -1,6 +1,8 @@
 .. index::
    single: autoconf, using with GSL
 
+.. _chap_autoconf-macros:
+
 ***************
 Autoconf Macros
 ***************

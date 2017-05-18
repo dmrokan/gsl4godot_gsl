@@ -4,6 +4,8 @@
    single: BLAS, Low-level C interface
    single: Basic Linear Algebra Subroutines (BLAS)
 
+.. _chap_cblas:
+
 *****************
 GSL CBLAS Library
 *****************

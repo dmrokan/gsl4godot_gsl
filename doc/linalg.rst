@@ -715,7 +715,7 @@ Mathematically, the "full" SVD is defined with :math:`U` as an
    single: square root of a matrix, Cholesky decomposition
    single: matrix square root, Cholesky decomposition
 
-.. _cholesky-decomposition:
+.. _sec_cholesky-decomposition:
 
 Cholesky Decomposition
 ======================
@@ -905,7 +905,7 @@ where :math:`P` is a permutation matrix.
    :math:`S A S`, where the input matrix :data:`A` is symmetric and positive
    definite, and the diagonal scaling matrix :data:`S` is computed to reduce the
    condition number of :data:`A` as much as possible. See
-   :ref:`Cholesky Decomposition <cholesky-decomposition>` for more information on the matrix :data:`S`.
+   :ref:`Cholesky Decomposition <sec_cholesky-decomposition>` for more information on the matrix :data:`S`.
    The Pivoted Cholesky decomposition satisfies :math:`P S A S P^T = L D L^T`.
    On input, the values from the diagonal and lower-triangular part of the matrix :data:`A` are
    used to construct the factorization.  On output the diagonal of the input matrix :data:`A` stores the diagonal

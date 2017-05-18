@@ -5,6 +5,8 @@
    single: inverse cumulative distribution functions
    single: quantile functions
 
+.. _chap_random-number-distributions:
+
 ***************************
 Random Number Distributions
 ***************************

@@ -279,7 +279,7 @@ functions.
 
    If you use a C99 compiler which requires inline functions in header
    files to be declared :code:`inline` instead of :code:`extern inline`,
-   define the macro :macro:`GSL_C99_INLINE` (@pxref{Inline functions}).
+   define the macro :macro:`GSL_C99_INLINE` (see :ref:`sec_inline-functions`).
    With GCC this is selected automatically when compiling in C99 mode
    (:code:`-std=c99`).
 
@@ -605,8 +605,8 @@ Copying vectors
 ---------------
 
 Common operations on vectors such as addition and multiplication are
-available in the BLAS part of the library (@pxref{BLAS
-Support}).  However, it is useful to have a small number of utility
+available in the BLAS part of the library (see :ref:`chap_blas-support`).
+However, it is useful to have a small number of utility
 functions which do not require the full BLAS code.  The following
 functions fall into this category.
 
@@ -1506,8 +1506,7 @@ the conditions.
    These functions return 1 if all the elements of the matrix :data:`m` are
    zero, strictly positive, strictly negative, or non-negative
    respectively, and 0 otherwise. To test whether a matrix is
-   positive-definite, use the Cholesky decomposition (@pxref{Cholesky
-   Decomposition}).
+   positive-definite, use the :ref:`Cholesky decomposition <sec_cholesky-decomposition>`.
 
 .. function:: int gsl_matrix_equal (const gsl_matrix * a, const gsl_matrix * b)
 

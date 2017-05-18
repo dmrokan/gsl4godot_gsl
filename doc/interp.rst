@@ -19,7 +19,7 @@ are provided for interpolating both one and two dimensional datasets.
 
 These interpolation methods produce curves that pass through each
 datapoint.  To interpolate noisy data with a smoothing curve see
-@ref{Basis Splines}.
+:ref:`chap_basis-splines`.
 
 The functions described in this section are declared in the header files
 :file:`gsl_interp.h` and :file:`gsl_spline.h`.

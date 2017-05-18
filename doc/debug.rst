@@ -231,8 +231,8 @@ programs::
 .. problems such as this.  You just have to remember to use them.  Here is a
 .. set of recommended warning options for numerical programs.
 
-For details of each option consult the manual @cite{Using and Porting
-GCC}.  The following table gives a brief explanation of what types of
+For details of each option consult the manual *Using and Porting
+GCC*.  The following table gives a brief explanation of what types of
 errors these options catch.
 
 :code:`-ansi -pedantic`

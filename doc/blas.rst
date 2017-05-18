@@ -6,7 +6,7 @@
    single: CBLAS
    single: Basic Linear Algebra Subroutines (BLAS)
 
-.. _blas-support:
+.. _chap_blas-support:
 
 ************
 BLAS Support
@@ -42,7 +42,7 @@ use a CBLAS conformant wrapper to convert it into a CBLAS
 library.  A reference CBLAS wrapper for legacy Fortran
 implementations exists as part of the CBLAS standard and can
 be obtained from Netlib.  The complete set of CBLAS functions is
-listed in an appendix (@pxref{GSL CBLAS Library}).
+listed in an :ref:`appendix <chap_cblas>`.
 
 There are three levels of BLAS operations,
 

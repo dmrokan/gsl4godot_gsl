@@ -942,13 +942,13 @@ articles by Powell,
 The following papers are also relevant to the algorithms described in
 this section,
 
-* J.J. Mor@'e, M.Y. Cosnard, "Numerical Solution of Nonlinear Equations",
+* J.J. |More|, M.Y. Cosnard, "Numerical Solution of Nonlinear Equations",
   *ACM Transactions on Mathematical Software*, Vol 5, No 1, (1979), p 64--85
 
 * C.G. Broyden, "A Class of Methods for Solving Nonlinear
   Simultaneous Equations", *Mathematics of Computation*, Vol 19 (1965),
   p 577--593
 
-* J.J. Mor@'e, B.S. Garbow, K.E. Hillstrom, "Testing Unconstrained
+* J.J. |More|, B.S. Garbow, K.E. Hillstrom, "Testing Unconstrained
   Optimization Software", ACM Transactions on Mathematical Software, Vol
   7, No 1 (1981), p 17--41

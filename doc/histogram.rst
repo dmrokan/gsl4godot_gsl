@@ -64,9 +64,9 @@ A histogram is defined by the following struct,
 
    In this picture the values of the :data:`range` array are denoted by
    :math:`r`.  On the left-hand side of each bin the square bracket
-   @samp{[} denotes an inclusive lower bound 
+   :code:`[` denotes an inclusive lower bound 
    (:math:`r \le x`),
-   and the round parentheses @samp{)} on the right-hand
+   and the round parentheses :code:`)` on the right-hand
    side denote an exclusive upper bound (:math:`x < r`).  Thus any samples
    which fall on the upper end of the histogram are excluded.  If you want
    to include this value for the last bin you will need to add an extra bin

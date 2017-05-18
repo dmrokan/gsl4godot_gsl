@@ -114,7 +114,7 @@ and matrix operations.  The following command line will link with the
 If the |atlas| library is installed in a non-standard directory use
 the :code:`-L` option to add it to the search path, as described above.  
 
-For more information about |blas| functions see :ref:`blas-support`.
+For more information about |blas| functions see :ref:`chap_blas-support`.
 
 .. index::
    single: shared libraries
@@ -191,6 +191,8 @@ have the prefix :code:`gsl_`, while exported macros have the prefix
    single: C99, inline keyword
    single: extern inline
 
+.. _sec_inline-functions:
+
 Inline functions
 ================
 
@@ -216,7 +218,7 @@ By default, the actual form of the inline keyword is :code:`extern
 inline`, which is a :code:`gcc` extension that eliminates unnecessary
 function definitions.  If the form :code:`extern inline` causes
 problems with other compilers a stricter autoconf test can be used,
-see @ref{Autoconf Macros}.
+see :ref:`chap_autoconf-macros`.
 
 When compiling with :code:`gcc` in C99 mode (:code:`gcc -std=c99`) the
 header files automatically switch to C99-compatible inline function
@@ -285,8 +287,7 @@ available you can include the following macro definitions in a file
 The application source files can then use the include command
 :code:`#include <config.h>` to replace each occurrence of :func:`hypot` by
 :func:`gsl_hypot` when :func:`hypot` is not available.  This substitution
-can be made automatically if you use :code:`autoconf`, see @ref{Autoconf
-Macros}.
+can be made automatically if you use :code:`autoconf`, see :ref:`chap_autoconf-macros`.
 
 In most circumstances the best strategy is to use the native versions of
 these functions when available, and fall back to GSL versions otherwise,

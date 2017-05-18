@@ -2,6 +2,8 @@
    single: basis splines, B-splines
    single: splines, basis
 
+.. _chap_basis-splines:
+
 *************
 Basis Splines
 *************
