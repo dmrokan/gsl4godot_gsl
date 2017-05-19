@@ -741,6 +741,8 @@ Name             Interval                        Weighting function :math:`w(x)`
 ================ =============================== ===============================================================
 Legendre         :math:`(a,b)`                   :math:`1.0`
 Chebyshev Type 1 :math:`(a,b)`                   :math:`1 / \sqrt{(b - x) (x - a)}`
+Gegenbauer       :math:`(a,b)`                   :math:`((b - x) (x - a))^{\alpha}`
+Jacobi           :math:`(a,b)`                   :math:`(b - x)^{\alpha} (x - a)^{\beta}`
 Laguerre         :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{( -b (x - a) )}`
 Hermite          :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)^2 )}`
 Chebyshev Type 2 :math:`(a,b)`                   :math:`\sqrt{(b - x) (x - a)}`
@@ -763,13 +765,25 @@ Chebyshev Type 2 :math:`(a,b)`                   :math:`\sqrt{(b - x) (x - a)}`
       This specifies Chebyshev type 1 quadrature integration. The parameters :data:`alpha` and
       :data:`beta` are ignored for this type.
 
+   .. type:: gsl_integration_fixed_gegenbauer
+
+      This specifies Gegenbauer quadrature integration. The parameter :data:`beta` is ignored for this type.
+      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+
+   .. type:: gsl_integration_fixed_jacobi
+
+      This specifies Jacobi quadrature integration. The parameters :data:`alpha` and :data:`beta`
+      must satisfy :math:`\alpha > -1` and :math:`\beta > -1`.
+
    .. type:: gsl_integration_fixed_laguerre
 
       This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
+      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
    .. type:: gsl_integration_fixed_hermite
 
       This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
+      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
    .. type:: gsl_integration_fixed_chebyshev2
 
