@@ -2601,6 +2601,109 @@ main (void)
     gsl_integration_fixed_free(w);
   }
 
+  /* test Gegenbauer quadrature */
+  {
+    const gsl_integration_fixed_type *T = gsl_integration_fixed_gegenbauer;
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    const double exactarray[5] = {4.159336121541550201614007e-7,4.642858717647494736995335e6,0.022648929294207685470861,10.9517897277808309341375,-1.461087006550834694444e-6};
+    const double aarray[5] = {0.123,7.747,1.47,-1.47,0.47};
+    const double barray[5] = {0.456,12.0,2.0,2.0,0.0};
+    double a, b, alpha;
+    gsl_integration_fixed_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    alpha = 2.0;
+    n = 50;
+    /* for ( b = 1.0; b <= 2.1; b += 0.1) */
+    for ( k = 0; k < 5; k++)
+      {
+        a = aarray[k];
+        b = barray[k];
+        //a = b + 2.0;
+        exact = exactarray[k];
+
+        w = gsl_integration_fixed_alloc(T, n, a, b, alpha, 0.0);
+
+        gsl_integration_fixed(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "gegenbauer monomial a=%g b=%g", a, b);
+
+        gsl_integration_fixed_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 1.6;
+    n = 200;
+    exact = 1.2279468957162412661311711271e-5;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, alpha, 0.0);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "gegenbauer myfn1");
+    gsl_integration_fixed_free(w);
+  }
+
+  /* test Jacobi quadrature */
+  {
+    const gsl_integration_fixed_type *T = gsl_integration_fixed_jacobi;
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    double exact, result;
+    const double exactarray[5] = {9.052430592016123480501898e-7,3.131716150347619771233591755e6,0.04435866422797298224404592896,5.287059602300844442782407,2.5337038518475893688512749675e-6};
+    const double aarray[5] = {0.123,7.747,1.47,-1.47,0.0};
+    const double barray[5] = {0.456,12.0,2.0,2.0,0.47};
+    double a, b, alpha, beta;
+    gsl_integration_fixed_workspace *w;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    alpha = 2.0;
+    beta = 1.5;
+    n = 50;
+    /* for ( b = 1.0; b <= 2.1; b += 0.1) */
+    for ( k = 0; k < 5; k++)
+      {
+        a = aarray[k];
+        b = barray[k];
+        //a = b + 2.0;
+        exact = exactarray[k];
+
+        w = gsl_integration_fixed_alloc(T, n, a, b, alpha, beta);
+
+        gsl_integration_fixed(&f, &result, w);
+        gsl_test_rel (result, exact, 1e-12, "jacobi monomial a=%g b=%g", a, b);
+
+        gsl_integration_fixed_free(w);
+      }
+
+    /* now test on myfn1 */
+
+    a = 1.2;
+    b = 1.6;
+    n = 200;
+    exact = 3.173064776410033e-5;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, alpha, beta);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "jacobi myfn1");
+    gsl_integration_fixed_free(w);
+  }
+
   exit (gsl_test_summary());
 } 
 

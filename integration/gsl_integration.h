@@ -350,10 +350,12 @@ typedef struct
 
 /* IQPACK integral types */
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_legendre;
-GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev2;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_gegenbauer;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_jacobi;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_laguerre;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_hermite;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev2;
 
 gsl_integration_fixed_workspace *
 gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_t n,
