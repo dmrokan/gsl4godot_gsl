@@ -733,13 +733,15 @@ The routines in this section are designed to efficiently evaluate integrals of t
 
 where the weight function :math:`w(x)` takes certain forms which allow solutions based
 on interpolating quadratures. The user specifies ahead of time how many quadrature nodes
-will be used, in contrast the adaptive methods described previously. The table below lists
+will be used, in contrast the adaptive methods described previously.
+Therefore, unlike other numerical integration routines within the library, these
+routines do not accept absolute or relative error bounds.  The table below lists
 the specialized integrals that can be solved with this method:
 
 ================ =============================== ===============================================================
 Name             Interval                        Weighting function :math:`w(x)`
 ================ =============================== ===============================================================
-Legendre         :math:`(a,b)`                   :math:`1.0`
+Legendre         :math:`(a,b)`                   :math:`1`
 Chebyshev Type 1 :math:`(a,b)`                   :math:`1 / \sqrt{(b - x) (x - a)}`
 Gegenbauer       :math:`(a,b)`                   :math:`((b - x) (x - a))^{\alpha}`
 Jacobi           :math:`(a,b)`                   :math:`(b - x)^{\alpha} (x - a)^{\beta}`
@@ -748,51 +750,96 @@ Hermite          :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (
 Chebyshev Type 2 :math:`(a,b)`                   :math:`\sqrt{(b - x) (x - a)}`
 ================ =============================== ===============================================================
 
+Once the weighting function is specified, optimal nodes :math:`x_i` and weights :math:`w_i` are computed
+in order to approximate the integral as
+
+.. math:: \int_a^b w(x) f(x) dx \approx \sum_{i=1}^n w_i f(x_i)
+
+where :math:`n` is the user-specified number of nodes to use. Once the quadrature nodes and weights are computed,
+they can be used to integrate any number of functions :math:`f(x)`, provided the interval :math:`(a,b)` and
+weight function :math:`w(x)` remain unchanged. The fixed point quadrature routines use
+the following workspace to store the nodes and weights, as well as additional variables for intermediate calculations:
+
+.. type:: gsl_integration_fixed_workspace
+
+   This workspace is used for fixed point quadrature rules and looks like this::
+
+     typedef struct
+     {
+       size_t n;        /* number of nodes/weights */
+       double *weights; /* quadrature weights */
+       double *x;       /* quadrature nodes */
+       double *diag;    /* diagonal of Jacobi matrix */
+       double *subdiag; /* subdiagonal of Jacobi matrix */
+       const gsl_integration_fixed_type * type;
+     } gsl_integration_fixed_workspace;
+
 .. function:: gsl_integration_fixed_workspace * gsl_integration_fixed_alloc(const gsl_integration_fixed_type * T, const size_t n, const double a, const double b, const double alpha, const double beta)
 
    This function allocates a workspace for computing integrals with interpolating quadratures using :data:`n`
    quadrature nodes. The parameters :data:`a`, :data:`b`, :data:`alpha`, and :data:`beta` specify the integration
-   interval and/or weighting function for the various quadrature types. The type of quadrature used is specified by
-   :data:`T` which can be set to the following choices:
+   interval and/or weighting function for the various quadrature types.
 
-   .. type:: gsl_integration_fixed_legendre
+   .. type:: gsl_integration_fixed_type
 
-      This specifies Legendre quadrature integration. The parameters :data:`alpha` and
-      :data:`beta` are ignored for this type.
+      The type of quadrature used is specified by :data:`T` which can be set to the following choices:
 
-   .. type:: gsl_integration_fixed_chebyshev
+      .. var:: gsl_integration_fixed_legendre
 
-      This specifies Chebyshev type 1 quadrature integration. The parameters :data:`alpha` and
-      :data:`beta` are ignored for this type.
+         This specifies Legendre quadrature integration. The parameters :data:`alpha` and
+         :data:`beta` are ignored for this type.
 
-   .. type:: gsl_integration_fixed_gegenbauer
+      .. var:: gsl_integration_fixed_chebyshev
 
-      This specifies Gegenbauer quadrature integration. The parameter :data:`beta` is ignored for this type.
-      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+         This specifies Chebyshev type 1 quadrature integration. The parameters :data:`alpha` and
+         :data:`beta` are ignored for this type.
 
-   .. type:: gsl_integration_fixed_jacobi
+      .. var:: gsl_integration_fixed_gegenbauer
 
-      This specifies Jacobi quadrature integration. The parameters :data:`alpha` and :data:`beta`
-      must satisfy :math:`\alpha > -1` and :math:`\beta > -1`.
+         This specifies Gegenbauer quadrature integration. The parameter :data:`beta` is ignored for this type.
+         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
-   .. type:: gsl_integration_fixed_laguerre
+      .. var:: gsl_integration_fixed_jacobi
 
-      This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
-      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+         This specifies Jacobi quadrature integration. The parameters :data:`alpha` and :data:`beta`
+         must satisfy :math:`\alpha > -1` and :math:`\beta > -1`.
 
-   .. type:: gsl_integration_fixed_hermite
+      .. var:: gsl_integration_fixed_laguerre
 
-      This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
-      The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+         This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
+         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
-   .. type:: gsl_integration_fixed_chebyshev2
+      .. var:: gsl_integration_fixed_hermite
 
-      This specifies Chebyshev type 2 quadrature integration. The parameters :data:`alpha` and
-      :data:`beta` are ignored for this type.
+         This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
+         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+
+      .. var:: gsl_integration_fixed_chebyshev2
+
+         This specifies Chebyshev type 2 quadrature integration. The parameters :data:`alpha` and
+         :data:`beta` are ignored for this type.
 
 .. function:: void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w)
 
    This function frees the memory assocated with the workspace :data:`w`
+
+.. function:: double * gsl_integration_fixed_nodes(const gsl_integration_fixed_workspace * w)
+
+   This function returns a pointer to an array of size :data:`n` containing the quadrature nodes :math:`x_i`.
+
+.. function:: double * gsl_integration_fixed_weights(const gsl_integration_fixed_workspace * w)
+
+   This function returns a pointer to an array of size :data:`n` containing the quadrature weights :math:`w_i`.
+
+.. function:: void gsl_integration_fixed(const gsl_function * func, double * result, const gsl_integration_fixed_workspace * w)
+
+   This function integrates the function :math:`f(x)` provided in :data:`func` using previously
+   computed fixed quadrature rules. The integral is approximated as
+   
+   .. math:: \sum_{i=1}^n w_i f(x_i)
+
+   where :math:`w_i` are the quadrature weights and :math:`x_i` are the quadrature nodes computed
+   previously by :func:`gsl_integration_fixed_alloc`. The sum is stored in :data:`result` on output.
 
 Error codes
 ===========
