@@ -313,9 +313,9 @@ gsl_integration_cquad_workspace_free (gsl_integration_cquad_workspace * w);
 
 int
 gsl_integration_cquad (const gsl_function * f, double a, double b,
-		       double epsabs, double epsrel,
-		       gsl_integration_cquad_workspace * ws,
-		       double *result, double *abserr, size_t * nevals);
+		                   double epsabs, double epsrel,
+		                   gsl_integration_cquad_workspace * ws,
+		                   double *result, double *abserr, size_t * nevals);
 
 /* IQPACK related structures and routines */
 
@@ -340,7 +340,7 @@ typedef struct
 
 typedef struct
 {
-  size_t size;
+  size_t n;        /* number of nodes/weights */
   double *weights; /* quadrature weights */
   double *x;       /* quadrature nodes */
   double *diag;    /* diagonal of Jacobi matrix */
@@ -363,23 +363,12 @@ gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_
 
 void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w);
 
+double *gsl_integration_fixed_nodes(const gsl_integration_fixed_workspace * w);
+
+double *gsl_integration_fixed_weights(const gsl_integration_fixed_workspace * w);
+
 int gsl_integration_fixed(const gsl_function * func, double * result,
-                          gsl_integration_fixed_workspace * w);
-
-typedef struct
-{
-  size_t size;
-  double *weights; /* quadrature weights */
-  double *x;       /* quadrature nodes */
-  double *diag;    /* diagonal of Jacobi matrix */
-  double *subdiag; /* subdiagonal of Jacobi matrix */
-} gsl_integration_hermite_workspace;
-
-gsl_integration_hermite_workspace *gsl_integration_hermite_alloc(const size_t n, const double a, const double b);
-
-void gsl_integration_hermite_free(gsl_integration_hermite_workspace * w);
-
-int gsl_integration_hermite(const gsl_function * func, double * result, gsl_integration_hermite_workspace * w);
+                          const gsl_integration_fixed_workspace * w);
 
 __END_DECLS
 
