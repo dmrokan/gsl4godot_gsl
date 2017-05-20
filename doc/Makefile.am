@@ -76,18 +76,21 @@ figures =                              \
 
 noinst_DATA = $(figures)
 
-EXTRA_DIST = $(man_MANS) $(noinst_DATA) gsl-design.texi
+EXTRA_DIST = $(man_MANS) $(noinst_DATA) gsl-design.texi gsl-ref.info
 
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SOURCEDIR     = .
-BUILDDIR      = _build
+SPHINX_OPTS        =
+SPHINX_BUILD       = sphinx-build
+SPHINX_SOURCEDIR   = .
+SPHINX_BUILDDIR    = _build
 
 # targets supported by sphinx
-SPHINXTARGETS = html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf latexpdfja text man texinfo info gettext changes xml pseudoxml linkcheck doctest coverage
+SPHINX_TARGETS = html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf latexpdfja text man texinfo info gettext changes xml pseudoxml linkcheck doctest coverage
 
-$(SPHINXTARGETS) :
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+$(SPHINX_TARGETS) :
+	@$(SPHINX_BUILD) -M $@ "$(SPHINX_SOURCEDIR)" "$(SPHINX_BUILDDIR)" $(SPHINX_OPTS) $(O)
+
+install-data-local: gsl-ref.info
+	${INSTALL} gsl-ref.info ${infodir}
 
 clean-local:
-	rm -rf "$(BUILDDIR)"
+	rm -rf "$(SPHINX_BUILDDIR)"
