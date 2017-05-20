@@ -54,7 +54,9 @@ gegenbauer_init(const size_t n, double * diag, double * subdiag, gsl_integration
   size_t i;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  for (i = 0; i < n; i++)
+  diag[0] = 0.0;
+  subdiag[0] = sqrt ( 1.0 / (2.0*params->alpha + 3.0) );
+  for (i = 1; i < n; i++)
     {
       diag[i] = 0.0;
       subdiag[i] = sqrt ( (i + 1.0) * (2.0*params->alpha + i + 1.0) / ( 4.0*(params->alpha + i + 1.0)*(params->alpha + i + 1.0) - 1.0 ) );

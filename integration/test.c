@@ -2650,6 +2650,19 @@ main (void)
     gsl_integration_fixed(&f, &result, w);
     gsl_test_rel (result, exact, 1e-12, "gegenbauer myfn1");
     gsl_integration_fixed_free(w);
+
+    /* test again with alpha = -1/2 */
+    alpha = -0.5;
+    a = 1.2;
+    b = 1.6;
+    n = 200;
+    exact = 1.228256086101808986e-1;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, alpha, 0.0);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "gegenbauer myfn1 alpha=-1/2");
+    gsl_integration_fixed_free(w);
   }
 
   /* test Jacobi quadrature */
@@ -2691,7 +2704,6 @@ main (void)
       }
 
     /* now test on myfn1 */
-
     a = 1.2;
     b = 1.6;
     n = 200;
@@ -2701,6 +2713,20 @@ main (void)
     w = gsl_integration_fixed_alloc(T, n, a, b, alpha, beta);
     gsl_integration_fixed(&f, &result, w);
     gsl_test_rel (result, exact, 1e-12, "jacobi myfn1");
+    gsl_integration_fixed_free(w);
+
+    /* test myfn1 again with alpha = beta = -1/2 */
+    alpha = -0.5;
+    beta = -0.5;
+    a = 1.2;
+    b = 1.6;
+    n = 200;
+    exact = 1.228256086101808986e-1;
+
+    f = make_function(&myfn1, 0);
+    w = gsl_integration_fixed_alloc(T, n, a, b, alpha, beta);
+    gsl_integration_fixed(&f, &result, w);
+    gsl_test_rel (result, exact, 1e-12, "jacobi myfn1 alpha=beta=-1/2");
     gsl_integration_fixed_free(w);
   }
 

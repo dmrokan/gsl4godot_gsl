@@ -57,13 +57,15 @@ jacobi_init(const size_t n, double * diag, double * subdiag, gsl_integration_fix
   size_t i;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  for (i = 0; i < n; i++)
+  diag[0] = abdiff/(absum + 2.0);
+  subdiag[0] = 2.0*sqrt((params->alpha + 1.0)*(params->beta + 1.0)/(absum + 3.0))/(absum + 2.0);
+  for (i = 1; i < n; i++)
     {
       diag[i] = a2b2 / ( (absum + 2.0*i) * (absum + 2.0*i + 2.0) );
-      subdiag[i] = sqrt ( 4.0*(i + 1.0) * (params->alpha + i + 1.0) * (params->beta + i + 1.0) * (absum + i + 1.0) / ( ( pow((absum + 2.0*i + 2.0), 2.0) - 1.0 )*( pow((absum + 2.0*i + 2.0), 2.0) ) ) );
+      subdiag[i] = sqrt ( 4.0*(i + 1.0) * (params->alpha + i + 1.0) * (params->beta + i + 1.0) * (absum + i + 1.0) / ( pow((absum + 2.0*i + 2.0), 2.0) - 1.0 ) ) / ( absum + 2.0*i + 2.0 );
     }
 
-	params->zemu = pow(2.0, absum + 1.0) * gsl_sf_gamma(params->alpha + 1.0) * gsl_sf_gamma(params->beta + 1.0) / gsl_sf_gamma(absum + 2.0);
+  params->zemu = pow(2.0, absum + 1.0) * gsl_sf_gamma(params->alpha + 1.0) * gsl_sf_gamma(params->beta + 1.0) / gsl_sf_gamma(absum + 2.0);
   params->shft = 0.5*(params->b + params->a);
   params->slp = 0.5*(params->b - params->a);
   params->al = params->alpha;
