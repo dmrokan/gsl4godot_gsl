@@ -727,16 +727,24 @@ Fixed point quadratures
    single: quadrature, interpolating
    single: quadrature, fixed point
 
-The routines in this section are designed to efficiently evaluate integrals of the form
+The routines in this section approximate an integral by the sum
 
-.. math:: \int_a^b w(x) f(x) dx
+.. math:: \int_a^b w(x) f(x) dx = \sum_{i=1}^n w_i f(x_i)
 
-where the weight function :math:`w(x)` takes certain forms which allow solutions based
-on interpolating quadratures. The user specifies ahead of time how many quadrature nodes
-will be used, in contrast the adaptive methods described previously.
-Therefore, unlike other numerical integration routines within the library, these
+where :math:`f(x)` is the function to be integrated and :math:`w(x)` is
+a weighting function. The :math:`n` weights :math:`w_i` and nodes :math:`x_i` are carefully chosen
+so that the result is exact when :math:`f(x)` is a polynomial of degree :math:`2n - 1`
+or less. Once the user chooses the order :math:`n` and weighting function :math:`w(x)`, the
+weights :math:`w_i` and nodes :math:`x_i` can be precomputed and used to efficiently evaluate
+integrals for any number of functions :math:`f(x)`.
+
+This method works best when :math:`f(x)` is well approximated by a polynomial on the interval
+:math:`(a,b)`, and so is not suitable for functions with singularities.
+Since the user specifies ahead of time how many quadrature nodes will be used, these
 routines do not accept absolute or relative error bounds.  The table below lists
-the specialized integrals that can be solved with this method:
+the weighting functions currently supported.
+
+.. _tab_fixed-quadratures:
 
 ================ ======================== =========================================== ================================
 Name             Interval                 Weighting function :math:`w(x)`             Constraints
@@ -868,6 +876,9 @@ functions can return the following values,
 Examples
 ========
 
+Adaptive integration example
+----------------------------
+
 The integrator :code:`QAGS` will handle a large class of definite
 integrals.  For example, consider the following integral, which has an
 algebraic-logarithmic singularity at the origin,
@@ -891,6 +902,44 @@ accuracy of almost twice as many digits.  The error estimate returned by
 the extrapolation procedure is larger than the actual error, giving a
 margin of safety of one order of magnitude.
 
+Fixed-point quadrature example
+------------------------------
+
+In this example, we use a fixed-point quadrature rule to integrate the
+integral
+
+.. math:: \int_{-\infty}^{\infty} e^{-x^2} \left( x^m + 1 \right) dx
+
+Consulting our :ref:`table <tab_fixed-quadratures>` of fixed point quadratures,
+we see that this integral can be evaluated with a Hermite quadrature rule,
+setting :math:`\alpha = 0, a = 0, b = 1`. Since we are integrating a polynomial
+of degree :math:`m`, we need to choose the number of nodes :math:`n \ge (m+1)/2`
+to achieve the best results.
+
+First we will try integrating for :math:`m = 10, n = 5`, which does not satisfy
+our criteria above::
+
+  $ ./integration2 10 5
+
+The output is,
+
+.. include:: examples/integration2a.txt
+   :code:
+
+So, we find a large error. Now we try integrating for :math:`m = 10, n = 6` which
+does satisfy the criteria above::
+
+  $ ./integration2 10 6
+
+The output is,
+
+.. include:: examples/integration2b.txt
+   :code:
+
+The program is given below.
+
+.. include:: examples/integration2.c
+   :code:
 
 References and Further Reading
 ==============================
