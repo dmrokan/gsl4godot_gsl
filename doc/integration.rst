@@ -738,17 +738,19 @@ Therefore, unlike other numerical integration routines within the library, these
 routines do not accept absolute or relative error bounds.  The table below lists
 the specialized integrals that can be solved with this method:
 
-================ =============================== ===============================================================
-Name             Interval                        Weighting function :math:`w(x)`
-================ =============================== ===============================================================
-Legendre         :math:`(a,b)`                   :math:`1`
-Chebyshev Type 1 :math:`(a,b)`                   :math:`1 / \sqrt{(b - x) (x - a)}`
-Gegenbauer       :math:`(a,b)`                   :math:`((b - x) (x - a))^{\alpha}`
-Jacobi           :math:`(a,b)`                   :math:`(b - x)^{\alpha} (x - a)^{\beta}`
-Laguerre         :math:`(a,\infty)`              :math:`(x-a)^\alpha \exp{( -b (x - a) )}`
-Hermite          :math:`(-\infty,\infty)`        :math:`|x-a|^\alpha \exp{( -b (x-a)^2 )}`
-Chebyshev Type 2 :math:`(a,b)`                   :math:`\sqrt{(b - x) (x - a)}`
-================ =============================== ===============================================================
+================ ======================== =========================================== ================================
+Name             Interval                 Weighting function :math:`w(x)`             Constraints
+================ ======================== =========================================== ================================
+Legendre         :math:`(a,b)`            :math:`1`                                   :math:`b > a`
+Chebyshev Type 1 :math:`(a,b)`            :math:`1 / \sqrt{(b - x) (x - a)}`          :math:`b > a`
+Gegenbauer       :math:`(a,b)`            :math:`((b - x) (x - a))^{\alpha}`          :math:`\alpha > -1, b > a`
+Jacobi           :math:`(a,b)`            :math:`(b - x)^{\alpha} (x - a)^{\beta}`    :math:`\alpha,\beta > -1, b > a`
+Laguerre         :math:`(a,\infty)`       :math:`(x-a)^{\alpha} \exp{( -b (x - a) )}` :math:`\alpha > -1, b > 0`
+Hermite          :math:`(-\infty,\infty)` :math:`|x-a|^{\alpha} \exp{( -b (x-a)^2 )}` :math:`\alpha > -1, b > 0`
+Exponential      :math:`(a,b)`            :math:`|x - (a + b)/2|^{\alpha}`            :math:`\alpha > -1, b > a`
+Rational         :math:`(a,\infty)`       :math:`(x - a)^{\alpha} (x + b)^{\beta}`    :math:`\alpha > -1, a + b > 0`
+Chebyshev Type 2 :math:`(a,b)`            :math:`\sqrt{(b - x) (x - a)}`              :math:`b > a`
+================ ======================== =========================================== ================================
 
 Once the weighting function is specified, optimal nodes :math:`x_i` and weights :math:`w_i` are computed
 in order to approximate the integral as
@@ -778,7 +780,7 @@ the following workspace to store the nodes and weights, as well as additional va
 
    This function allocates a workspace for computing integrals with interpolating quadratures using :data:`n`
    quadrature nodes. The parameters :data:`a`, :data:`b`, :data:`alpha`, and :data:`beta` specify the integration
-   interval and/or weighting function for the various quadrature types.
+   interval and/or weighting function for the various quadrature types. The size of the workspace is :math:`O(4n)`.
 
    .. type:: gsl_integration_fixed_type
 
@@ -797,22 +799,26 @@ the following workspace to store the nodes and weights, as well as additional va
       .. var:: gsl_integration_fixed_gegenbauer
 
          This specifies Gegenbauer quadrature integration. The parameter :data:`beta` is ignored for this type.
-         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
       .. var:: gsl_integration_fixed_jacobi
 
-         This specifies Jacobi quadrature integration. The parameters :data:`alpha` and :data:`beta`
-         must satisfy :math:`\alpha > -1` and :math:`\beta > -1`.
+         This specifies Jacobi quadrature integration.
 
       .. var:: gsl_integration_fixed_laguerre
 
          This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
-         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
 
       .. var:: gsl_integration_fixed_hermite
 
          This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
-         The parameter :data:`alpha` must satisfy :math:`\alpha > -1`.
+
+      .. var:: gsl_integration_fixed_exponential
+
+         This specifies exponential quadrature integration. The parameter :data:`beta` is ignored for this type.
+
+      .. var:: gsl_integration_fixed_rational
+
+         This specifies rational quadrature integration.
 
       .. var:: gsl_integration_fixed_chebyshev2
 
@@ -822,6 +828,10 @@ the following workspace to store the nodes and weights, as well as additional va
 .. function:: void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w)
 
    This function frees the memory assocated with the workspace :data:`w`
+
+.. function:: size_t gsl_integration_fixed_n(const gsl_integration_fixed_workspace * w)
+
+   This function returns the number of quadrature nodes and weights.
 
 .. function:: double * gsl_integration_fixed_nodes(const gsl_integration_fixed_workspace * w)
 

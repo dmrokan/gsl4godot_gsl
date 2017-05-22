@@ -365,6 +365,8 @@ gsl_integration_fixed_alloc(const gsl_integration_fixed_type * type, const size_
 
 void gsl_integration_fixed_free(gsl_integration_fixed_workspace * w);
 
+size_t gsl_integration_fixed_n(const gsl_integration_fixed_workspace * w);
+
 double *gsl_integration_fixed_nodes(const gsl_integration_fixed_workspace * w);
 
 double *gsl_integration_fixed_weights(const gsl_integration_fixed_workspace * w);

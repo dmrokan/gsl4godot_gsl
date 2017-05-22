@@ -108,6 +108,12 @@ gsl_integration_fixed_free(gsl_integration_fixed_workspace * w)
   free(w);
 }
 
+size_t
+gsl_integration_fixed_n(const gsl_integration_fixed_workspace * w)
+{
+  return w->n;
+}
+
 double *
 gsl_integration_fixed_nodes(const gsl_integration_fixed_workspace * w)
 {
