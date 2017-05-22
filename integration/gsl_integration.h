@@ -355,6 +355,8 @@ GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_gegenbauer;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_jacobi;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_laguerre;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_hermite;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_exponential;
+GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_rational;
 GSL_VAR const gsl_integration_fixed_type * gsl_integration_fixed_chebyshev2;
 
 gsl_integration_fixed_workspace *

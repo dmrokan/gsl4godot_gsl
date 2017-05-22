@@ -1,4 +1,4 @@
-/* integration/jacobi.c
+/* integration/exponential.c
  * 
  * Copyright (C) 2017 Konrad Griessinger, Patrick Alken
  * 
@@ -30,7 +30,7 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-jacobi_check(const size_t n, const gsl_integration_fixed_params * params)
+exponential_check(const size_t n, const gsl_integration_fixed_params * params)
 {
   (void) n;
 
@@ -42,9 +42,9 @@ jacobi_check(const size_t n, const gsl_integration_fixed_params * params)
     {
       GSL_ERROR("lower integration limit must be smaller than upper limit", GSL_EDOM);
     }
-  else if (params->alpha <= -1.0 || params->beta <= -1.0)
+  else if (params->alpha <= -1.0)
     {
-      GSL_ERROR("alpha and beta must be > -1", GSL_EDOM);
+      GSL_ERROR("alpha must be > -1", GSL_EDOM);
     }
   else
     {
@@ -53,35 +53,32 @@ jacobi_check(const size_t n, const gsl_integration_fixed_params * params)
 }
 
 static int
-jacobi_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
+exponential_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
-  const double absum = params->beta + params->alpha;
-  const double abdiff = params->beta - params->alpha;
-  const double a2b2 = absum * abdiff; /* beta^2 - alpha^2 */
   size_t i;
+  double a2i = params->alpha;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  diag[0] = abdiff/(absum + 2.0);
-  subdiag[0] = 2.0*sqrt((params->alpha + 1.0)*(params->beta + 1.0)/(absum + 3.0))/(absum + 2.0);
-  for (i = 1; i < n; i++)
+  for (i = 1; i <= n; i++)
     {
-      diag[i] = a2b2 / ( (absum + 2.0*i) * (absum + 2.0*i + 2.0) );
-      subdiag[i] = sqrt ( 4.0*(i + 1.0) * (params->alpha + i + 1.0) * (params->beta + i + 1.0) * (absum + i + 1.0) / ( pow((absum + 2.0*i + 2.0), 2.0) - 1.0 ) ) / ( absum + 2.0*i + 2.0 );
+      diag[i-1] = 0.0;
+      a2i += 2.0;
+      subdiag[i-1] = (i + params->alpha*(i%2))/sqrt( a2i*a2i - 1.0 );
     }
 
-  params->zemu = pow(2.0, absum + 1.0) * gsl_sf_gamma(params->alpha + 1.0) * gsl_sf_gamma(params->beta + 1.0) / gsl_sf_gamma(absum + 2.0);
+  params->zemu = 2.0/(params->alpha + 1.0);
   params->shft = 0.5*(params->b + params->a);
   params->slp = 0.5*(params->b - params->a);
   params->al = params->alpha;
-  params->be = params->beta;
+  params->be = 0.0;
 
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_fixed_type jacobi_type =
+static const gsl_integration_fixed_type exponential_type =
 {
-  jacobi_check,
-  jacobi_init
+  exponential_check,
+  exponential_init
 };
 
-const gsl_integration_fixed_type *gsl_integration_fixed_jacobi = &jacobi_type;
+const gsl_integration_fixed_type *gsl_integration_fixed_exponential = &exponential_type;

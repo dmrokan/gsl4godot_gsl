@@ -38,8 +38,10 @@ legendre_check(const size_t n, const gsl_integration_fixed_params * params)
     {
       GSL_ERROR("|b - a| too small", GSL_EDOM);
     }
-
-  return GSL_SUCCESS;
+  else
+    {
+      return GSL_SUCCESS;
+    }
 }
 
 static int

@@ -38,6 +38,10 @@ gegenbauer_check(const size_t n, const gsl_integration_fixed_params * params)
     {
       GSL_ERROR("|b - a| too small", GSL_EDOM);
     }
+  else if (params->a >= params->b)
+    {
+      GSL_ERROR("lower integration limit must be smaller than upper limit", GSL_EDOM);
+    }
   else if (params->alpha <= -1.0)
     {
       GSL_ERROR("alpha must be > -1", GSL_EDOM);
