@@ -1,6 +1,6 @@
-/* integration/laguerre.c
+/* integration/legendre.c
  * 
- * Copyright (C) 2017 Patrick Alken
+ * Copyright (C) 2017 Konrad Griessinger, Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,17 +30,13 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-laguerre_check(const size_t n, const gsl_integration_fixed_params * params)
+legendre_check(const size_t n, const gsl_integration_fixed_params * params)
 {
   (void) n;
 
-  if (params->b <= 0.0)
+  if (fabs(params->b - params->a) <= GSL_DBL_EPSILON)
     {
-      GSL_ERROR("b must be positive", GSL_EDOM);
-    }
-  else if (params->alpha <= -1.0)
-    {
-      GSL_ERROR("alpha must be > -1", GSL_EDOM);
+      GSL_ERROR("|b - a| too small", GSL_EDOM);
     }
   else
     {
@@ -49,30 +45,30 @@ laguerre_check(const size_t n, const gsl_integration_fixed_params * params)
 }
 
 static int
-laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
+legendre_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
   size_t i;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  for (i = 0; i < n; i++)
+  for (i = 1; i <= n; i++)
     {
-      diag[i] = 2.0 * i + 1.0 + params->alpha;
-      subdiag[i] = sqrt ((i + 1.0) * (params->alpha + i + 1.0));
+      diag[i-1] = 0.0;
+      subdiag[i-1] = (double) i / sqrt(4.0*i*i-1.0);
     }
 
-  params->zemu = gsl_sf_gamma(params->alpha + 1.0);
-  params->shft = params->a;
-  params->slp = 1.0 / params->b;
-  params->al = params->alpha;
+  params->zemu = 2.0;
+  params->shft = 0.5*(params->b + params->a);
+  params->slp = 0.5*(params->b - params->a);
+  params->al = 0.0;
   params->be = 0.0;
 
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_fixed_type laguerre_type =
+static const gsl_integration_fixed_type legendre_type =
 {
-  laguerre_check,
-  laguerre_init
+  legendre_check,
+  legendre_init
 };
 
-const gsl_integration_fixed_type *gsl_integration_fixed_laguerre = &laguerre_type;
+const gsl_integration_fixed_type *gsl_integration_fixed_legendre = &legendre_type;

@@ -1,6 +1,6 @@
-/* integration/laguerre.c
+/* integration/exponential.c
  * 
- * Copyright (C) 2017 Patrick Alken
+ * Copyright (C) 2017 Konrad Griessinger, Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,13 +30,17 @@
 #include <gsl/gsl_sf_gamma.h>
 
 static int
-laguerre_check(const size_t n, const gsl_integration_fixed_params * params)
+exponential_check(const size_t n, const gsl_integration_fixed_params * params)
 {
   (void) n;
 
-  if (params->b <= 0.0)
+  if (fabs(params->b - params->a) <= GSL_DBL_EPSILON)
     {
-      GSL_ERROR("b must be positive", GSL_EDOM);
+      GSL_ERROR("|b - a| too small", GSL_EDOM);
+    }
+  else if (params->a >= params->b)
+    {
+      GSL_ERROR("lower integration limit must be smaller than upper limit", GSL_EDOM);
     }
   else if (params->alpha <= -1.0)
     {
@@ -49,30 +53,32 @@ laguerre_check(const size_t n, const gsl_integration_fixed_params * params)
 }
 
 static int
-laguerre_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
+exponential_init(const size_t n, double * diag, double * subdiag, gsl_integration_fixed_params * params)
 {
   size_t i;
+  double a2i = params->alpha;
 
   /* construct the diagonal and subdiagonal elements of Jacobi matrix */
-  for (i = 0; i < n; i++)
+  for (i = 1; i <= n; i++)
     {
-      diag[i] = 2.0 * i + 1.0 + params->alpha;
-      subdiag[i] = sqrt ((i + 1.0) * (params->alpha + i + 1.0));
+      diag[i-1] = 0.0;
+      a2i += 2.0;
+      subdiag[i-1] = (i + params->alpha*(i%2))/sqrt( a2i*a2i - 1.0 );
     }
 
-  params->zemu = gsl_sf_gamma(params->alpha + 1.0);
-  params->shft = params->a;
-  params->slp = 1.0 / params->b;
+  params->zemu = 2.0/(params->alpha + 1.0);
+  params->shft = 0.5*(params->b + params->a);
+  params->slp = 0.5*(params->b - params->a);
   params->al = params->alpha;
   params->be = 0.0;
 
   return GSL_SUCCESS;
 }
 
-static const gsl_integration_fixed_type laguerre_type =
+static const gsl_integration_fixed_type exponential_type =
 {
-  laguerre_check,
-  laguerre_init
+  exponential_check,
+  exponential_init
 };
 
-const gsl_integration_fixed_type *gsl_integration_fixed_laguerre = &laguerre_type;
+const gsl_integration_fixed_type *gsl_integration_fixed_exponential = &exponential_type;
