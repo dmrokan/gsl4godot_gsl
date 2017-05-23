@@ -746,9 +746,9 @@ the weighting functions currently supported.
 
 .. _tab_fixed-quadratures:
 
-================ ======================== =========================================== ================================
+================ ======================== =========================================== =======================================================
 Name             Interval                 Weighting function :math:`w(x)`             Constraints
-================ ======================== =========================================== ================================
+================ ======================== =========================================== =======================================================
 Legendre         :math:`(a,b)`            :math:`1`                                   :math:`b > a`
 Chebyshev Type 1 :math:`(a,b)`            :math:`1 / \sqrt{(b - x) (x - a)}`          :math:`b > a`
 Gegenbauer       :math:`(a,b)`            :math:`((b - x) (x - a))^{\alpha}`          :math:`\alpha > -1, b > a`
@@ -756,19 +756,12 @@ Jacobi           :math:`(a,b)`            :math:`(b - x)^{\alpha} (x - a)^{\beta
 Laguerre         :math:`(a,\infty)`       :math:`(x-a)^{\alpha} \exp{( -b (x - a) )}` :math:`\alpha > -1, b > 0`
 Hermite          :math:`(-\infty,\infty)` :math:`|x-a|^{\alpha} \exp{( -b (x-a)^2 )}` :math:`\alpha > -1, b > 0`
 Exponential      :math:`(a,b)`            :math:`|x - (a + b)/2|^{\alpha}`            :math:`\alpha > -1, b > a`
-Rational         :math:`(a,\infty)`       :math:`(x - a)^{\alpha} (x + b)^{\beta}`    :math:`\alpha > -1, a + b > 0`
+Rational         :math:`(a,\infty)`       :math:`(x - a)^{\alpha} (x + b)^{\beta}`    :math:`\alpha > -1, \alpha + \beta + 2n < 0, a + b > 0`
 Chebyshev Type 2 :math:`(a,b)`            :math:`\sqrt{(b - x) (x - a)}`              :math:`b > a`
-================ ======================== =========================================== ================================
+================ ======================== =========================================== =======================================================
 
-Once the weighting function is specified, optimal nodes :math:`x_i` and weights :math:`w_i` are computed
-in order to approximate the integral as
-
-.. math:: \int_a^b w(x) f(x) dx \approx \sum_{i=1}^n w_i f(x_i)
-
-where :math:`n` is the user-specified number of nodes to use. Once the quadrature nodes and weights are computed,
-they can be used to integrate any number of functions :math:`f(x)`, provided the interval :math:`(a,b)` and
-weight function :math:`w(x)` remain unchanged. The fixed point quadrature routines use
-the following workspace to store the nodes and weights, as well as additional variables for intermediate calculations:
+The fixed point quadrature routines use the following workspace to store the nodes and weights,
+as well as additional variables for intermediate calculations:
 
 .. type:: gsl_integration_fixed_workspace
 
@@ -959,3 +952,13 @@ The |cquad| integration algorithm is described in the following paper:
 * P. Gonnet, "Increasing the Reliability of Adaptive Quadrature Using
   Explicit Interpolants", ACM Transactions on Mathematical
   Software, Volume 37 (2010), Issue 3, Article 26.
+
+The fixed-point quadrature routines are based on IQPACK, described in the
+following papers:
+
+* S. Elhay, J. Kautsky, Algorithm 655: IQPACK, FORTRAN Subroutines for the
+  Weights of Interpolatory Quadrature, ACM Transactions on Mathematical Software,
+  Volume 13, Number 4, December 1987, pages 399-415.
+
+* J. Kautsky, S. Elhay, Calculation of the Weights of Interpolatory Quadratures,
+  Numerische Mathematik, Volume 40, Number 3, October 1982, pages 407-422.
