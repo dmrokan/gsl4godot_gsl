@@ -20,8 +20,9 @@ oscillatory integrals.  The library reimplements the algorithms used in
 |quadpack|, a numerical integration package written by Piessens,
 de Doncker-Kapenga, Ueberhuber and Kahaner.  Fortran code for |quadpack| is
 available on Netlib.  Also included are non-adaptive, fixed-order
-Gauss-Legendre integration routines with high precision coefficients
-by Pavel Holoborodko.
+Gauss-Legendre integration routines with high precision coefficients, as
+well as fixed-order quadrature rules for a variety of weighting functions
+from IQPACK.
 
 The functions described in this chapter are declared in the header file
 :file:`gsl_integration.h`.
@@ -781,7 +782,8 @@ as well as additional variables for intermediate calculations:
 
    This function allocates a workspace for computing integrals with interpolating quadratures using :data:`n`
    quadrature nodes. The parameters :data:`a`, :data:`b`, :data:`alpha`, and :data:`beta` specify the integration
-   interval and/or weighting function for the various quadrature types. The size of the workspace is :math:`O(4n)`.
+   interval and/or weighting function for the various quadrature types. See the :ref:`table <tab_fixed-quadratures>` above
+   for constraints on these parameters. The size of the workspace is :math:`O(4n)`.
 
    .. type:: gsl_integration_fixed_type
 
