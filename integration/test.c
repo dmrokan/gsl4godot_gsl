@@ -32,6 +32,14 @@
 
 #include "tests.h"
 
+#define SQRT15             3.8729833462074168852
+#define SQRT30             5.4772255750516611346
+#define SQRT70             8.3666002653407554798
+#define CONST1             0.86113631159405257522 /* sqrt((3+2*sqrt(6./5))/7) */
+#define CONST2             0.33998104358485626480 /* sqrt((3-2*sqrt(6./5))/7) */
+#define CONST3             0.90617984593866399280 /* sqrt((5+2*sqrt(10./7)))/3 */
+#define CONST4             0.53846931010568309104 /* sqrt((5-2*sqrt(10./7)))/3 */
+
 gsl_function make_function (double (* f) (double, void *), double * p);
 
 gsl_function make_function (double (* f) (double, void *), double * p)
@@ -2254,26 +2262,26 @@ main (void)
       {0, 2 }
     };
     const double e2[2][2] = {
-      {-1/sqrt(3), 1},
-      { 1/sqrt(3), 1}
+      {-1.0/M_SQRT3, 1},
+      { 1.0/M_SQRT3, 1}
     };
     const double e3[3][2] = {
-      {-sqrt(15)/5, 5./9},
+      {-SQRT15/5, 5./9},
       {          0, 8./9},
-      { sqrt(15)/5, 5./9}
+      { SQRT15/5, 5./9}
     };
     const double e4[4][2] = {
-      {-sqrt((3+2*sqrt(6./5))/7), (18-sqrt(30))/36},
-      {-sqrt((3-2*sqrt(6./5))/7), (18+sqrt(30))/36},
-      { sqrt((3-2*sqrt(6./5))/7), (18+sqrt(30))/36},
-      { sqrt((3+2*sqrt(6./5))/7), (18-sqrt(30))/36}
+      {-CONST1, (18-SQRT30)/36},
+      {-CONST2, (18+SQRT30)/36},
+      { CONST2, (18+SQRT30)/36},
+      { CONST1, (18-SQRT30)/36}
     };
     const double e5[5][2] = {
-      {-sqrt((5+2*sqrt(10./7)))/3, (322-13*sqrt(70))/900},
-      {-sqrt((5-2*sqrt(10./7)))/3, (322+13*sqrt(70))/900},
-      {                         0, 128./225             },
-      { sqrt((5-2*sqrt(10./7)))/3, (322+13*sqrt(70))/900},
-      { sqrt((5+2*sqrt(10./7)))/3, (322-13*sqrt(70))/900}
+      {-CONST3, (322-13*SQRT70)/900},
+      {-CONST4, (322+13*SQRT70)/900},
+      {      0, 128./225           },
+      { CONST4, (322+13*SQRT70)/900},
+      { CONST3, (322-13*SQRT70)/900}
     };
 
     n = 1;
