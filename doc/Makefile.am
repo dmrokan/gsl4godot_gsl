@@ -84,10 +84,15 @@ SPHINX_SOURCEDIR   = .
 SPHINX_BUILDDIR    = _build
 
 # targets supported by sphinx
-SPHINX_TARGETS = html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf latexpdfja text man texinfo info gettext changes xml pseudoxml linkcheck doctest coverage
+SPHINX_TARGETS = html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf latexpdfja text man texinfo gettext changes xml pseudoxml linkcheck doctest coverage
 
 $(SPHINX_TARGETS) :
 	@$(SPHINX_BUILD) -M $@ "$(SPHINX_SOURCEDIR)" "$(SPHINX_BUILDDIR)" $(SPHINX_OPTS) $(O)
+
+# special case info target
+info:
+	@$(SPHINX_BUILD) -M $@ "$(SPHINX_SOURCEDIR)" "$(SPHINX_BUILDDIR)" $(SPHINX_OPTS) $(O)
+	cp "$(SPHINX_BUILDDIR)/texinfo/gsl-ref.info" .
 
 install-data-local: gsl-ref.info
 	${INSTALL} gsl-ref.info ${infodir}
