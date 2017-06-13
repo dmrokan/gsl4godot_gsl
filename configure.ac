@@ -90,6 +90,8 @@ GSL_MINOR_VERSION=`echo "$VERSION" | $SED 's/[[^.]][[^.]]*.\([[^.]][[^.]]*\).*/\
 AC_SUBST(GSL_MAJOR_VERSION)
 AC_SUBST(GSL_MINOR_VERSION)
 
+AC_PROG_MKDIR_P
+
 dnl things required by automake
 dnl AC_ARG_PROGRAM
 AC_PROG_MAKE_SET
