@@ -1,5 +1,10 @@
 * What is new in gsl-2.5:
 
+** better texinfo documentation for gsl_sf_hyperg functions
+
+** fix vector and matrix fread/fwrite testing on windows systems
+   when tmpfile() fails
+
 ** fix for rstat/test.c on PPC64 (reported by Adam Majer)
 
 * What was new in gsl-2.4:
