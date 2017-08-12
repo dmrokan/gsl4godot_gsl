@@ -25,13 +25,14 @@
 #include <gsl/gsl_errno.h>
 
 /* Any double precision number bigger than this is automatically an even integer. */
-#define DBL_MANT_DIG 53
-#define TWOBIG ((double)(1LL << DBL_MANT_DIG))
+/*#define TWOBIG 9.0071992547409920e+15*/
+#define TWOBIG (2.0 / GSL_DBL_EPSILON)
 
-/* routine computing sin(pi*x) valid for |x| <= 0.25 using a Taylor expansion around the origin and otherwise a rational approximation from the reference below. */
+/* routine computing sin(pi*x) valid for |x| <= 0.25 using a Taylor expansion around the origin and otherwise a rational approximation from the reference below. Spot-checked to give around 2e-16 relative accuracy. */
 /* I. Koren and O. Zinaty. Evaluating elementary functions in a numerical
 coprocessor based on rational approximations. IEEE Transactions on
 Computers, Vol.39, No.8, August 1990, pp 1030-1037. */
+/*
 static int
 sin_pi_koren(const double x, gsl_sf_result *result)
 {
@@ -48,7 +49,7 @@ sin_pi_koren(const double x, gsl_sf_result *result)
     const double a2 =    3664210.647581261810227924465160827365;
     const double a3 =     -28904.140246461781357223741935980097;
     const double a4 =         76.568981088717405810132543523682;
-    const double b0 = 2298821602.638922662085487520330827251172;
+    const double b0 = 2298821602.638922662086487520330827251172;
     const double b1 =   27037050.118894436776624866648235591988;
     const double b2 =     155791.388546947693206469423979505671;
     const double b3 =        540.567501261284024767779280700089;
@@ -60,11 +61,13 @@ sin_pi_koren(const double x, gsl_sf_result *result)
   
   return GSL_SUCCESS;
 }
+*/
 
-/* routine computing cos(pi*x) valid for |x| <= 0.25 using a Taylor expansion around the origin and otherwise a rational approximation from the reference below. */
+/* routine computing cos(pi*x) valid for |x| <= 0.25 using a Taylor expansion around the origin and otherwise a rational approximation from the reference below. Spot-checked to give around 2e-16 relative accuracy. */
 /* I. Koren and O. Zinaty. Evaluating elementary functions in a numerical
 coprocessor based on rational approximations. IEEE Transactions on
 Computers, Vol.39, No.8, August 1990, pp 1030-1037. */
+/*
 static int
 cos_pi_koren(const double x, gsl_sf_result *result)
 {
@@ -93,6 +96,7 @@ cos_pi_koren(const double x, gsl_sf_result *result)
   
   return GSL_SUCCESS;
 }
+*/
 
 /* routine computing sin(pi*x) using a Taylor expansion around the origin and otherwise the library function. */
 static int
