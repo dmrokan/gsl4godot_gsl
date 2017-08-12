@@ -1,5 +1,8 @@
 * What is new in gsl-2.5:
 
+** add support for negative arguments nu in gsl_sf_bessel_Jnu and
+   gsl_sf_bessel_Ynu (Konrad Griessinger)
+
 ** better texinfo documentation for gsl_sf_hyperg functions
 
 ** fix vector and matrix fread/fwrite testing on windows systems
