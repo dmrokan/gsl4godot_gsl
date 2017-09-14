@@ -155,6 +155,7 @@ gsl_sf_sin_pi_e(const double x, gsl_sf_result *result)
 
   /* int sign = 1 - 2*((int)round(fmod(fabs(intx),2.0))); */
   if (fabs(fracx) == 0.5) { /* probably unnecessary */
+    if (fracx < 0.0) sign = -sign;
     result->val = ( sign != 1 ? -1.0 : 1.0 );
     return GSL_SUCCESS;
   }

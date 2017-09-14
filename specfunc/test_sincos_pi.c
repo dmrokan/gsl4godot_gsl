@@ -40,6 +40,42 @@ test_sincos_pi(void)
 
   /* sin_pi tests */
 
+  fx = 0.5;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+  fx = -0.5;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 1.5;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+  fx = -1.5;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 2.5;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+  fx = -2.5;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 3.5;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+  fx = -3.5;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
   fx = 0.375;
   exact = 0.923879532511286756128183189397;
   
@@ -118,7 +154,7 @@ test_sincos_pi(void)
     TEST_SF(s, gsl_sf_sin_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
     ix = pow(10.0,k+1);
   }
-  
+
   fx = 0.75;
   exact = 0.707106781186547524400844362105;
 
@@ -156,6 +192,42 @@ test_sincos_pi(void)
 
   
   /* cos_pi tests */
+
+  fx = 0.0;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 1.0;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = -1.0;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 2.0;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = -2.0;
+  exact = 1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = 3.0;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
+  fx = -3.0;
+  exact = -1.0;
+
+  TEST_SF(s, gsl_sf_cos_pi_e, (ix+fx, &r), exact, TEST_TOL0, GSL_SUCCESS);
+
 
   fx = 0.375;
   exact = 0.382683432365089771728459984030;
