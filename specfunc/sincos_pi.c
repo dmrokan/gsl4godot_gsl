@@ -25,7 +25,6 @@
 #include <gsl/gsl_errno.h>
 
 /* Any double precision number bigger than this is automatically an even integer. */
-/*#define TWOBIG 9.0071992547409920e+15*/
 #define TWOBIG (2.0 / GSL_DBL_EPSILON)
 
 /* routine computing sin(pi*x) valid for |x| <= 0.25 using a Taylor expansion around the origin and otherwise a rational approximation from the reference below. Spot-checked to give around 2e-16 relative accuracy. */
@@ -143,14 +142,15 @@ gsl_sf_sin_pi_e(const double x, gsl_sf_result *result)
 {
   double intx = 0.0, fracx = 0.0;
   long q;
-  int sign, status;
+  int sign = 1, status;
 
   result->val = 0.0;
   result->err = 0.0;
   fracx = modf(x,&intx);
   if (fracx == 0.0) return GSL_SUCCESS;
+  if(fabs(intx) >= TWOBIG) return GSL_SUCCESS; /* to be sure. Actually should be covered by the line above */
 
-  q = ( fabs(intx) < TWOBIG ? intx : 0 );
+  q = ( ( (intx >= LONG_MIN) && (intx <= LONG_MAX) ) ? intx : fmod(intx, 2.0) );
   sign = ( q % 2 ? -1 : 1 );
 
   /* int sign = 1 - 2*((int)round(fmod(fabs(intx),2.0))); */
@@ -184,14 +184,19 @@ gsl_sf_cos_pi_e(const double x, gsl_sf_result *result)
 {
   double intx = 0.0, fracx = 0.0;
   long q;
-  int sign, status;
+  int sign = 1, status;
 
   result->val = 0.0;
   result->err = 0.0;
   fracx = modf(x,&intx);
   if (fabs(fracx) == 0.5) return GSL_SUCCESS;
+  
+  if(fabs(intx) >= TWOBIG) {
+    result->val = 1.0;
+    return GSL_SUCCESS;
+  }
 
-  q = ( fabs(intx) < TWOBIG ? intx : 0 );
+  q = ( ( (intx >= LONG_MIN) && (intx <= LONG_MAX) ) ? intx : fmod(intx, 2.0) );
   sign = ( q % 2 ? -1 : 1 );
 
   /* int sign = 1 - 2*((int)round(fmod(fabs(intx),2.0))); */
