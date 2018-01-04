@@ -1,5 +1,8 @@
 * What is new in gsl-2.5:
 
+** changed internal workspace inside gsl_spmatrix to a union to
+   avoid casting (suggested by Manuel Schmitz)
+
 ** bug fixes in ode-initval2 for very rare solver crashing cases:
    #52230 in msadams (reported by Michael Kaufman) and
    #52336 in msbdf (reported by Andrew Benson). As a fix,
