@@ -1,5 +1,8 @@
 * What is new in gsl-2.5:
 
+** bug fix in exponential fitting example when using larger number
+   of points (reported by Anna Russo)
+
 ** changed internal workspace inside gsl_spmatrix to a union to
    avoid casting (suggested by Manuel Schmitz)
 
