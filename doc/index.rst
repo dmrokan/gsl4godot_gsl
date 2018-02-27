@@ -31,6 +31,7 @@ GNU Scientific Library
    randist.rst
    statistics.rst
    rstat.rst
+   movstat.rst
    histogram.rst
    ntuple.rst
    montecarlo.rst

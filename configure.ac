@@ -615,6 +615,7 @@ linalg/Makefile              \
 matrix/Makefile              \
 min/Makefile                 \
 monte/Makefile               \
+movstat/Makefile             \
 multifit/Makefile            \
 multifit_nlinear/Makefile    \
 multilarge/Makefile          \
