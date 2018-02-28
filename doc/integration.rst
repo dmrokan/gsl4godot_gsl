@@ -698,7 +698,9 @@ equally spaced points with spacing
 
 for :math:`k = 1, \dots, n`. For each :math:`k`, Richardson extrapolation
 is used :math:`k-1` times on previous approximations to improve the order
-of accuracy as much as possible.
+of accuracy as much as possible. Romberg integration typically works
+well (and converges quickly) for smooth integrands with no singularities in
+the interval or at the end points.
 
 .. function:: gsl_integration_romberg_workspace * gsl_integration_romberg_alloc(const size_t n)
 

@@ -152,7 +152,7 @@ gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
       size_t i, j;
 
       /* first calculate median values of each window in x */
-      gsl_movstat_median(GSL_MOVSTAT_EDGE_PADZERO, x, xmedian, w->median_workspace_p);
+      gsl_movstat_median(GSL_MOVSTAT_END_PADZERO, x, xmedian, w->median_workspace_p);
 
       /* loop over windows */
       for (i = 0; i < n; ++i)

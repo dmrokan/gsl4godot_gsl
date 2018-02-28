@@ -27,9 +27,8 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sort.h>
 #include <gsl/gsl_ieee_utils.h>
-
-#define SWAP(a,b) { register double t=(a);(a)=(b);(b)=t; }
 
 /* compare two vectors */
 static void
@@ -76,68 +75,10 @@ random_vector_int(const int a, const int b, gsl_vector * v, gsl_rng * r)
 
 /* find median of array z of length n by sorting */
 static double
-median_select(const long n, double *z)
+median_find(const size_t n, double * z)
 {
-  long low, high;
-  long median;
-  long middle, ll, hh;
-
-  low = 0;
-  high = n-1;
-  median = (low + high) / 2;
-  for (;;)
-    {
-      /* One element only */
-      if (high <= low)
-        return z[median];
-
-      /* Two elements only */
-      if (high == low + 1)
-        {
-          if (z[low] > z[high])
-              SWAP(z[low], z[high]);
-          return z[median];
-        }
-
-      /* Find median of low, middle and high items; swap to low position */
-      middle = (low + high) / 2;
-      if (z[middle] > z[high])
-        SWAP(z[middle], z[high]);
-      if (z[low] > z[high])
-        SWAP(z[low], z[high]);
-      if (z[middle] > z[low])
-        SWAP(z[middle], z[low]);
-
-      /* Swap low item (now in position middle) into position (low+1) */
-      SWAP(z[middle], z[low+1]);
-
-      /* Work from each end towards middle, swapping items when stuck */
-      ll = low + 1;
-      hh = high;
-      for (;;)
-        {
-          do
-            ll++;
-          while (z[low] > z[ll]);
-          do
-            hh--;
-          while (z[hh] > z[low]);
-
-          if (hh < ll)
-            break;
-
-          SWAP(z[ll], z[hh]);
-        }
-
-      /* Swap middle item (in position low) back into correct position */
-      SWAP(z[low], z[hh]);
-
-      /* Reset active partition */
-      if (hh <= median)
-        low = ll;
-      if (hh >= median)
-        high = hh - 1;
-    }
+  gsl_sort(z, 1, n);
+  return gsl_stats_median_from_sorted_data(z, 1, n);
 }
 
 #include "test_mad.c"

@@ -37,10 +37,10 @@ __BEGIN_DECLS
 
 typedef enum
 {
-  GSL_MOVSTAT_EDGE_PADZERO,
-  GSL_MOVSTAT_EDGE_PADVALUE,
-  GSL_MOVSTAT_EDGE_TRUNCATE
-} gsl_movstat_edge_t;
+  GSL_MOVSTAT_END_PADZERO,
+  GSL_MOVSTAT_END_PADVALUE,
+  GSL_MOVSTAT_END_TRUNCATE
+} gsl_movstat_end_t;
 
 /****** Accumulators *******/
 
@@ -87,16 +87,17 @@ double gsl_movstat_minmaxacc_max(const gsl_movstat_minmaxacc_workspace * w);
 /* workspace for moving window median */
 typedef struct
 {
-  size_t H;   /* number of previous samples in window */
-  size_t J;   /* number of after samples in window */
-  size_t K;   /* window size K = H + J + 1 */
+  size_t H;     /* number of previous samples in window */
+  size_t J;     /* number of after samples in window */
+  size_t K;     /* window size K = H + J + 1 */
+  double *work; /* workspace, size K */
   gsl_movstat_medacc_workspace *medacc_workspace_p;
 } gsl_movstat_median_workspace;
 
 gsl_movstat_median_workspace *gsl_movstat_median_alloc(const size_t K);
 gsl_movstat_median_workspace *gsl_movstat_median_alloc2(const size_t H, const size_t J);
 void gsl_movstat_median_free(gsl_movstat_median_workspace * w);
-int gsl_movstat_median(const gsl_movstat_edge_t etype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w);
+int gsl_movstat_median(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w);
 
 typedef struct
 {
