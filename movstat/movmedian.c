@@ -1,4 +1,4 @@
-/* movstat/median.c
+/* movstat/movmedian.c
  *
  * Routines related to a moving window median
  * 
@@ -127,21 +127,32 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w)
 {
-  const size_t n = x->size;
-
-  if (n != y->size)
+  if (x->size != y->size)
     {
       GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
     }
   else
     {
+      const int n = (int) x->size;
       const int H = w->H; /* number of samples to left of current sample */
       const int J = w->J; /* number of samples to right of current sample */
-      size_t i;
+      int i;
       double x1 = 0.0;    /* pad values for data edges */
       double xN = 0.0;
+      int idx1, idx2;
 
-      if (endtype != GSL_MOVSTAT_END_TRUNCATE)
+      if (endtype == GSL_MOVSTAT_END_TRUNCATE)
+        {
+          /* reset medacc since it might contain old samples from previous calls */
+          gsl_movstat_medacc_reset(w->medacc_workspace_p);
+
+          /* save last K - 1 samples of x for later (needed for in-place input/output) */
+          idx1 = GSL_MAX(n - J - H, 0);
+          idx2 = n - 1;
+          for (i = idx1; i <= idx2; ++i)
+            w->work[i - idx1] = gsl_vector_get(x, i);
+        }
+      else
         {
           if (endtype == GSL_MOVSTAT_END_PADZERO)
             {
@@ -155,15 +166,15 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
             }
 
           /* pad initial windows with H values */
-          for (i = 0; i < w->H; ++i)
+          for (i = 0; i < H; ++i)
             gsl_movstat_medacc_insert(x1, w->medacc_workspace_p);
         }
 
-      /* process input vector and fill y(1:n - J) */
+      /* process input vector and fill y(0:n - J - 1) */
       for (i = 0; i < n; ++i)
         {
           double xi = gsl_vector_get(x, i);
-          int idx = (int) i - J;
+          int idx = i - J;
 
           gsl_movstat_medacc_insert(xi, w->medacc_workspace_p);
 
@@ -173,64 +184,32 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
       if (endtype == GSL_MOVSTAT_END_TRUNCATE)
         {
-          int idx1, idx2, j, nwork;
+          int wsize = n - GSL_MAX(n - J - H, 0); /* size of work array */
 
-          /* copy last K samples into w->work, to allow in-place input/output */
-          idx1 = GSL_MAX((int)n - J - 1 - H, 0);
-          idx2 = (int)n - 1;
-          nwork = idx2 - idx1 + 1;
+          /* need to fill y(n-J:n-1) using shrinking windows */
+          idx1 = GSL_MAX(n - J, 0);
+          idx2 = n - 1;
 
-          for (j = idx1; j <= idx2; ++j)
-            w->work[j - idx1] = gsl_vector_get(x, j);
-
-          for (j = (int)n - J; j < (int) n; ++j)
+          for (i = idx1; i <= idx2; ++i)
             {
-              int k, ntot;
+              int nsamp = n - GSL_MAX(i - H, 0); /* number of samples in this window */
+              int j;
 
-              /* reset median accumulator since we need median of less than K samples */
               gsl_movstat_medacc_reset(w->medacc_workspace_p);
 
-              /* index of left most sample in current window */
-              idx1 = GSL_MAX(j - H, 0);
-              ntot = idx2 - idx1 + 1;
+              for (j = wsize - nsamp; j < wsize; ++j)
+                gsl_movstat_medacc_insert(w->work[j], w->medacc_workspace_p);
 
-              /* add truncated window into accumulator */
-              for (k = nwork - ntot; k < nwork; ++k)
-                gsl_movstat_medacc_insert(w->work[k], w->medacc_workspace_p);
-
-              gsl_vector_set(y, j, gsl_movstat_medacc_median(w->medacc_workspace_p));
+              /* yi = median [ work(i:K-2) ] */
+              gsl_vector_set(y, i, gsl_movstat_medacc_median(w->medacc_workspace_p));
             }
-
-#if 0
-          for (i = 0; i < w->J; ++i)
-            {
-              int idx = (int) n - J + (int) i; /* index of output sample */
-
-              if (idx >= 0)
-                {
-                  int idx1 = idx - H;
-                  int idx2 = idx + J;
-                  int j;
-
-
-                  /* insert x(idx-H:idx+J) into accumulator */
-                  for (j = GSL_MAX(idx1, 0); j <= GSL_MIN(idx2, (int) (n - 1)); ++j)
-                    {
-                      double xj = gsl_vector_get(x, j);
-                      gsl_movstat_medacc_insert(xj, w->medacc_workspace_p);
-                    }
-
-                  gsl_vector_set(y, idx, gsl_movstat_medacc_median(w->medacc_workspace_p));
-                }
-            }
-#endif
         }
       else
         {
-          /* pad final windows and fill y(n - J + 1:n) */
-          for (i = 0; i < w->J; ++i)
+          /* pad final windows and fill y(n-J:n-1) */
+          for (i = 0; i < J; ++i)
             {
-              int idx = (int) n - J + (int) i;
+              int idx = n - J + i;
 
               gsl_movstat_medacc_insert(xN, w->medacc_workspace_p);
 

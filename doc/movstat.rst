@@ -35,6 +35,42 @@ focus on :math:`x_{i+1}`. The total number of samples in the window is
 :math:`K = H + J + 1`. To define a symmetric window centered on :math:`x_i`,
 one would set :math:`H = J = K / 2`.
 
+Handling Endpoints
+==================
+
+When processing samples near the ends of the input signal, there will not
+be enough samples to fill the window :math:`W_i^{H,J}` defined above.
+Therefore the user must specify how to construct the windows near the end points.
+This is done by passing an input argument of type :type:`gsl_movstat_end_t`:
+
+.. type:: gsl_movstat_end_t
+
+   This data type specifies how to construct windows near end points and can
+   be selected from the following choices:
+
+   .. macro:: GSL_MOVSTAT_END_PADZERO
+
+      With this option, a full window of length :math:`K` will be constructed
+      by inserting zeros into the window near the signal end points. Effectively,
+      the input signal is modified to
+
+      .. math:: \tilde{x} = \{ \underbrace{0, \dots, 0}_{H \textrm{ zeros}}, x_1, x_2, \dots, x_{n-1}, x_n, \underbrace{0, \dots, 0}_{J \textrm{ zeros} } \}
+
+      to ensure a well-defined window for all :math:`x_i`.
+
+   .. macro:: GSL_MOVSTAT_END_PADVALUE
+
+      With this option, a full window of length :math:`K` will be constructed
+      by padding the window with the first and last sample in the input signal.
+      Effectively, the input signal is modified to
+
+      .. math:: \tilde{x} = \{ \underbrace{x_1, \dots, x_1}_{H}, x_1, x_2, \dots, x_{n-1}, x_n, \underbrace{x_n, \dots, x_n}_{J} \}
+
+   .. macro:: GSL_MOVSTAT_END_TRUNCATE
+
+      With this option, no padding is performed, and the windows are simply truncated
+      as the end points are approached.
+
 Moving Median
 =============
 
@@ -47,23 +83,23 @@ each sample :math:`x_i`:
 
    This function allocates a workspace for computing a symmetric, centered moving median with a window
    length of :math:`K` samples. In this case, :math:`H = J = K/2`. The size of the workspace
-   is :math:`O(3K)`.
+   is :math:`O(4K)`.
 
 .. function:: gsl_movstat_median_workspace * gsl_movstat_median_alloc2(const size_t H, const size_t J)
 
    This function allocates a workspace for computing a moving median using a window with :math:`H`
    samples prior to the current sample, and :math:`J` samples after the current sample. The
-   total window size is :math:`K = H + J + 1`. The size of the workspace is :math:`O(3K)`.
+   total window size is :math:`K = H + J + 1`. The size of the workspace is :math:`O(4K)`.
 
 .. function:: void * gsl_movstat_median_free(gsl_movstat_median_workspace * w)
 
    This function frees the memory associated with :data:`w`.
 
-.. function:: int gsl_movstat_median(const gsl_movstat_edge_t etype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w)
+.. function:: int gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w)
 
    This function computes the moving median of the input vector :data:`x`, storing
-   the output in :data:`y`. The parameter :data:`etype` specifies how windows near
-   the edges of the input should be handled.
+   the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
+   the ends of the input should be handled.
 
 Moving MAD
 ==========

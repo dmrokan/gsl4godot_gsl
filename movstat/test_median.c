@@ -88,9 +88,9 @@ slow_median(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
 
 /* test root sequence */
 static void
-test_median_root(const double tol, const size_t n, const size_t k, const gsl_movstat_end_t etype)
+test_median_root(const double tol, const size_t n, const size_t K, const gsl_movstat_end_t etype)
 {
-  gsl_movstat_median_workspace *w = gsl_movstat_median_alloc(k);
+  gsl_movstat_median_workspace *w = gsl_movstat_median_alloc(K);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *y = gsl_vector_alloc(n);
   char buf[2048];
@@ -105,7 +105,7 @@ test_median_root(const double tol, const size_t n, const size_t k, const gsl_mov
   /* compute y = median(x) and test y = x */
   gsl_movstat_median(etype, x, y, w);
 
-  sprintf(buf, "n=%zu k=%zu SMF root sequence", n, k);
+  sprintf(buf, "n=%zu K=%zu endtype=%u SMF root sequence", n, K, etype);
   compare_vectors(tol, y, x, buf);
 
   gsl_vector_free(x);
@@ -128,11 +128,11 @@ test_median_symmetric(const double tol, const size_t n, const size_t K,
 
   random_vector(x, rng_p);
 
-  /* y = median(x) */
-  gsl_movstat_median(etype, x, y, w);
+  /* y = median(x) with slow brute force algorithm */
+  slow_median(etype, x, y, w->H, w->J);
 
-  /* z = median(x) with slow algorithm */
-  slow_median(etype, x, z, w->H, w->J);
+  /* z = median(x) */
+  gsl_movstat_median(etype, x, z, w);
 
   /* test y = z */
   sprintf(buf, "n=%zu k=%zu endtype=%u median symmetric random slow test", n, K, etype);
@@ -224,11 +224,11 @@ test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, cons
 
   random_vector(x, rng_p);
 
-  /* y = median(x) */
-  gsl_movstat_median(etype, x, y, w);
+  /* y = median(x) with slow brute force algorithm */
+  slow_median(etype, x, y, w->H, w->J);
 
-  /* z = median(x) with slow algorithm */
-  slow_median(etype, x, z, w->H, w->J);
+  /* z = median(x) */
+  gsl_movstat_median(etype, x, z, w);
 
   /* test y = z */
   sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u median nonsymmetric random slow test", n, H, J, etype);
@@ -264,10 +264,9 @@ test_median(void)
   test_median_symmetric(GSL_DBL_EPSILON, 200, 501, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_median_symmetric(GSL_DBL_EPSILON, 1000, 501, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
-#if 0
   test_median_symmetric(GSL_DBL_EPSILON, 400, 11, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_median_symmetric(GSL_DBL_EPSILON, 200, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-#endif
+  test_median_symmetric(GSL_DBL_EPSILON, 100, 205, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 
   test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 5, 4, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_median_nonsymmetric2(GSL_DBL_EPSILON, 2000, 7, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -278,6 +277,14 @@ test_median(void)
   test_median_nonsymmetric2(GSL_DBL_EPSILON, 500, 2, 30, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
   test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 3, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 1, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 10, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 0, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 1000, 50, 75, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 3, 50, 75, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 5, 3, 45, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 10, 30, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_nonsymmetric2(GSL_DBL_EPSILON, 10, 30, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 
   gsl_rng_free(rng_p);
 }

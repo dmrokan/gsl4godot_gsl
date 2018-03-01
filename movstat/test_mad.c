@@ -39,7 +39,7 @@ test_mad_symmetric(void)
     gsl_vector *xmad = gsl_vector_alloc(n);
     size_t i;
 
-    gsl_movstat_mad(&x.vector, xmedian, xmad, w);
+    gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, &x.vector, xmedian, xmad, w);
 
     for (i = 0; i < n; ++i)
       {
@@ -73,7 +73,7 @@ test_mad_symmetric(void)
         s *= -1.0;
       }
 
-    gsl_movstat_mad(x, xmedian, xmad, w);
+    gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, x, xmedian, xmad, w);
 
     /* test median results (compared with MATLAB medfilt1) */
 
@@ -137,7 +137,7 @@ test_mad_nonsymmetric(void)
   gsl_vector *xmad = gsl_vector_alloc(n);
   size_t i;
 
-  gsl_movstat_mad(&x.vector, xmedian, xmad, w);
+  gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, &x.vector, xmedian, xmad, w);
 
   for (i = 0; i < n; ++i)
     {

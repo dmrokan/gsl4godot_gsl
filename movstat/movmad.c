@@ -119,7 +119,8 @@ gsl_movstat_mad_free(gsl_movstat_mad_workspace * w)
 gsl_movstat_mad()
   Apply a moving MAD to an input vector
 
-Inputs: x       - input vector, size n
+Inputs: endtype - how to handle end points
+        x       - input vector, size n
         xmedian - (output) vector of median values of x, size n
                   xmedian_i = median of window centered on x_i
         xmad    - (output) vector of estimated standard deviations of x, size n
@@ -128,7 +129,7 @@ Inputs: x       - input vector, size n
 */
 
 int
-gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
+gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
                 gsl_movstat_mad_workspace * w)
 {
   const size_t n = x->size;
@@ -152,7 +153,7 @@ gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
       size_t i, j;
 
       /* first calculate median values of each window in x */
-      gsl_movstat_median(GSL_MOVSTAT_END_PADZERO, x, xmedian, w->median_workspace_p);
+      gsl_movstat_median(endtype, x, xmedian, w->median_workspace_p);
 
       /* loop over windows */
       for (i = 0; i < n; ++i)

@@ -97,7 +97,7 @@ typedef struct
 gsl_movstat_median_workspace *gsl_movstat_median_alloc(const size_t K);
 gsl_movstat_median_workspace *gsl_movstat_median_alloc2(const size_t H, const size_t J);
 void gsl_movstat_median_free(gsl_movstat_median_workspace * w);
-int gsl_movstat_median(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w);
+int gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w);
 
 typedef struct
 {
@@ -111,7 +111,7 @@ typedef struct
 gsl_movstat_mad_workspace *gsl_movstat_mad_alloc(const size_t K);
 gsl_movstat_mad_workspace *gsl_movstat_mad_alloc2(const size_t H, const size_t J);
 void gsl_movstat_mad_free(gsl_movstat_mad_workspace * w);
-int gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian,
+int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian,
                     gsl_vector * xmad, gsl_movstat_mad_workspace * w);
 
 __END_DECLS
