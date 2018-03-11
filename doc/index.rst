@@ -32,6 +32,7 @@ GNU Scientific Library
    statistics.rst
    rstat.rst
    movstat.rst
+   filter.rst
    histogram.rst
    ntuple.rst
    montecarlo.rst

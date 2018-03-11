@@ -1,6 +1,6 @@
-/* movstat/movmedian.c
+/* movstat/movminmax.c
  *
- * Routines related to a moving window median
+ * Routines related to a moving window min/max
  * 
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -26,21 +26,26 @@
 #include <gsl/gsl_movstat.h>
 
 /*
-gsl_movstat_median()
-  Apply median filter to input vector
+gsl_movstat_minmax()
+  Apply minmax filter to input vector
 
 Inputs: endtype - end point handling criteria
         x       - input vector, size n
-        y       - output vector, size n
+        y_min   - output vector of minimum values, size n
+        y_max   - output vector of maximum values, size n
         w       - workspace
 */
 
 int
-gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w)
 {
-  if (x->size != y->size)
+  if (x->size != y_min->size)
     {
-      GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
+      GSL_ERROR("input and y_min vectors must have same length", GSL_EBADLEN);
+    }
+  else if (x->size != y_max->size)
+    {
+      GSL_ERROR("input and y_max vectors must have same length", GSL_EBADLEN);
     }
   else
     {
@@ -54,8 +59,8 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
       if (endtype == GSL_MOVSTAT_END_TRUNCATE)
         {
-          /* reset medacc since it might contain old samples from previous calls */
-          gsl_movstat_medacc_reset(w->medacc_workspace_p);
+          /* reset minmaxacc since it might contain old samples from previous calls */
+          gsl_movstat_minmaxacc_reset(w->minmaxacc_workspace_p);
 
           /* save last K - 1 samples of x for later (needed for in-place input/output) */
           idx1 = GSL_MAX(n - J - H, 0);
@@ -78,7 +83,7 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
           /* pad initial windows with H values */
           for (i = 0; i < H; ++i)
-            gsl_movstat_medacc_insert(x1, w->medacc_workspace_p);
+            gsl_movstat_minmaxacc_insert(x1, w->minmaxacc_workspace_p);
         }
 
       /* process input vector and fill y(0:n - J - 1) */
@@ -87,10 +92,15 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
           double xi = gsl_vector_get(x, i);
           int idx = i - J;
 
-          gsl_movstat_medacc_insert(xi, w->medacc_workspace_p);
+          gsl_movstat_minmaxacc_insert(xi, w->minmaxacc_workspace_p);
 
           if (idx >= 0)
-            gsl_vector_set(y, idx, gsl_movstat_medacc_median(w->medacc_workspace_p));
+            {
+              double *y_min_ptr = gsl_vector_ptr(y_min, idx);
+              double *y_max_ptr = gsl_vector_ptr(y_max, idx);
+
+              gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
+            }
         }
 
       if (endtype == GSL_MOVSTAT_END_TRUNCATE)
@@ -103,16 +113,18 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
           for (i = idx1; i <= idx2; ++i)
             {
+              double *y_min_ptr = gsl_vector_ptr(y_min, i);
+              double *y_max_ptr = gsl_vector_ptr(y_max, i);
               int nsamp = n - GSL_MAX(i - H, 0); /* number of samples in this window */
               int j;
 
-              gsl_movstat_medacc_reset(w->medacc_workspace_p);
+              gsl_movstat_minmaxacc_reset(w->minmaxacc_workspace_p);
 
               for (j = wsize - nsamp; j < wsize; ++j)
-                gsl_movstat_medacc_insert(w->work[j], w->medacc_workspace_p);
+                gsl_movstat_minmaxacc_insert(w->work[j], w->minmaxacc_workspace_p);
 
-              /* yi = median [ work(i:K-2) ] */
-              gsl_vector_set(y, i, gsl_movstat_medacc_median(w->medacc_workspace_p));
+              /* [ymini,ymaxi] = minmax [ work(i:K-2) ] */
+              gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
             }
         }
       else
@@ -122,10 +134,15 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
             {
               int idx = n - J + i;
 
-              gsl_movstat_medacc_insert(xN, w->medacc_workspace_p);
+              gsl_movstat_minmaxacc_insert(xN, w->minmaxacc_workspace_p);
 
               if (idx >= 0)
-                gsl_vector_set(y, idx, gsl_movstat_medacc_median(w->medacc_workspace_p));
+                {
+                  double *y_min_ptr = gsl_vector_ptr(y_min, idx);
+                  double *y_max_ptr = gsl_vector_ptr(y_max, idx);
+
+                  gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
+                }
             }
         }
 

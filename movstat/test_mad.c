@@ -34,7 +34,7 @@ test_mad_symmetric(void)
     const double expected_median[] = { 0.0, 3.4, 3.4, 3.4, 1.1, -5.6, -5.6, 0.0 };
     const double expected_MAD[] = { 1.0, 2.3, 2.3, 2.3, 8.4, 15.1, 5.8, 0.2 };
     gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
-    gsl_movstat_mad_workspace *w = gsl_movstat_mad_alloc(k);
+    gsl_movstat_workspace *w = gsl_movstat_alloc(k);
     gsl_vector *xmedian = gsl_vector_alloc(n);
     gsl_vector *xmad = gsl_vector_alloc(n);
     size_t i;
@@ -52,7 +52,7 @@ test_mad_symmetric(void)
 
     gsl_vector_free(xmedian);
     gsl_vector_free(xmad);
-    gsl_movstat_mad_free(w);
+    gsl_movstat_free(w);
   }
 
   /* test movmad on the dataset x = [1:100] with alternating signs with a 7-point window */
@@ -62,7 +62,7 @@ test_mad_symmetric(void)
     gsl_vector *x = gsl_vector_alloc(n);
     gsl_vector *xmedian = gsl_vector_alloc(n);
     gsl_vector *xmad = gsl_vector_alloc(n);
-    gsl_movstat_mad_workspace *w = gsl_movstat_mad_alloc(k);
+    gsl_movstat_workspace *w = gsl_movstat_alloc(k);
     size_t i;
     double s = 1.0;
 
@@ -114,7 +114,7 @@ test_mad_symmetric(void)
     gsl_vector_free(x);
     gsl_vector_free(xmedian);
     gsl_vector_free(xmad);
-    gsl_movstat_mad_free(w);
+    gsl_movstat_free(w);
   }
 }
 
@@ -132,7 +132,7 @@ test_mad_nonsymmetric(void)
   const double expected_MAD[] = { 0.0, 1.905, 2.835, 2.895, 1.58, 1.325, 2.30, 1.92, 2.36, 2.015,
                                   1.17, 1.71, 2.555, 2.685, 2.39, 2.465, 1.695, 2.16, 1.90, 2.49 };
   gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
-  gsl_movstat_mad_workspace *w = gsl_movstat_mad_alloc2(H, J);
+  gsl_movstat_workspace *w = gsl_movstat_alloc2(H, J);
   gsl_vector *xmedian = gsl_vector_alloc(n);
   gsl_vector *xmad = gsl_vector_alloc(n);
   size_t i;
@@ -150,7 +150,7 @@ test_mad_nonsymmetric(void)
 
   gsl_vector_free(xmedian);
   gsl_vector_free(xmad);
-  gsl_movstat_mad_free(w);
+  gsl_movstat_free(w);
 }
 
 static void

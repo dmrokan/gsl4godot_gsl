@@ -31,6 +31,7 @@ typedef struct
 
 static deque *deque_alloc(const size_t n);
 static void deque_free(deque * d);
+static int deque_empty(deque * d);
 static int deque_is_empty(const deque * d);
 static int deque_is_full(const deque * d);
 static int deque_push_front(const deque_type x, deque * d);
@@ -72,12 +73,23 @@ deque_free(deque * d)
   free(d);
 }
 
+/* empty the queue */
+static int
+deque_empty(deque * d)
+{
+  d->head = -1;
+  d->tail = 0;
+  return GSL_SUCCESS;
+}
+
+/* check if queue is empty */
 static int
 deque_is_empty(const deque * d)
 {
   return (d->head == -1);
 }
 
+/* check if queue is full */
 static int
 deque_is_full(const deque * d)
 {

@@ -114,7 +114,6 @@ test_rmedian_random(const size_t n, const size_t k, gsl_rng * r)
   gsl_vector *y = gsl_vector_alloc(n);
   gsl_vector *z = gsl_vector_alloc(n);
   char buf[2048];
-  size_t i;
 
   /* test filter with random input against slow algorithm */
 

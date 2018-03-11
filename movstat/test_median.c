@@ -90,7 +90,7 @@ slow_median(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
 static void
 test_median_root(const double tol, const size_t n, const size_t K, const gsl_movstat_end_t etype)
 {
-  gsl_movstat_median_workspace *w = gsl_movstat_median_alloc(K);
+  gsl_movstat_workspace *w = gsl_movstat_alloc(K);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *y = gsl_vector_alloc(n);
   char buf[2048];
@@ -110,7 +110,7 @@ test_median_root(const double tol, const size_t n, const size_t K, const gsl_mov
 
   gsl_vector_free(x);
   gsl_vector_free(y);
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 }
 
 /* symmetric window */
@@ -118,7 +118,7 @@ static void
 test_median_symmetric(const double tol, const size_t n, const size_t K,
                       const gsl_movstat_end_t etype, gsl_rng *rng_p)
 {
-  gsl_movstat_median_workspace *w = gsl_movstat_median_alloc(K);
+  gsl_movstat_workspace *w = gsl_movstat_alloc(K);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *y = gsl_vector_alloc(n);
   gsl_vector *z = gsl_vector_alloc(n);
@@ -148,11 +148,11 @@ test_median_symmetric(const double tol, const size_t n, const size_t K,
   gsl_vector_free(x);
   gsl_vector_free(y);
   gsl_vector_free(z);
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 }
 
 /* non-symmetric window */
-void
+static void
 test_median_nonsymmetric(const gsl_movstat_end_t etype)
 {
   const double tol = GSL_DBL_EPSILON;
@@ -165,7 +165,7 @@ test_median_nonsymmetric(const gsl_movstat_end_t etype)
                                  6.55, 2.76, 4.98, 4.98, 3.40, 4.98, 4.98, 3.40, 2.23, 0.0 };        /* H=1, J=3 */
   const double expected_y3[] = { 0.0, 0.0, 3.81, 4.38, 4.38, 4.89, 4.89, 4.89, 4.45, 4.89,
                                  4.45, 6.46, 6.55, 6.55, 2.76, 4.98, 4.98, 3.40, 4.98, 4.98 };       /* H=4, J=0 */
-  gsl_movstat_median_workspace *w;
+  gsl_movstat_workspace *w;
   gsl_vector *y = gsl_vector_alloc(n);
   gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
   gsl_vector_const_view y1 = gsl_vector_const_view_array(expected_y1, n);
@@ -176,35 +176,35 @@ test_median_nonsymmetric(const gsl_movstat_end_t etype)
   /* test 1: H = 5, J = 2 */
   H = 5;
   J = 2;
-  w = gsl_movstat_median_alloc2(H, J);
+  w = gsl_movstat_alloc2(H, J);
 
   /* y = median(x) */
   gsl_movstat_median(etype, &x.vector, y, w);
   compare_vectors(tol, y, &y1.vector, "SMF nonsymmetric H=5 J=2");
 
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 
   /* test 2: H = 1, J = 3 */
   H = 1;
   J = 3;
-  w = gsl_movstat_median_alloc2(H, J);
+  w = gsl_movstat_alloc2(H, J);
 
   /* y = median(x) */
   gsl_movstat_median(etype, &x.vector, y, w);
   compare_vectors(tol, y, &y2.vector, "SMF nonsymmetric H=1 J=3");
 
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 
   /* test 3: H = 4, J = 0 */
   H = 4;
   J = 0;
-  w = gsl_movstat_median_alloc2(H, J);
+  w = gsl_movstat_alloc2(H, J);
 
   /* y = median(x) */
   gsl_movstat_median(etype, &x.vector, y, w);
   compare_vectors(tol, y, &y3.vector, "SMF nonsymmetric H=4 J=0");
 
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 
   gsl_vector_free(y);
 }
@@ -214,7 +214,7 @@ static void
 test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, const size_t J,
                           const gsl_movstat_end_t etype, gsl_rng *rng_p)
 {
-  gsl_movstat_median_workspace *w = gsl_movstat_median_alloc2(H, J);
+  gsl_movstat_workspace *w = gsl_movstat_alloc2(H, J);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *y = gsl_vector_alloc(n);
   gsl_vector *z = gsl_vector_alloc(n);
@@ -244,10 +244,10 @@ test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, cons
   gsl_vector_free(x);
   gsl_vector_free(y);
   gsl_vector_free(z);
-  gsl_movstat_median_free(w);
+  gsl_movstat_free(w);
 }
 
-void
+static void
 test_median(void)
 {
   gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);

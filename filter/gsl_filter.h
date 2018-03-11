@@ -36,6 +36,13 @@
 
 __BEGIN_DECLS
 
+typedef enum
+{
+  GSL_FILTER_END_PADZERO = GSL_MOVSTAT_END_PADZERO,
+  GSL_FILTER_END_PADVALUE = GSL_MOVSTAT_END_PADVALUE,
+  GSL_FILTER_END_TRUNCATE = GSL_MOVSTAT_END_TRUNCATE
+} gsl_filter_end_t;
+
 /* workspace for recursive median filter */
 typedef struct
 {
@@ -48,6 +55,19 @@ gsl_filter_rmedian_workspace *gsl_filter_rmedian_alloc(const size_t K);
 void gsl_filter_rmedian_free(gsl_filter_rmedian_workspace * w);
 int gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
 int gsl_filter_rmedian2(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
+
+typedef struct
+{
+  size_t K;   /* window size */
+  gsl_movstat_workspace *movstat_workspace_p;
+} gsl_filter_hampel_workspace;
+
+gsl_filter_hampel_workspace *gsl_filter_hampel_alloc(const size_t K);
+void gsl_filter_hampel_free(gsl_filter_hampel_workspace * w);
+int gsl_filter_hampel(const gsl_filter_end_t endtype, const double nsigma, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
+                      gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_hampel_workspace * w);
+int gsl_filter_hampel2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
+                       gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_hampel_workspace * w);
 
 __END_DECLS
 

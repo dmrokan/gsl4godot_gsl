@@ -27,6 +27,7 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_ieee_utils.h>
 
@@ -81,17 +82,92 @@ median_find(const size_t n, double * z)
   return gsl_stats_median_from_sorted_data(z, 1, n);
 }
 
+static int
+test_noisy_sine(const double sigma, gsl_vector * x, gsl_rng * r)
+{
+  const size_t n = x->size;
+  size_t i;
+
+  for (i = 0; i < n; ++i)
+    {
+      double ti = (double) i / (n - 1.0);
+      double xi = sin(2.0 * M_PI * ti) +
+                  sin(2.0 * M_PI * 40.0 * ti);
+      double ei = gsl_ran_gaussian(r, sigma);
+
+      gsl_vector_set(x, i, xi + ei);
+    }
+
+  return GSL_SUCCESS;
+}
+
+/* fill window for sample 'idx' from x using given end conditions */
+static int
+test_window(const gsl_movstat_end_t endtype, const int idx, const int H, const int J,
+            const gsl_vector * x, double * window)
+{
+  const int n = x->size;
+  int idx1, idx2, j;
+  int wsize;
+
+  if (endtype == GSL_MOVSTAT_END_TRUNCATE)
+    {
+      idx1 = GSL_MAX(idx - H, 0);
+      idx2 = GSL_MIN(idx + J, n - 1);
+    }
+  else
+    {
+      idx1 = idx - H;
+      idx2 = idx + J;
+    }
+
+  wsize = idx2 - idx1 + 1;
+
+  /* fill sliding window */
+  for (j = idx1; j <= idx2; ++j)
+    {
+      int widx = j - idx1;
+
+      if (j < 0)
+        {
+          /* initial condition */
+          if (endtype == GSL_MOVSTAT_END_PADZERO)
+            window[widx] = 0.0;
+          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
+            window[widx] = gsl_vector_get(x, 0);
+        }
+      else if (j >= n)
+        {
+          if (endtype == GSL_MOVSTAT_END_PADZERO)
+            window[widx] = 0.0;
+          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
+            window[widx] = gsl_vector_get(x, n - 1);
+        }
+      else
+        {
+          window[widx] = gsl_vector_get(x, j);
+        }
+    }
+
+  wsize = idx2 - idx1 + 1;
+
+  return wsize;
+}
+
 #include "test_mad.c"
 #include "test_medacc.c"
 #include "test_median.c"
+#include "test_minmax.c"
 #include "test_minmaxacc.c"
 
 int
 main()
 {
   test_medacc();
-  test_median();
   test_minmaxacc();
+
+  test_median();
+  test_minmax();
   test_mad();
 
   exit (gsl_test_summary());

@@ -83,9 +83,8 @@ gsl_movstat_minmaxacc_alloc(const size_t n)
     }
 
   w->n = n;
-  w->idx = 0;
-  w->init = 0;
-  w->xprev = 0.0;
+
+  gsl_movstat_minmaxacc_reset(w);
 
   return w;
 }
@@ -108,6 +107,20 @@ gsl_movstat_minmaxacc_free(gsl_movstat_minmaxacc_workspace * w)
     deque_free(w->minque);
 
   free(w);
+}
+
+int
+gsl_movstat_minmaxacc_reset(gsl_movstat_minmaxacc_workspace * w)
+{
+  /* empty the queues */
+  deque_empty(w->minque);
+  deque_empty(w->maxque);
+
+  w->idx = 0;
+  w->init = 0;
+  w->xprev = 0.0;
+
+  return GSL_SUCCESS;
 }
 
 /*

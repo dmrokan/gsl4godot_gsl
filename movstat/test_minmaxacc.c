@@ -24,13 +24,13 @@
 #include <gsl/gsl_movstat.h>
 
 static void
-test_minmaxacc_n(const double tol, const size_t n, const size_t k)
+test_minmaxacc_n(const double tol, const int n, const int k)
 {
   gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);
   gsl_movstat_minmaxacc_workspace *w = gsl_movstat_minmaxacc_alloc(k);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector_view wv;
-  size_t i;
+  int i;
 
   /* generate random integer vector in [-100,100] */
   random_vector_int(-100, 100, x, rng_p);
@@ -40,7 +40,7 @@ test_minmaxacc_n(const double tol, const size_t n, const size_t k)
       double xi = gsl_vector_get(x, i);
       double min, max;
       double min_exact, max_exact;
-      int idx = (int) i - (int) k + 1;
+      int idx = i - k + 1;
       size_t wlen;
 
       gsl_movstat_minmaxacc_insert(xi, w);

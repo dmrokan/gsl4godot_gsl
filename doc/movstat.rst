@@ -71,6 +71,47 @@ This is done by passing an input argument of type :type:`gsl_movstat_end_t`:
       With this option, no padding is performed, and the windows are simply truncated
       as the end points are approached.
 
+Allocation for Moving Window Statistics
+=======================================
+
+.. type:: gsl_movstat_workspace
+
+   The moving window statistical routines use a common workspace.
+
+.. function:: gsl_movstat_workspace * gsl_movstat_alloc(const size_t K)
+
+   This function allocates a workspace for computing symmetric, centered moving statistics with a window
+   length of :math:`K` samples. In this case, :math:`H = J = K/2`. The size of the workspace
+   is :math:`O(7K)`.
+
+.. function:: gsl_movstat_workspace * gsl_movstat_alloc2(const size_t H, const size_t J)
+
+   This function allocates a workspace for computing moving statistics using a window with :math:`H`
+   samples prior to the current sample, and :math:`J` samples after the current sample. The
+   total window size is :math:`K = H + J + 1`. The size of the workspace is :math:`O(7K)`.
+
+.. function:: void * gsl_movstat_free(gsl_movstat_workspace * w)
+
+   This function frees the memory associated with :data:`w`.
+
+Moving Minimum and Maximum
+==========================
+
+The moving minimum/maximum calculates the minimum and maximum values of
+each window :math:`W_i^{H,J}`.
+
+.. math::
+
+   y_i &= \min \left( W_i^{H,J} \right) \\
+   z_i &= \max \left( W_i^{H,J} \right)
+
+
+.. function:: int gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w)
+
+   This function computes the moving min/max of the input vector :data:`x`, storing
+   the window minimums in :data:`y_min` and the window maximums in :data:`y_max`.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+
 Moving Median
 =============
 
@@ -79,23 +120,7 @@ each sample :math:`x_i`:
 
 .. math:: y_i = \textrm{median} \left( W_i^{H,J} \right)
 
-.. function:: gsl_movstat_median_workspace * gsl_movstat_median_alloc(const size_t K)
-
-   This function allocates a workspace for computing a symmetric, centered moving median with a window
-   length of :math:`K` samples. In this case, :math:`H = J = K/2`. The size of the workspace
-   is :math:`O(4K)`.
-
-.. function:: gsl_movstat_median_workspace * gsl_movstat_median_alloc2(const size_t H, const size_t J)
-
-   This function allocates a workspace for computing a moving median using a window with :math:`H`
-   samples prior to the current sample, and :math:`J` samples after the current sample. The
-   total window size is :math:`K = H + J + 1`. The size of the workspace is :math:`O(4K)`.
-
-.. function:: void * gsl_movstat_median_free(gsl_movstat_median_workspace * w)
-
-   This function frees the memory associated with :data:`w`.
-
-.. function:: int gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_median_workspace * w)
+.. function:: int gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 
    This function computes the moving median of the input vector :data:`x`, storing
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
@@ -113,23 +138,7 @@ In words, first the median of all samples in :math:`W_i^{H,J}` is computed. Then
 is subtracted from all samples in the window to find the deviation of each sample
 from the window median. The median of all absolute deviations is then the MAD.
 
-.. function:: gsl_movstat_mad_workspace * gsl_movstat_mad_alloc(const size_t K)
-
-   This function allocates a workspace for computing a symmetric, centered moving MAD with a window
-   length of :math:`K` samples. In this case, :math:`H = J = K/2`. The size of the workspace
-   is :math:`O(6K)`.
-
-.. function:: gsl_movstat_mad_workspace * gsl_movstat_mad_alloc2(const size_t H, const size_t J)
-
-   This function allocates a workspace for computing a moving MAD using a window with :math:`H`
-   samples prior to the current sample, and :math:`J` samples after the current sample. The
-   total window size is :math:`K = H + J + 1`. The size of the workspace is :math:`O(6K)`.
-
-.. function:: void * gsl_movstat_mad_free(gsl_movstat_mad_workspace * w)
-
-   This function frees the memory associated with :data:`w`.
-
-.. function:: int gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_mad_workspace * w)
+.. function:: int gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
 
    This function computes the moving MAD of the input vector :data:`x` and stores the result
    in :data:`xmad`. The medians of each window :math:`W_i^{H,J}` are stored in :data:`xmedian`
@@ -177,10 +186,10 @@ to update the median of a window each time a new sample is added.
 
    This function returns the median of the current data window.
 
-Min/Max Accumulator
--------------------
+Minimum/Maximum Accumulator
+---------------------------
 
-The min/max accumulator efficiently tracks the minimum and maximum values of the
+The minimum/maximum accumulator efficiently tracks the minimum and maximum values of the
 current sliding window, using the algorithm by D. Lemire.
 
 .. function:: gsl_movstat_minmaxacc_workspace * gsl_movstat_minmaxacc_alloc(const size_t K)
@@ -211,11 +220,15 @@ current sliding window, using the algorithm by D. Lemire.
 
    This function returns the maximum value of the current window.
 
+.. function:: int gsl_movstat_minmaxacc_reset(gsl_movstat_minmaxacc_workspace * w)
+
+   This function resets the accumulator so it can begin working on a fresh dataset.
+
 References and Further Reading
 ==============================
 
 The following publications are relevant to the algorithms described
-in this section,
+in this chapter,
 
 * W. Härdle and W. Steiger, *Optimal Median Smoothing*, Appl. Statist. 44 (2), 1995.
 
