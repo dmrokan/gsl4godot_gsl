@@ -126,8 +126,19 @@ each sample :math:`x_i`:
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
    the ends of the input should be handled.
 
+Robust Scale Estimation
+=======================
+
+A common problem in statistics is to quantify the dispersion (also known as the variability, scatter, and spread) of
+a set of data. Often this is done by calculating the variance or standard deviation. However these statistics
+are strongly influenced by outliers, and can often provide erroneous results when even a small number of outliers
+are present.
+
+Several useful statistics have emerged to provide robust estimates of scale which are not as susceptible to data outliers.
+A few of these statistical scale estimators are described below.
+
 Moving MAD
-==========
+----------
 
 The median absolute deviation (MAD) for the window :math:`W_i^{H,J}` is defined
 to be the median of the absolute deviations from the window's median:
@@ -143,6 +154,28 @@ from the window median. The median of all absolute deviations is then the MAD.
    This function computes the moving MAD of the input vector :data:`x` and stores the result
    in :data:`xmad`. The medians of each window :math:`W_i^{H,J}` are stored in :data:`xmedian`
    on output. The inputs :data:`x`, :data:`xmedian`, and :data:`xmad` must all be the same length.
+
+Moving QQR
+----------
+
+The q-quantile range (QQR) is the difference between the :math:`(1-q)` and :math:`q` quantiles
+of a set of data,
+
+.. math:: QQR = Q_{1-q} - Q_q
+
+The case :math:`q = 0.25` corresponds to the well-known *interquartile range (IQR)*, which
+is the difference between the 75th and 25th percentiles of a set of data. The QQR is
+a *trimmed estimator*, the main idea being to discard the largest and smallest values in
+a data window and compute a scale estimate from the remaining middle values. In the case
+of the IQR, the largest and smallest 25% of the data are discarded and the scale is
+estimated from the remaining (middle) 50%.
+
+.. function:: int gsl_movstat_qqr(const gsl_movstat_end_t endtype, const gsl_vector * x, const double q, gsl_vector * xqqr, gsl_movstat_workspace * w)
+
+   This function computes the moving QQR of the input vector :data:`x` and stores the q-quantile ranges
+   of each window :math:`W_i^{H,J}` in :data:`xqqr`. The quantile parameter :data:`q` must be between
+   :math:`0` and :math:`0.5`. The input :math:`q = 0.25` corresponds to the IQR.
+   The inputs :data:`x` and :data:`xqqr` must be the same length.
 
 Accumulators
 ============

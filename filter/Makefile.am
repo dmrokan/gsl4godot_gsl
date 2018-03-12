@@ -4,7 +4,7 @@ pkginclude_HEADERS = gsl_filter.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-libgslfilter_la_SOURCES = hampel.c rmedian.c
+libgslfilter_la_SOURCES = impulse.c rmedian.c
 
 check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)
