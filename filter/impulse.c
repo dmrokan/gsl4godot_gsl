@@ -58,8 +58,6 @@ gsl_filter_impulse_alloc(const size_t K)
       return NULL;
     }
 
-  w->K = w->movstat_workspace_p->K;
-
   return w;
 }
 
@@ -73,56 +71,56 @@ gsl_filter_impulse_free(gsl_filter_impulse_workspace * w)
 }
 
 /*
-gsl_filter_impulse_hampel()
-  Apply a Hampel filter to an input vector
+gsl_filter_impulse()
+  Apply an impulse detection filter to an input vector
 
-Inputs: endtype  - how to handle signal end points
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = sigma for i-th window: scale*MAD
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
+Inputs: endtype    - how to handle signal end points
+        scale_type - which statistic to use for scale estimate (MAD, IQR, etc)
+        t          - number of standard deviations required to identity outliers (>= 0)
+        x          - input vector, size n
+        y          - (output) filtered vector, size n
+        xmedian    - (output) vector of median values of x, size n
+                     xmedian_i = median of window centered on x_i
+        xsigma     - (output) vector of estimated local standard deviations of x, size n
+                     xsigma_i = sigma for i-th window
+        noutlier   - (output) number of outliers detected
+        ioutlier   - (output) boolean array indicating outliers identified, size n; may be NULL
+                     ioutlier_i = 1 if outlier detected, 0 if not
+        w          - workspace
 */
 
 int
-gsl_filter_impulse_hampel(const gsl_filter_end_t endtype, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                          gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
+gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double t, const gsl_vector * x,
+                   gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
+                   gsl_filter_impulse_workspace * w)
 {
-  int status = gsl_filter_impulse_hampel2(endtype, 0.0, t, x, y, xmedian, xsigma, noutlier, ioutlier, w);
+  int status = gsl_filter_impulse2(endtype, scale_type, 0.0, t, x, y, xmedian, xsigma, noutlier, ioutlier, w);
   return status;
 }
 
 /*
-gsl_filter_impulse_hampel2()
-  Apply a Hampel filter to an input vector. The filter output is
+gsl_filter_impulse2()
+  Apply an impulse detection filter to an input vector. The filter output is
 
 y_i = { x_i, |x_i - m_i| <= t * S_i OR S_i < epsilon
       { m_i, |x_i - m_i| > t * S_i
 
-where m_i is the median of the window W_i^H and S_i is the MAD
-scale estimate, defined as
+where m_i is the median of the window W_i^H and S_i is the scale estimate (MAD, IQR, etc)
 
-S_i = 1.4826 * median [ | W_i^H - m_i | ]
-
-Inputs: endtype  - how to handle signal end points
-        epsilon  - minimum allowed MAD scale estimate for identifying outliers
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = sigma for i-th window: scale*MAD
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
+Inputs: endtype    - how to handle signal end points
+        scale_type - which statistic to use for scale estimate (MAD, IQR, etc)
+        epsilon    - minimum allowed MAD scale estimate for identifying outliers
+        t          - number of standard deviations required to identity outliers (>= 0)
+        x          - input vector, size n
+        y          - (output) filtered vector, size n
+        xmedian    - (output) vector of median values of x, size n
+                     xmedian_i = median of window centered on x_i
+        xsigma     - (output) vector of estimated local standard deviations of x, size n
+                     xsigma_i = sigma for i-th window: scale*MAD
+        noutlier   - (output) number of outliers detected
+        ioutlier   - (output) boolean array indicating outliers identified, size n; may be NULL
+                     ioutlier_i = 1 if outlier detected, 0 if not
+        w          - workspace
 
 Notes:
 1) If S_i = 0 or is very small for a particular sample, then the filter may erroneously flag the
@@ -132,8 +130,9 @@ samples for which S_i < epsilon are passed through unchanged.
 */
 
 int
-gsl_filter_impulse_hampel2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                           gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
+gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double epsilon, const double t,
+                    const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier,
+                    gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
 {
   const size_t n = x->size;
 
@@ -160,222 +159,51 @@ gsl_filter_impulse_hampel2(const gsl_filter_end_t endtype, const double epsilon,
   else
     {
       int status;
-      const double scale = 1.482602218505602;
+      double scale = 1.0;
 
-      /* calculate the window medians and MADs */
-      gsl_movstat_mad(endtype, x, xmedian, xsigma, w->movstat_workspace_p);
+      switch (scale_type)
+        {
+          /* calculate the window medians and MADs */
+          case GSL_FILTER_SCALE_MAD:
+            {
+              /* multiplication factor for MAD to estimate stddev for Gaussian signal */
+              scale = 1.482602218505602;
 
-      /* apply impulse detecting filter using MAD scale estimate */
-      status = filter_impulse(scale, epsilon, t, x, xmedian, y, xsigma, noutlier, ioutlier);
+              /* compute window medians and MADs */
+              gsl_movstat_mad(endtype, x, xmedian, xsigma, w->movstat_workspace_p);
 
-      return status;
-    }
-}
+              break;
+            }
 
-/*
-gsl_filter_impulse_qqr()
-  Apply an impulse detecting filter to an input vector using QQR scale estimate
-
-Inputs: endtype  - how to handle signal end points
-        q        - q-quantile \in [0,0.5]
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = QQR for i-th window
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
-*/
-
-int
-gsl_filter_impulse_qqr(const gsl_filter_end_t endtype, const double q, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                       gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
-{
-  int status = gsl_filter_impulse_qqr2(endtype, 0.0, q, t, x, y, xmedian, xsigma, noutlier, ioutlier, w);
-  return status;
-}
-
-/*
-gsl_filter_impulse_qqr2()
-  Apply an impulse detecting filter to an input vector based on the QQR scale estimate.
-The filter output is
-
-y_i = { x_i, |x_i - m_i| <= t * S_i OR S_i < epsilon
-      { m_i, |x_i - m_i| > t * S_i
-
-where m_i is the median of the window W_i^H and S_i is the QQR
-scale estimate, defined as
-
-Inputs: endtype  - how to handle signal end points
-        epsilon  - minimum allowed MAD scale estimate for identifying outliers
-        q        - q-quantile \in [0,0.5]
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = sigma for i-th window: scale*MAD
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
-
-Notes:
-1) If S_i = 0 or is very small for a particular sample, then the filter may erroneously flag the
-sample as an outlier, since it will act as a standard median filter. To avoid this scenario, the
-parameter epsilon specifies the minimum value of S_i which can be used in the filter test. Any
-samples for which S_i < epsilon are passed through unchanged.
-*/
-
-int
-gsl_filter_impulse_qqr2(const gsl_filter_end_t endtype, const double epsilon, const double q, const double t, const gsl_vector * x,
-                        gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
-                        gsl_filter_impulse_workspace * w)
-{
-  const size_t n = x->size;
-
-  if (n != y->size)
-    {
-      GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
-    }
-  else if (xmedian->size != n)
-    {
-      GSL_ERROR("xmedian vector must match input size", GSL_EBADLEN);
-    }
-  else if (xsigma->size != n)
-    {
-      GSL_ERROR("xsigma vector must match input size", GSL_EBADLEN);
-    }
-  else if ((ioutlier != NULL) && (ioutlier->size != n))
-    {
-      GSL_ERROR("ioutlier vector must match input size", GSL_EBADLEN);
-    }
-  else if (t < 0.0)
-    {
-      GSL_ERROR("t must be non-negative", GSL_EDOM);
-    }
-  else if (q < 0.0 || q > 0.5)
-    {
-      GSL_ERROR("q must be between 0 and 0.5", GSL_EDOM);
-    }
-  else
-    {
-      int status;
-
-      /* calculate the window medians */
-      gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+          case GSL_FILTER_SCALE_IQR:
+            {
+              /* calculate the window medians */
+              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
       
-      /* calculate window QQRs */
-      gsl_movstat_qqr(endtype, x, q, xsigma, w->movstat_workspace_p);
+              /* calculate window IQRs */
+              gsl_movstat_qqr(endtype, x, 0.25, xsigma, w->movstat_workspace_p);
 
-      /* apply impulse detecting filter using QQR scale estimate */
-      status = filter_impulse(1.0, epsilon, t, x, xmedian, y, xsigma, noutlier, ioutlier);
+              break;
+            }
 
-      return status;
-    }
-}
+          case GSL_FILTER_SCALE_SN:
+            {
+              /* multiplication factor for S_n to estimate stddev for Gaussian signal */
+              scale = 1.1926;
 
-/*
-gsl_filter_impulse_Sn()
-  Apply an impulse detecting filter to an input vector using S_n scale estimate
-
-Inputs: endtype  - how to handle signal end points
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = S_n for i-th window
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
-*/
-
-int
-gsl_filter_impulse_Sn(const gsl_filter_end_t endtype, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                      gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
-{
-  int status = gsl_filter_impulse_Sn2(endtype, 0.0, t, x, y, xmedian, xsigma, noutlier, ioutlier, w);
-  return status;
-}
-
-/*
-gsl_filter_impulse_Sn2()
-  Apply an impulse detecting filter to an input vector based on the S_n scale estimate.
-The filter output is
-
-y_i = { x_i, |x_i - m_i| <= t * S_i OR S_i < epsilon
-      { m_i, |x_i - m_i| > t * S_i
-
-where m_i is the median of the window W_i^H and S_i is the S_n scale estimate
-
-Inputs: endtype  - how to handle signal end points
-        epsilon  - minimum allowed MAD scale estimate for identifying outliers
-        t        - number of standard deviations required to identity outliers (>= 0)
-        x        - input vector, size n
-        y        - (output) filtered vector, size n
-        xmedian  - (output) vector of median values of x, size n
-                   xmedian_i = median of window centered on x_i
-        xsigma   - (output) vector of estimated local standard deviations of x, size n
-                   xsigma_i = sigma for i-th window: scale*MAD
-        noutlier - (output) number of outliers detected
-        ioutlier - (output) boolean array indicating outliers identified, size n; may be NULL
-                   ioutlier_i = 1 if outlier detected, 0 if not
-        w        - workspace
-
-Notes:
-1) If S_i = 0 or is very small for a particular sample, then the filter may erroneously flag the
-sample as an outlier, since it will act as a standard median filter. To avoid this scenario, the
-parameter epsilon specifies the minimum value of S_i which can be used in the filter test. Any
-samples for which S_i < epsilon are passed through unchanged.
-*/
-
-int
-gsl_filter_impulse_Sn2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x,
-                       gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
-                       gsl_filter_impulse_workspace * w)
-{
-  const size_t n = x->size;
-
-  if (n != y->size)
-    {
-      GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
-    }
-  else if (xmedian->size != n)
-    {
-      GSL_ERROR("xmedian vector must match input size", GSL_EBADLEN);
-    }
-  else if (xsigma->size != n)
-    {
-      GSL_ERROR("xsigma vector must match input size", GSL_EBADLEN);
-    }
-  else if ((ioutlier != NULL) && (ioutlier->size != n))
-    {
-      GSL_ERROR("ioutlier vector must match input size", GSL_EBADLEN);
-    }
-  else if (t < 0.0)
-    {
-      GSL_ERROR("t must be non-negative", GSL_EDOM);
-    }
-  else
-    {
-      const double scale = 1.1926;
-      int status;
-
-      /* calculate the window medians */
-      gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+              /* calculate the window medians */
+              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
       
-      /* calculate window S_n values */
-      gsl_movstat_scaleSn(endtype, x, xsigma, w->movstat_workspace_p);
+              /* calculate window S_n values */
+              gsl_movstat_scaleSn(endtype, x, xsigma, w->movstat_workspace_p);
+            }
 
-      /* apply impulse detecting filter using S_n scale estimate */
+          default:
+            GSL_ERROR("unknown scale type", GSL_EDOM);
+            break;
+        }
+
+      /* apply impulse detecting filter using previously computed scale estimate */
       status = filter_impulse(scale, epsilon, t, x, xmedian, y, xsigma, noutlier, ioutlier);
 
       return status;
@@ -384,15 +212,15 @@ gsl_filter_impulse_Sn2(const gsl_filter_end_t endtype, const double epsilon, con
 
 /*
 filter_impulse()
-  Apply a Hampel filter to an input vector. The filter output is
+  Apply an impulse detection filter to an input vector. The filter output is
 
 y_i = { x_i, |x_i - m_i| <= t * S_i OR S_i < epsilon
       { m_i, |x_i - m_i| > t * S_i
 
-where m_i is the median of the window W_i^H and S_i is the scale estimate (MAD, QQR, etc)
+where m_i is the median of the window W_i^H and S_i is the scale estimate (MAD, IQR, etc)
 
 Inputs: scale    - scale factor to multiply xsigma to get unbiased estimate of stddev for Gaussian data
-        epsilon  - minimum allowed MAD scale estimate for identifying outliers
+        epsilon  - minimum allowed scale estimate for identifying outliers
         t        - number of standard deviations required to identity outliers (>= 0)
         x        - input vector, size n
         xmedian  - vector of median values of x, size n

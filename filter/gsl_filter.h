@@ -36,12 +36,21 @@
 
 __BEGIN_DECLS
 
+/* end point handling methods */
 typedef enum
 {
   GSL_FILTER_END_PADZERO = GSL_MOVSTAT_END_PADZERO,
   GSL_FILTER_END_PADVALUE = GSL_MOVSTAT_END_PADVALUE,
   GSL_FILTER_END_TRUNCATE = GSL_MOVSTAT_END_TRUNCATE
 } gsl_filter_end_t;
+
+/* robust scale estimates */
+typedef enum
+{
+  GSL_FILTER_SCALE_MAD, /* median absolute deviation */
+  GSL_FILTER_SCALE_IQR, /* interquartile range */
+  GSL_FILTER_SCALE_SN   /* S_n scale statistic */
+} gsl_filter_scale_t;
 
 /* workspace for Gaussian filter */
 typedef struct
@@ -71,27 +80,17 @@ int gsl_filter_rmedian2(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian
 
 typedef struct
 {
-  size_t K;   /* window size */
   gsl_movstat_workspace *movstat_workspace_p;
 } gsl_filter_impulse_workspace;
 
 gsl_filter_impulse_workspace *gsl_filter_impulse_alloc(const size_t K);
 void gsl_filter_impulse_free(gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_hampel(const gsl_filter_end_t endtype, const double nsigma, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                              gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_hampel2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                               gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_qqr(const gsl_filter_end_t endtype, const double q, const double t, const gsl_vector * x,
-                           gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
-                           gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_qqr2(const gsl_filter_end_t endtype, const double epsilon, const double q, const double t, const gsl_vector * x,
-                            gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
-                            gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_Sn(const gsl_filter_end_t endtype, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
-                          gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
-int gsl_filter_impulse_Sn2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x,
-                           gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
-                           gsl_filter_impulse_workspace * w);
+int gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double t,
+                       const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier,
+                       gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
+int gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double epsilon, const double t,
+                        const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier,
+                        gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
 
 __END_DECLS
 
