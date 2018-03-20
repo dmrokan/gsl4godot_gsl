@@ -43,6 +43,19 @@ typedef enum
   GSL_FILTER_END_TRUNCATE = GSL_MOVSTAT_END_TRUNCATE
 } gsl_filter_end_t;
 
+/* workspace for Gaussian filter */
+typedef struct
+{
+  size_t H;        /* window half-length (K / 2) */
+  size_t K;        /* window size */
+  double *kernel;  /* Gaussian kernel, size K */
+} gsl_filter_gaussian_workspace;
+
+gsl_filter_gaussian_workspace *gsl_filter_gaussian_alloc(const size_t K);
+void gsl_filter_gaussian_free(gsl_filter_gaussian_workspace * w);
+int gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x, gsl_vector * y,
+                        gsl_filter_gaussian_workspace * w);
+
 /* workspace for recursive median filter */
 typedef struct
 {
@@ -74,6 +87,11 @@ int gsl_filter_impulse_qqr(const gsl_filter_end_t endtype, const double q, const
 int gsl_filter_impulse_qqr2(const gsl_filter_end_t endtype, const double epsilon, const double q, const double t, const gsl_vector * x,
                             gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
                             gsl_filter_impulse_workspace * w);
+int gsl_filter_impulse_Sn(const gsl_filter_end_t endtype, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian,
+                          gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w);
+int gsl_filter_impulse_Sn2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x,
+                           gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier,
+                           gsl_filter_impulse_workspace * w);
 
 __END_DECLS
 

@@ -81,11 +81,13 @@ median_find(const size_t n, double * z)
   return gsl_stats_median_from_sorted_data(z, 1, n);
 }
 
+#include "test_gaussian.c"
 #include "test_rmedian.c"
 
 int
 main()
 {
+  test_gaussian();
   test_rmedian();
 
   exit (gsl_test_summary());

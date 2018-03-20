@@ -149,11 +149,12 @@ In words, first the median of all samples in :math:`W_i^{H,J}` is computed. Then
 is subtracted from all samples in the window to find the deviation of each sample
 from the window median. The median of all absolute deviations is then the MAD.
 
-.. function:: int gsl_movstat_mad(const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
+.. function:: int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
 
    This function computes the moving MAD of the input vector :data:`x` and stores the result
    in :data:`xmad`. The medians of each window :math:`W_i^{H,J}` are stored in :data:`xmedian`
    on output. The inputs :data:`x`, :data:`xmedian`, and :data:`xmad` must all be the same length.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
 
 Moving QQR
 ----------
@@ -176,6 +177,7 @@ estimated from the remaining (middle) 50%.
    of each window :math:`W_i^{H,J}` in :data:`xqqr`. The quantile parameter :data:`q` must be between
    :math:`0` and :math:`0.5`. The input :math:`q = 0.25` corresponds to the IQR.
    The inputs :data:`x` and :data:`xqqr` must be the same length.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
 
 Accumulators
 ============
