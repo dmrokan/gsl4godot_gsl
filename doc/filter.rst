@@ -77,12 +77,13 @@ left unchanged by the filter.  So there is no need to apply an RMF filter twice 
    This function applies a recursive median filter to the input :data:`x`, storing the output in :data:`y`. It
    is allowed to have :data:`x` = :data:`y` for an in-place filter.
 
-Hampel Filter
--------------
+Impulse Detection Filter
+------------------------
 
-The Hampel filter is closely related to the standard median filter, which is designed to detect
-outliers based on the median and median absolute deviation (MAD) scale estimator.
-This filter's response is
+Impulsive noise is characterized by short sequences of data points distinct from those in the
+surrounding neighborhood. This section describes a powerful class of filters, also known as
+*decision-based filters*, designed to detect and remove such outliers from data.
+The filter's response is given by
 
 .. math:: y_i = \left\{
                   \begin{array}{cc}
@@ -91,39 +92,78 @@ This filter's response is
                   \end{array}
                 \right.
 
-where :math:`m_i` is the median value of the window :math:`W_i^H`, and :math:`S_i` is the
-MAD scale estimate, defined by
+where :math:`m_i` is the median value of the window :math:`W_i^H`, :math:`S_i` is a robust estimate
+of the scatter or dispersion for the window :math:`W_i^H`, and :math:`t` is a tuning parameter specifying
+the number of scale factors needed to determine that a point is an outlier. The main idea is that the median
+:math:`m_i` will be unaffected by a small number of outliers in the window, and so a given
+sample :math:`x_i` is tested to determine how far away it is from the median in terms of the local
+scale estimate :math:`S_i`. Samples which are more than :math:`t` scale estimates away from the median
+are labeled as outliers and replaced by the window median :math:`m_i`. Samples which are less than
+:math:`t` scale estimates from the median are left unchanged by the filter.
 
-.. math:: S_i = 1.4826 \times \textrm{median} \left\{ | W_i^H - m_i | \right\}
-
-In other words, it takes the median of all the absolute deviations of each sample in the window :math:`W_i^H`
-from its local window median :math:`m_i`. The factor :math:`1.4826` makes :math:`S_i` an unbiased estimate of
-the standard deviation for Gaussian data. The MAD statistic is used instead of the window standard deviation
-since it is much less sensitive to outliers. Finally, :math:`t` is a tunable parameter for deciding
-how far a particular sample should be from the MAD scale estimate to identify it as an outlier. Identified
-outliers are replaced by the local median, while unflagged data are left unchanged.
-
-Note that when :math:`t = 0`, the Hampel filter is equivalent to the standard median filter. When
-:math:`t \rightarrow \infty`, it becomes the identity filter. This means the Hampel filter can
+Note that when :math:`t = 0`, the impulse detection filter is equivalent to the standard median filter. When
+:math:`t \rightarrow \infty`, it becomes the identity filter. This means the impulse detection filter can
 be viewed as a "less aggressive" version of the standard median filter, becoming less aggressive as :math:`t` is
-increased. Note that the Hampel filter modifies only samples identified as outliers, while the standard median
+increased. Note that this filter modifies only samples identified as outliers, while the standard median
 filter changes all samples to the local median, regardless of whether they are outliers. This fact, plus
-the additional flexibility offered by the additional tuning parameter :math:`t` can make the Hampel filter
+the additional flexibility offered by the additional tuning parameter :math:`t` can make the impulse detection filter
 a better choice for some applications.
+
+It is important to have a robust and accurate scale estimate :math:`S_i` in order to
+detect impulse outliers even in the presence of noise. The window standard deviation is not
+typically a good choice, as it can be significantly perturbed by the presence of even one outlier.
+GSL offers the following choices (specified by a parameter of type :type:`gsl_filter_scale_t`) for
+computing the scale estimate :math:`S_i`, all of which are robust to the presence of impulse outliers.
+
+.. type:: gsl_filter_scale_t
+
+   This type specifies how the scale estimate :math:`S_i` of the window :math:`W_i^H` is calculated.
+
+   .. macro:: GSL_FILTER_SCALE_MAD
+
+      This option specifies the median absolute deviation (MAD) scale estimate, defined by
+
+      .. math:: S_i = 1.4826 \times \textrm{median} \left\{ | W_i^H - m_i | \right\}
+
+      In words, it takes the median of all the absolute deviations of each sample in the window :math:`W_i^H`
+      from its local window median :math:`m_i`. The factor :math:`1.4826` makes :math:`S_i` an unbiased estimate of
+      the standard deviation for Gaussian data. The MAD has a statistical efficiency of 37%.
+      This choice of scale estimate is also known as the *Hampel filter* in the statistical literature.
+
+   .. macro:: GSL_FILTER_SCALE_IQR
+
+      This option specifies the interquartile range (IQR) scale estimate, defined as the difference between
+      the 75th and 25th percentiles of the window :math:`W_i^H`,
+
+      .. math:: S_i = Q_{0.75} - Q_{0.25}
+
+      where :math:`Q_p` is the p-quantile of the window :math:`W_i^H`. The idea is to throw away the largest
+      and smallest 25% of the window samples (where the outliers would be), and estimate a scale from the middle 50%.
+
+   .. macro:: GSL_FILTER_SCALE_SN
+
+      This option specifies the so-called :math:`S_n` statistic proposed by Croux and Rousseeuw, defined by
+
+      .. math:: S_i = 1.1926 \times \textrm{median}_j \left\{ \textrm{median}_k \left( \left| x_j - x_k \right| \right) \right\}, \quad x_j,x_k \in W_i^H
+
+      For each sample :math:`x_j \in W_i^H`, the median of the values :math:`|x_j - x_k|` are computed for
+      all :math:`x_k \in W_i^H`. This yields :math:`K` values, whose median is then the final :math:`S_i`.
+      The factor :math:`1.1926` makes :math:`S_i` an unbiased estimate of the standard deviation for
+      Gaussian data. This statistic has an efficiency of 58%.
 
 .. warning::
 
-   While the MAD is much less sensitive to outliers than the standard deviation, it can suffer from an
-   effect called *MAD implosion*. The standard deviation of a window :math:`W_i^H` will be zero
+   While the scale estimates defined above are much less sensitive to outliers than the standard deviation,
+   they can suffer from an effect called *implosion*. The standard deviation of a window :math:`W_i^H` will be zero
    if and only if all samples in the window are equal. However, it is possible for the MAD of a window
    to be zero even if all the samples in the window are not equal. For example, if :math:`K/2 + 1` or more
    of the :math:`K` samples in the window are equal to some value :math:`x^{*}`, then the window median will
    be equal to :math:`x^{*}`. Consequently, at least :math:`K/2 + 1` of the absolute deviations
-   :math:`|x_j - x^{*}|` will be zero, and so the statistic :math:`S_i` will be zero. In such a case, the Hampel
+   :math:`|x_j - x^{*}|` will be zero, and so the MAD will be zero. In such a case, the Hampel
    filter will act like the standard median filter regardless of the value of :math:`t`. Caution should also
    be exercised if dividing by :math:`S_i`.
 
-Because of the possibility of MAD implosion, GSL offers a routine :func:`gsl_filter_hampel2` where
+Because of the possibility of scale implosion, GSL offers a routine :func:`gsl_filter_impulse2` where
 the user can input an additional parameter :data:`epsilon`. This parameter is used as a lower bound
 on the :math:`S_i`. So for this function, the filter's response is
 
@@ -134,24 +174,24 @@ on the :math:`S_i`. So for this function, the filter's response is
                   \end{array}
                 \right.
 
-The function :func:`gsl_filter_hampel` sets :math:`\epsilon = 0`.
+The function :func:`gsl_filter_impulse` sets :math:`\epsilon = 0`.
 
-.. function:: gsl_filter_hampel_workspace * gsl_filter_hampel_alloc(const size_t K)
+.. function:: gsl_filter_impulse_workspace * gsl_filter_impulse_alloc(const size_t K)
 
    This function initializes a workspace for Hampel filtering using a symmetric moving window of
    size :data:`K`. Here, :math:`H = K / 2`. If :math:`K` is even, it is rounded up to the next
    odd integer to ensure a symmetric window. The size of the workspace is :math:`O(6K)`.
 
-.. function:: void gsl_filter_hampel_free(gsl_filter_hampel_workspace * w)
+.. function:: void gsl_filter_impulse_free(gsl_filter_impulse_workspace * w)
 
    This function frees the memory associated with :data:`w`.
 
-.. function:: int gsl_filter_hampel(const gsl_filter_end_t endtype, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_hampel_workspace * w)
-.. function:: int gsl_filter_hampel2(const gsl_filter_end_t endtype, const double epsilon, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_hampel_workspace * w)
+.. function:: int gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
+.. function:: int gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t scale_type, const double epsilon, const double t, const gsl_vector * x, gsl_vector * y, gsl_vector * xmedian, gsl_vector * xsigma, size_t * noutlier, gsl_vector_int * ioutlier, gsl_filter_impulse_workspace * w)
 
-   These functions apply a Hampel filter to the input vector :data:`x`, storing the filtered output
-   in :data:`y`.  The tuning parameter :math:`t` is provided in :data:`t`. The lower
-   bound :math:`\epsilon` for the MAD scale estimates :math:`S_i` is provided in :data:`epsilon`.
+   These functions apply an impulse detection filter to the input vector :data:`x`, storing the filtered output
+   in :data:`y`. The tuning parameter :math:`t` is provided in :data:`t`. The lower
+   bound :math:`\epsilon` for the scale estimates :math:`S_i` is provided in :data:`epsilon`.
    The window medians :math:`m_i` are stored in :data:`xmedian` and the :math:`S_i` are stored in :data:`xsigma` on output.
    The number of outliers detected is stored in :data:`noutlier` on output, while
    the locations of flagged outliers are stored in the boolean array :data:`ioutlier`. The input
