@@ -673,6 +673,33 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 .. The t-test statistic measures the difference between the means of two
 .. datasets.
 
+Robust Scale Estimation
+=======================
+
+A *robust scale estimate*, also known as a robust measure of scale, attempts to quantify
+the statistical dispersion (variability, scatter, spread) in a set of data which may contain outliers.
+In such datasets, the usual variance or standard deviation scale estimate can be rendered useless
+by even a single outlier.
+
+:math:`S_n` Statistic
+---------------------
+
+The :math:`S_n` statistic developed by Croux and Rousseeuw is defined as
+
+.. math:: S_n = 1.1926 \times c_n \times \textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}
+
+The factor :math:`1.1926` makes :math:`S_n` an unbiased estimate of the standard deviation for Gaussian data.
+The factor :math:`c_n` is a correction factor to correct bias in small sample sizes.
+
+.. function:: double gsl_stats_Sn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
+
+   This function returns the :math:`S_n` statistic of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. This function requires additional workspace of size
+   :data:`n` provided in :data:`work`.
+
 Examples
 ========
 

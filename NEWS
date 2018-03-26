@@ -1,5 +1,7 @@
 * What is new in gsl-2.5:
 
+** added gsl_stats_Sn_from_sorted_data()
+
 ** added Romberg integration (gsl_integration_romberg)
 
 ** bug fix in deprecated functions gsl_multifit_wlinear_svd and

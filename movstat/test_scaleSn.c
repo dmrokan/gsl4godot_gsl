@@ -19,6 +19,8 @@
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_test.h>
 
 static void
@@ -27,6 +29,7 @@ test_scaleSn(void)
   const size_t n = 19;
   const double tol = GSL_DBL_EPSILON;
   gsl_vector *x = gsl_vector_alloc(n);
+  gsl_vector *work = gsl_vector_alloc(n);
   double Sn;
   size_t i;
 
@@ -40,8 +43,11 @@ test_scaleSn(void)
   for (i = 10; i < n; ++i)
     gsl_vector_set(x, i, i + 91.0);
 
-  Sn = gsl_movstat_full_scaleSn(x);
+  /*Sn = gsl_movstat_full_scaleSn(x);*/
+  gsl_sort_vector(x);
+  Sn = gsl_stats_sn_from_sorted_data(x->data, x->stride, x->size, work->data);
   gsl_test_rel(Sn, 9.0, tol, "S_n, x = [1:10, 100 + 1:9]");
 
   gsl_vector_free(x);
+  gsl_vector_free(work);
 }

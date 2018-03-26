@@ -259,6 +259,24 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
                   NAME(gsl_stats) "_quantile_from_sorted_data (50, odd)");
   }
 
+  {
+    BASE * work = malloc(ina * sizeof(BASE));
+    double sn = FUNCTION(gsl_stats,Sn_from_sorted_data)(sorted, stridea, ina, work) ;
+    double expected = 2.3852;
+    gsl_test_rel (sn, expected, rel,
+                  NAME(gsl_stats) "_Sn_from_sorted_data (even)");
+    free(work);
+  }
+
+  {
+    BASE * work = malloc((ina - 1) * sizeof(BASE));
+    double sn = FUNCTION(gsl_stats,Sn_from_sorted_data)(sorted, stridea, ina - 1, work) ;
+    double expected = 2.503801104972376;
+    gsl_test_rel (sn, expected, rel,
+                  NAME(gsl_stats) "_Sn_from_sorted_data (odd)");
+    free(work);
+  }
+
   free (sorted);
   free (igroupa);
   free (igroupb);
