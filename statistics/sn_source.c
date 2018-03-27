@@ -53,14 +53,14 @@ licence it under the GNU Public Licence.
 */
 
 /*
-gsl_stats_Sn_from_sorted_data()
+gsl_stats_Sn0_from_sorted_data()
   Efficient algorithm for the scale estimator:
 
-    S_n = LOMED_{i} HIMED_{i} |x_i - x_j|
+    S_n0 = LOMED_{i} HIMED_{i} |x_i - x_j|
 
 which can equivalently be written as
 
-    S_n = LOMED_{i} LOMED_{j != i} |x_i - x_j|
+    S_n0 = LOMED_{i} LOMED_{j != i} |x_i - x_j|
 
 Inputs: sorted_data - sorted array containing the observations
         stride      - stride
@@ -68,23 +68,20 @@ Inputs: sorted_data - sorted array containing the observations
         work        - workspace of length n
                       work[i] := LOMED_{j != i} | x_i - x_j |
 
-Return: S_n statistic
+Return: S_n statistic (without scale/correction factor)
 */
 
 double
-FUNCTION(gsl_stats,Sn_from_sorted_data) (const BASE sorted_data[],
-                                         const size_t stride,
-                                         const size_t n,
-                                         BASE work[])
+FUNCTION(gsl_stats,Sn0_from_sorted_data) (const BASE sorted_data[],
+                                          const size_t stride,
+                                          const size_t n,
+                                          BASE work[])
 {
   /* Local variables */
-  const double scale = 1.1926; /* asymptotic consistency for sigma^2 */
-  double cn = 1.0;
   double medA, medB;
   int i, diff, half, Amin, Amax, even, length;
   int leftA, leftB, nA, nB, tryA, tryB, rightA, rightB;
   int np1_2 = (n + 1) / 2;
-  double Sn;
 
   work[0] = sorted_data[n / 2 * stride] - sorted_data[0];
 
@@ -214,6 +211,41 @@ FUNCTION(gsl_stats,Sn_from_sorted_data) (const BASE sorted_data[],
   /* sort work array */
   TYPE (gsl_sort) (work, 1, n);
 
+  return work[np1_2 - 1];
+}
+
+/*
+gsl_stats_Sn_from_sorted_data()
+  Efficient algorithm for the scale estimator:
+
+    S_n = 1.1926 * c_n LOMED_{i} HIMED_{i} |x_i - x_j|
+
+which can equivalently be written as
+
+    S_n = 1.1926 * c_n * LOMED_{i} LOMED_{j != i} |x_i - x_j|
+
+and c_n is a correction factor for small sample bias
+
+Inputs: sorted_data - sorted array containing the observations
+        stride      - stride
+        n           - length of 'sorted_data'
+        work        - workspace of length n
+                      work[i] := LOMED_{j != i} | x_i - x_j |
+
+Return: S_n statistic
+*/
+
+double
+FUNCTION(gsl_stats,Sn_from_sorted_data) (const BASE sorted_data[],
+                                         const size_t stride,
+                                         const size_t n,
+                                         BASE work[])
+{
+  const double scale = 1.1926; /* asymptotic consistency for sigma^2 */
+  double Sn0 = FUNCTION(gsl_stats,Sn0_from_sorted_data)(sorted_data, stride, n, work);
+  double cn = 1.0;
+  double Sn;
+
   /* determine correction factor for finite sample bias */
   if (n <= 9)
     {
@@ -231,7 +263,7 @@ FUNCTION(gsl_stats,Sn_from_sorted_data) (const BASE sorted_data[],
       cn = (double) n / (n - 0.9);
     }
 
-  Sn = scale * cn * work[np1_2 - 1];
+  Sn = scale * cn * Sn0;
 
   return Sn;
 }

@@ -178,7 +178,7 @@ The function :func:`gsl_filter_impulse` sets :math:`\epsilon = 0`.
 
 .. function:: gsl_filter_impulse_workspace * gsl_filter_impulse_alloc(const size_t K)
 
-   This function initializes a workspace for Hampel filtering using a symmetric moving window of
+   This function initializes a workspace for impulse detection filtering using a symmetric moving window of
    size :data:`K`. Here, :math:`H = K / 2`. If :math:`K` is even, it is rounded up to the next
    odd integer to ensure a symmetric window. The size of the workspace is :math:`O(6K)`.
 
