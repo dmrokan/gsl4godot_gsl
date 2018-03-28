@@ -432,6 +432,26 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     free(work);
   }
 
+  {
+    BASE *work = malloc(3 * na * sizeof(BASE));
+    int *work_int = malloc(5 * na * sizeof(int));
+    double r = FUNCTION(gsl_stats,Qn_from_sorted_data) (sorted, stridea, na, work, work_int);
+    double expected = 0.04113672759664409;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Qn_from_sorted_data (even)");
+    free(work);
+    free(work_int);
+  }
+
+  {
+    BASE *work = malloc(3 * (na - 1) * sizeof(BASE));
+    int *work_int = malloc(5 * (na - 1) * sizeof(int));
+    double r = FUNCTION(gsl_stats,Qn_from_sorted_data) (sorted, stridea, na - 1, work, work_int);
+    double expected = 0.03684305546303433;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Qn_from_sorted_data (odd)");
+    free(work);
+    free(work_int);
+  }
+
   free (sorted);
   free (groupa);
   free (groupb);

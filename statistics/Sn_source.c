@@ -1,4 +1,4 @@
-/* statistics/sn_source.c
+/* statistics/Sn_source.c
  * 
  * Copyright (C) 2018 Patrick Alken
  * Copyright (C) 2005, 2006, 2007 Martin Maechler, ETH Zurich

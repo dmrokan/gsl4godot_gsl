@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_FLOAT_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -97,6 +98,9 @@ double gsl_stats_float_quantile_from_sorted_data (const float sorted_data[], con
 
 double gsl_stats_float_Sn0_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[]) ;
 double gsl_stats_float_Sn_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[]) ;
+
+float gsl_stats_float_Qn0_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[], int work_int[]) ;
+double gsl_stats_float_Qn_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[], int work_int[]) ;
 
 __END_DECLS
 

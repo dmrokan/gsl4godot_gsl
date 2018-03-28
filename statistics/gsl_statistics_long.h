@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_LONG_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -77,6 +78,9 @@ double gsl_stats_long_quantile_from_sorted_data (const long sorted_data[], const
 
 double gsl_stats_long_Sn0_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n, long work[]) ;
 double gsl_stats_long_Sn_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n, long work[]) ;
+
+long gsl_stats_long_Qn0_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n, long work[], int work_int[]) ;
+double gsl_stats_long_Qn_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n, long work[], int work_int[]) ;
 
 __END_DECLS
 

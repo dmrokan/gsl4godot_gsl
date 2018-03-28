@@ -45,7 +45,7 @@ test_scaleSn(void)
 
   /*Sn = gsl_movstat_full_scaleSn(x);*/
   gsl_sort_vector(x);
-  Sn = gsl_stats_sn_from_sorted_data(x->data, x->stride, x->size, work->data);
+  Sn = gsl_stats_Sn0_from_sorted_data(x->data, x->stride, x->size, work->data);
   gsl_test_rel(Sn, 9.0, tol, "S_n, x = [1:10, 100 + 1:9]");
 
   gsl_vector_free(x);

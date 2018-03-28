@@ -69,6 +69,37 @@ slow_Sn0(const size_t n, const double x[])
   return Sn;
 }
 
+/* calculate Q_n statistic for input vector using slow/naive algorithm */
+static double
+slow_Qn0(const size_t n, const double x[])
+{
+  const size_t wsize = n * (n - 1) / 2;
+  const size_t n_2 = n / 2;
+  const size_t k = ((n_2 + 1) * n_2) / 2;
+  double *work;
+  double Qn;
+  size_t idx = 0;
+  size_t i, j;
+
+  if (n < 2)
+    return (0.0);
+
+  work = malloc(wsize * sizeof(double));
+
+  for (i = 0; i < n; ++i)
+    {
+      for (j = i + 1; j < n; ++j)
+        work[idx++] = fabs(x[i] - x[j]);
+    }
+
+  gsl_sort(work, 1, idx);
+  Qn = work[k - 1];
+
+  free(work);
+
+  return Qn;
+}
+
 static int
 test_Sn(const double tol, const size_t n, gsl_rng * r)
 {
@@ -93,6 +124,32 @@ test_Sn(const double tol, const size_t n, gsl_rng * r)
   return 0;
 }
 
+static int
+test_Qn(const double tol, const size_t n, gsl_rng * r)
+{
+  double * x = malloc(n * sizeof(double));
+  double * work = malloc(3 * n * sizeof(double));
+  int * work_int = malloc(5 * n * sizeof(int));
+  double Qn1, Qn2;
+
+  random_array(n, x, r);
+
+  /* compute Q_n with slow/naive algorithm */
+  Qn1 = slow_Qn0(n, x);
+
+  /* compute Q_n with efficient algorithm */
+  gsl_sort(x, 1, n);
+  Qn2 = gsl_stats_Qn0_from_sorted_data(x, 1, n, work, work_int);
+
+  gsl_test_rel(Qn2, Qn1, tol, "test_Qn n=%zu", n);
+
+  free(x);
+  free(work);
+  free(work_int);
+
+  return 0;
+}
+
 int
 test_robust (void)
 {
@@ -106,6 +163,16 @@ test_robust (void)
   test_Sn(tol, 101, r);
   test_Sn(tol, 500, r);
   test_Sn(tol, 501, r);
+
+  test_Qn(tol, 1, r);
+  test_Qn(tol, 2, r);
+  test_Qn(tol, 3, r);
+  test_Qn(tol, 4, r);
+  test_Qn(tol, 5, r);
+  test_Qn(tol, 100, r);
+  test_Qn(tol, 101, r);
+  test_Qn(tol, 500, r);
+  test_Qn(tol, 501, r);
 
   gsl_rng_free(r);
 

@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_UCHAR_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -77,6 +78,9 @@ double gsl_stats_uchar_quantile_from_sorted_data (const unsigned char sorted_dat
 
 double gsl_stats_uchar_Sn0_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[]) ;
 double gsl_stats_uchar_Sn_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[]) ;
+
+unsigned char gsl_stats_uchar_Qn0_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[], int work_int[]) ;
+double gsl_stats_uchar_Qn_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[], int work_int[]) ;
 
 __END_DECLS
 

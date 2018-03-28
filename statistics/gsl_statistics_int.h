@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_INT_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -77,6 +78,9 @@ double gsl_stats_int_quantile_from_sorted_data (const int sorted_data[], const s
 
 double gsl_stats_int_Sn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
 double gsl_stats_int_Sn_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
+
+int gsl_stats_int_Qn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[], int work_int[]) ;
+double gsl_stats_int_Qn_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[], int work_int[]) ;
 
 __END_DECLS
 
