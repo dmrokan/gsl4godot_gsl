@@ -259,6 +259,47 @@ current sliding window, using the algorithm by D. Lemire.
 
    This function resets the accumulator so it can begin working on a fresh dataset.
 
+Examples
+========
+
+Robust Scale Example
+--------------------
+
+The following example program analyzes a time series of length :math:`N = 1000` composed
+of Gaussian random variates with zero mean whose standard deviation changes in a piecewise constant fashion
+as shown in the table below.
+
+============ ==============
+Sample Range :math:`\sigma`
+============ ==============
+1-200        1.0
+201-450      5.0
+451-600      1.0
+601-850      3.0
+851-1000     5.0
+============ ==============
+
+Additionally, about 1% of the samples are perturbed to represent outliers by adding
+:math:`\pm 15` to the random Gaussian variate.
+The program calculates the moving statistics MAD, IQR, :math:`S_n`, and :math:`Q_n`, using
+a moving window of length :math:`K = 40`. The results are shown in
+:numref:`fig_movstat2`.
+
+.. _fig_movstat2:
+
+.. figure:: /images/movstat2.png
+   :scale: 60%
+
+   Top: time series of piecewise constant variance. Bottom: scale estimates using a moving
+   window; the true sigma value is in light blue, MAD in green, IQR in red, :math:`S_n` in yellow, and
+   :math:`Q_n` in dark blue.
+
+The robust statistics follow the true standard deviation piecewise changes well, without being
+influenced by the outliers. The program is given below.
+
+.. include:: examples/movstat2.c
+   :code:
+
 References and Further Reading
 ==============================
 

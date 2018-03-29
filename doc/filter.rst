@@ -146,10 +146,7 @@ computing the scale estimate :math:`S_i`, all of which are robust to the presenc
 
       .. math:: S_i = 1.1926 \times \textrm{median}_j \left\{ \textrm{median}_k \left( \left| x_j - x_k \right| \right) \right\}, \quad x_j,x_k \in W_i^H
 
-      For each sample :math:`x_j \in W_i^H`, the median of the values :math:`|x_j - x_k|` are computed for
-      all :math:`x_k \in W_i^H`. This yields :math:`K` values, whose median is then the final :math:`S_i`.
-      The factor :math:`1.1926` makes :math:`S_i` an unbiased estimate of the standard deviation for
-      Gaussian data. This statistic has an efficiency of 58%.
+      See :ref:`here <sec_Sn-statistic>` for more information.
 
 .. warning::
 

@@ -681,6 +681,8 @@ the statistical dispersion (variability, scatter, spread) in a set of data which
 In such datasets, the usual variance or standard deviation scale estimate can be rendered useless
 by even a single outlier.
 
+.. _sec_Sn-statistic:
+
 :math:`S_n` Statistic
 ---------------------
 
@@ -688,6 +690,8 @@ The :math:`S_n` statistic developed by Croux and Rousseeuw is defined as
 
 .. math:: S_n = 1.1926 \times c_n \times \textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}
 
+For each sample :math:`x_i, 1 \le i \le n`, the median of the values :math:`\left| x_i - x_j \right|` is computed for all
+:math:`x_j, 1 \le j \le n`. This yields :math:`n` values, whose median then gives the final :math:`S_n`.
 The factor :math:`1.1926` makes :math:`S_n` an unbiased estimate of the standard deviation for Gaussian data.
 The factor :math:`c_n` is a correction factor to correct bias in small sample sizes. :math:`S_n` has an asymptotic
 efficiency of 58%.

@@ -159,7 +159,7 @@ test_window(const gsl_movstat_end_t endtype, const int idx, const int H, const i
 #include "test_median.c"
 #include "test_minmax.c"
 #include "test_minmaxacc.c"
-#include "test_scaleSn.c"
+#include "test_Sn.c"
 
 int
 main()
@@ -170,7 +170,7 @@ main()
   test_median();
   test_minmax();
   test_mad();
-  test_scaleSn();
+  test_Sn();
 
   exit (gsl_test_summary());
 }

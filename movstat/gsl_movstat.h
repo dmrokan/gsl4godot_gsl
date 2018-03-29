@@ -109,9 +109,10 @@ int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_v
                     gsl_vector * xmad, gsl_movstat_workspace * w);
 int gsl_movstat_qqr(const gsl_movstat_end_t endtype, const gsl_vector * x, const double q,
                     gsl_vector * xqqr, gsl_movstat_workspace * w);
-int gsl_movstat_scaleSn(const gsl_movstat_end_t endtype, const gsl_vector * x,
-                        gsl_vector * xscale, gsl_movstat_workspace * w);
-double gsl_movstat_full_scaleSn(const gsl_vector * x); /*XXX*/
+int gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
+                   gsl_vector * xscale, gsl_movstat_workspace * w);
+int gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
+                   gsl_vector * xscale, gsl_movstat_workspace * w);
 
 __END_DECLS
 

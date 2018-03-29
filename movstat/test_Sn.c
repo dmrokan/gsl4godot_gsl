@@ -1,4 +1,4 @@
-/* movstat/test_scaleSn.c
+/* movstat/test_Sn.c
  * 
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -24,7 +24,7 @@
 #include <gsl/gsl_test.h>
 
 static void
-test_scaleSn(void)
+test_Sn(void)
 {
   const size_t n = 19;
   const double tol = GSL_DBL_EPSILON;
@@ -36,14 +36,14 @@ test_scaleSn(void)
   for (i = 0; i < n; ++i)
     gsl_vector_set(x, i, i + 1.0);
 
-  Sn = gsl_movstat_full_scaleSn(x);
+  Sn = gsl_stats_Sn0_from_sorted_data(x->data, x->stride, x->size, work->data);
   gsl_test_rel(Sn, 5.0, tol, "S_n, x = [1:19]");
 
   /* add some outliers */
   for (i = 10; i < n; ++i)
     gsl_vector_set(x, i, i + 91.0);
 
-  /*Sn = gsl_movstat_full_scaleSn(x);*/
+  /*Sn = gsl_movstat_full_Sn(x);*/
   gsl_sort_vector(x);
   Sn = gsl_stats_Sn0_from_sorted_data(x->data, x->stride, x->size, work->data);
   gsl_test_rel(Sn, 9.0, tol, "S_n, x = [1:10, 100 + 1:9]");

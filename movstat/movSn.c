@@ -1,4 +1,4 @@
-/* movstat/movscaleSn.c
+/* movstat/movSn.c
  *
  * Compute moving "S_n" statistic from Croux and Rousseeuw, 1992
  * 
@@ -32,7 +32,7 @@
 #include "movstat_common.c"
 
 /*
-gsl_movstat_scaleSn()
+gsl_movstat_Sn()
   Calculate moving S_n statistic for input vector
 
 Inputs: endtype - how to handle end points
@@ -43,8 +43,8 @@ Inputs: endtype - how to handle end points
 */
 
 int
-gsl_movstat_scaleSn(const gsl_movstat_end_t endtype, const gsl_vector * x,
-                    gsl_vector * xscale, gsl_movstat_workspace * w)
+gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
+               gsl_vector * xscale, gsl_movstat_workspace * w)
 {
   if (x->size != xscale->size)
     {
@@ -56,66 +56,24 @@ gsl_movstat_scaleSn(const gsl_movstat_end_t endtype, const gsl_vector * x,
       const int H = (int) w->H; /* number of samples to left of current sample */
       const int J = (int) w->J; /* number of samples to right of current sample */
       double *window = w->work;
-      int window_size;
+      double *work2 = malloc(w->K * sizeof(double)); /*FIXME*/
+      size_t window_size;
       int i;
 
       for (i = 0; i < n; ++i)
         {
           double *xscalei = gsl_vector_ptr(xscale, i);
-          gsl_vector_view v;
 
           /* fill window centered on x_i */
           window_size = movstat_fill_window(endtype, i, H, J, x, window);
 
           /* compute S_n for this window */
-          v = gsl_vector_view_array(window, window_size);
-          *xscalei = gsl_movstat_full_scaleSn(&v.vector);
+          gsl_sort(window, 1, window_size);
+          *xscalei = gsl_stats_Sn_from_sorted_data(window, 1, window_size, work2);
         }
+
+      free(work2);
 
       return GSL_SUCCESS;
     }
-}
-
-/*
-gsl_movstat_full_scaleSn()
-  Calculate S_n statistic for input vector
-
-Inputs: x - input vector, size n
-
-Return: S_n(x)
-*/
-
-/*XXX*/
-double
-gsl_movstat_full_scaleSn(const gsl_vector * x)
-{
-  const int n = (int) x->size;
-  double *work1 = malloc(n * sizeof(double));
-  double *work2 = malloc(n * sizeof(double));
-  double Sn;
-  int j, k;
-
-  for (j = 0; j < n; ++j)
-    {
-      double xj = gsl_vector_get(x, j);
-
-      for (k = 0; k < n; ++k)
-        {
-          double xk = gsl_vector_get(x, k);
-          work1[k] = fabs(xj - xk);
-        }
-
-      /* find med_k | x_j - x_k | */
-      gsl_sort(work1, 1, n);
-      work2[j] = gsl_stats_median_from_sorted_data(work1, 1, n);
-    }
-
-  /* find med_j { med_k | x_j - x_k | } */
-  gsl_sort(work2, 1, n);
-  Sn = gsl_stats_median_from_sorted_data(work2, 1, n);
-
-  free(work1);
-  free(work2);
-
-  return Sn;
 }
