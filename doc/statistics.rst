@@ -689,16 +689,55 @@ The :math:`S_n` statistic developed by Croux and Rousseeuw is defined as
 .. math:: S_n = 1.1926 \times c_n \times \textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}
 
 The factor :math:`1.1926` makes :math:`S_n` an unbiased estimate of the standard deviation for Gaussian data.
-The factor :math:`c_n` is a correction factor to correct bias in small sample sizes.
+The factor :math:`c_n` is a correction factor to correct bias in small sample sizes. :math:`S_n` has an asymptotic
+efficiency of 58%.
 
+.. function:: double gsl_stats_Sn0_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
 .. function:: double gsl_stats_Sn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
 
-   This function returns the :math:`S_n` statistic of :data:`sorted_data`, a dataset
+   These functions return the :math:`S_n` statistic of :data:`sorted_data`, a dataset
    of length :data:`n` with stride :data:`stride`.  The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
-   always be used first. This function requires additional workspace of size
-   :data:`n` provided in :data:`work`.
+   always be used first. The :code:`Sn0` function calculates
+   :math:`\textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}`
+   (i.e. the :math:`S_n` statistic without the bias correction scale factors).
+   These functions require additional workspace of size
+   :code:`n` provided in :data:`work`.
+
+:math:`Q_n` Statistic
+---------------------
+
+The :math:`Q_n` statistic developed by Croux and Rousseeuw is defined as
+
+.. math:: Q_n = 2.21914 \times d_n \times \left\{ \left| x_i - x_j \right|, i < j \right\}_{(k)}
+
+The factor :math:`2.21914` makes :math:`Q_n` an unbiased estimate of the standard deviation for Gaussian data.
+The factor :math:`d_n` is a correction factor to correct bias in small sample sizes. The order statistic
+is
+
+.. math:: k = \left(
+                \begin{array}{c}
+                  \left\lfloor \frac{n}{2} \right\rfloor + 1 \\
+                  2
+                \end{array}
+              \right)
+
+:math:`Q_n` has an asymptotic efficiency of 82%.
+
+.. function:: double gsl_stats_Qn0_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[], int work_int[])
+              double gsl_stats_Qn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[], int work_int[])
+
+   These functions return the :math:`Q_n` statistic of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. The :code:`Qn0` function calculates
+   :math:`\left\{ \left| x_i - x_j \right|, i < j \right\}_{(k)}`
+   (i.e. :math:`Q_n` without the bias correction scale factors).
+   These functions require additional workspace of size
+   :code:`3n` provided in :data:`work` and integer workspace of size :code:`5n`
+   provided in :data:`work_int`.
 
 Examples
 ========
@@ -751,3 +790,10 @@ Annual Review of Particle Physics.
 
 The Review of Particle Physics is available online at
 the website http://pdg.lbl.gov/.
+
+The following papers describe robust scale estimation,
+
+* C. Croux and P. J. Rousseeuw, *Time-Efficient algorithms for two highly robust
+  estimators of scale*, Comp. Stat., Physica, Heidelberg, 1992.
+* P. J. Rousseeuw and C. Croux, *Explicit scale estimators with high breakdown point*,
+  L1-Statistical Analysis and Related Methods, pp. 77-92, 1992.

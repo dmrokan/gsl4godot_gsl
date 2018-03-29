@@ -76,7 +76,7 @@ void gsl_stats_int_minmax_index (size_t * min_index, size_t * max_index, const i
 double gsl_stats_int_median_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n) ;
 double gsl_stats_int_quantile_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, const double f) ;
 
-double gsl_stats_int_Sn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
+int gsl_stats_int_Sn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
 double gsl_stats_int_Sn_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
 
 int gsl_stats_int_Qn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[], int work_int[]) ;

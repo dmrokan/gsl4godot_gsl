@@ -239,7 +239,7 @@ FUNCTION(gsl_stats,Qn_from_sorted_data) (const BASE sorted_data[],
                                          int work_int[])
 {
   const double scale = 2.21914; /* asymptotic consistency for sigma^2 */
-  double Qn0 = FUNCTION(gsl_stats,Qn0_from_sorted_data)(sorted_data, stride, n, work, work_int);
+  double Qn0 = (double) FUNCTION(gsl_stats,Qn0_from_sorted_data)(sorted_data, stride, n, work, work_int);
   double dn = 1.0;
   double Qn;
 

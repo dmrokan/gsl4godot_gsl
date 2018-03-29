@@ -71,7 +71,7 @@ Inputs: sorted_data - sorted array containing the observations
 Return: S_n statistic (without scale/correction factor)
 */
 
-double
+BASE
 FUNCTION(gsl_stats,Sn0_from_sorted_data) (const BASE sorted_data[],
                                           const size_t stride,
                                           const size_t n,
@@ -242,7 +242,7 @@ FUNCTION(gsl_stats,Sn_from_sorted_data) (const BASE sorted_data[],
                                          BASE work[])
 {
   const double scale = 1.1926; /* asymptotic consistency for sigma^2 */
-  double Sn0 = FUNCTION(gsl_stats,Sn0_from_sorted_data)(sorted_data, stride, n, work);
+  double Sn0 = (double) FUNCTION(gsl_stats,Sn0_from_sorted_data)(sorted_data, stride, n, work);
   double cn = 1.0;
   double Sn;
 
