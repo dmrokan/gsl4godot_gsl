@@ -1,4 +1,6 @@
 /* movstat/sumacc.c
+ *
+ * Moving window sum accumulator
  * 
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -27,7 +29,6 @@ typedef double ringbuf_type;
 
 typedef struct
 {
-  size_t n;       /* window size */
   double sum;     /* current window sum */
   ringbuf *rbuf;  /* ring buffer storing current window */
 } sumacc_state_t;
@@ -48,7 +49,6 @@ sumacc_init(const size_t n, void * vstate)
 {
   sumacc_state_t * state = (sumacc_state_t *) vstate;
 
-  state->n = n;
   state->sum = 0.0;
 
   state->rbuf = vstate + sizeof(sumacc_state_t);
@@ -81,7 +81,10 @@ sumacc_delete(void * vstate)
   sumacc_state_t * state = (sumacc_state_t *) vstate;
 
   if (!ringbuf_is_empty(state->rbuf))
-    state->sum -= ringbuf_peek_back(state->rbuf);
+    {
+      state->sum -= ringbuf_peek_back(state->rbuf);
+      ringbuf_pop_back(state->rbuf);
+    }
 
   return GSL_SUCCESS;
 }

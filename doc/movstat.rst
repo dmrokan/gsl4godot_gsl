@@ -112,6 +112,20 @@ each window :math:`W_i^{H,J}`.
    the window minimums in :data:`y_min` and the window maximums in :data:`y_max`.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
 
+Moving Sum
+==========
+
+The moving window sum calculates the sum of the values of each window :math:`W_i^{H,J}`.
+
+.. math:: y_i &= \sum_{m=1}^K x_m, \quad x_m \in W_i^{H,J}
+
+.. function:: int gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+
+   This function computes the moving window sum of the input vector :data:`x`, storing
+   the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
+   the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
+   for an in-place moving sum.
+
 Moving Median
 =============
 

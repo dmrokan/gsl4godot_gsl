@@ -34,6 +34,7 @@ static int ringbuf_empty(ringbuf * d);
 static int ringbuf_is_empty(const ringbuf * d);
 static int ringbuf_is_full(const ringbuf * d);
 static int ringbuf_add(const ringbuf_type x, ringbuf * d);
+static int ringbuf_pop_back(ringbuf * b);
 static ringbuf_type ringbuf_peek_front(const ringbuf * d);
 static ringbuf_type ringbuf_peek_back(const ringbuf * d);
 
@@ -118,6 +119,33 @@ ringbuf_add(const ringbuf_type x, ringbuf * b)
   return GSL_SUCCESS;
 }
 
+static int
+ringbuf_pop_back(ringbuf * b)
+{
+  if (ringbuf_is_empty(b) || b->tail < 0)
+    {
+      GSL_ERROR("buffer is empty", GSL_EBADLEN);
+    }
+  else
+    {
+      if (b->head == b->tail) /* buffer has only one element */
+        {
+          b->head = -1;
+          b->tail = -1;
+        }
+      else if (b->tail == 0)  /* tail is in first position, wrap to end */
+        {
+          b->tail = b->size - 1;
+        }
+      else
+        {
+          --(b->tail);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
 static ringbuf_type
 ringbuf_peek_front(const ringbuf * b)
 {
@@ -136,7 +164,7 @@ ringbuf_peek_back(const ringbuf * b)
 {
   if (ringbuf_is_empty(b) || b->tail < 0)
     {
-      GSL_ERROR("queue is empty", GSL_EBADLEN);
+      GSL_ERROR("buffer is empty", GSL_EBADLEN);
     }
   else
     {

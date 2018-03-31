@@ -90,3 +90,112 @@ movstat_fill_window(const gsl_movstat_end_t endtype, const int idx, const int H,
 
   return wsize;
 }
+
+/*
+movstat_apply()
+  Apply moving window statistic to input vector. This is a generalized
+routine to handle window endpoints and apply a given accumulator to
+the input vector.
+
+Inputs: endtype    - end point handling criteria
+        x          - input vector, size n
+        y          - output vector, size n
+        acc_init   - initialize accumulator
+        acc_add    - add a single sample to accumulator
+        acc_delete - delete oldest sample from accumulator
+        acc_get    - get current accumulated value
+        w          - workspace
+
+Notes:
+1) It is allowed to have x = y for in-place moving statistics
+*/
+
+int
+movstat_apply(const gsl_movstat_end_t endtype,
+              const gsl_vector * x,
+              gsl_vector * y,
+              int (*acc_init)(const size_t n, void * vstate),
+              int (*acc_add)(const double x, void * vstate),
+              int (*acc_delete)(void * vstate),
+              double (*acc_get)(const void * vstate),
+              gsl_movstat_workspace * w)
+{
+  if (x->size != y->size)
+    {
+      GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
+    }
+  else
+    {
+      const int n = (int) x->size;
+      const int H = w->H; /* number of samples to left of current sample */
+      const int J = w->J; /* number of samples to right of current sample */
+      int i;
+      double x1 = 0.0;    /* pad values for data edges */
+      double xN = 0.0;
+
+      /* initialize sum accumulator */
+      (*acc_init)(w->K, w->state);
+
+      /* pad initial window if necessary */
+      if (endtype != GSL_MOVSTAT_END_TRUNCATE)
+        {
+          if (endtype == GSL_MOVSTAT_END_PADZERO)
+            {
+              x1 = 0.0;
+              xN = 0.0;
+            }
+          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
+            {
+              x1 = gsl_vector_get(x, 0);
+              xN = gsl_vector_get(x, n - 1);
+            }
+
+          /* pad initial windows with H values */
+          for (i = 0; i < H; ++i)
+            (*acc_add)(x1, w->state);
+        }
+
+      /* process input vector and fill y(0:n - J - 1) */
+      for (i = 0; i < n; ++i)
+        {
+          double xi = gsl_vector_get(x, i);
+          int idx = i - J;
+
+          (*acc_add)(xi, w->state);
+
+          if (idx >= 0)
+            gsl_vector_set(y, idx, (*acc_get)(w->state));
+        }
+
+      if (endtype == GSL_MOVSTAT_END_TRUNCATE)
+        {
+          /* need to fill y(n-J:n-1) using shrinking windows */
+          int idx1 = GSL_MAX(n - J, 0);
+          int idx2 = n - 1;
+
+          for (i = idx1; i <= idx2; ++i)
+            {
+              /* delete oldest window sample as we move closer to edge */
+              (*acc_delete)(w->state);
+
+              /* yi = acc_get [ work(i:K-2) ] */
+              gsl_vector_set(y, i, (*acc_get)(w->state));
+            }
+        }
+      else
+        {
+          /* pad final windows and fill y(n-J:n-1) */
+          for (i = 0; i < J; ++i)
+            {
+              int idx = n - J + i;
+
+              (*acc_add)(xN, w->state);
+
+              if (idx >= 0)
+                gsl_vector_set(y, idx, (*acc_get)(w->state));
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}

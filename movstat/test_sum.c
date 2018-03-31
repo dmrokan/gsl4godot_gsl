@@ -110,6 +110,13 @@ test_sum_proc(const double tol, const size_t n, const size_t H, const size_t J,
   sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u sum random", n, H, J, etype);
   compare_vectors(tol, z, y, buf);
 
+  /* z = sum(x) in-place */
+  gsl_vector_memcpy(z, x);
+  gsl_movstat_sum(etype, z, z, w);
+
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u sum random in-place", n, H, J, etype);
+  compare_vectors(tol, z, y, buf);
+
   gsl_movstat_free(w);
   gsl_vector_free(x);
   gsl_vector_free(y);
