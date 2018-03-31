@@ -177,6 +177,9 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
 
           case GSL_FILTER_SCALE_IQR:
             {
+              /* multiplication factor for IQR to estimate stddev for Gaussian signal */
+              scale = 0.741301109252801;
+
               /* calculate the window medians */
               gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
       
@@ -188,14 +191,20 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
 
           case GSL_FILTER_SCALE_SN:
             {
-              /* multiplication factor for S_n to estimate stddev for Gaussian signal */
-              scale = 1.1926;
-
               /* calculate the window medians */
               gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
       
               /* calculate window S_n values */
-              gsl_movstat_scaleSn(endtype, x, xsigma, w->movstat_workspace_p);
+              gsl_movstat_Sn(endtype, x, xsigma, w->movstat_workspace_p);
+            }
+
+          case GSL_FILTER_SCALE_QN:
+            {
+              /* calculate the window medians */
+              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+      
+              /* calculate window Q_n values */
+              gsl_movstat_Qn(endtype, x, xsigma, w->movstat_workspace_p);
             }
 
           default:
@@ -279,12 +288,12 @@ filter_impulse(const double scale, const double epsilon, const double t, const g
           double absdevi = fabs(xi - xmedi); /* absolute deviation for this sample */
           double *xsigmai = gsl_vector_ptr(xsigma, i);
 
-          /* multiply MAD value by scale factor to get estimate of standard deviation */
+          /* multiply by scale factor to get estimate of standard deviation */
           *xsigmai *= scale;
 
           /*
            * If the absolute deviation for this sample is more than t stddevs
-           * for this window (and S_i is sufficiently large to avoid MAD scale implosion),
+           * for this window (and S_i is sufficiently large to avoid scale implosion),
            * set the output value to the window median, otherwise use the original sample
            */
           if ((*xsigmai >= epsilon) && (absdevi > t * (*xsigmai)))

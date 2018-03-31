@@ -709,6 +709,8 @@ efficiency of 58%.
    These functions require additional workspace of size
    :code:`n` provided in :data:`work`.
 
+.. _sec_Qn-statistic:
+
 :math:`Q_n` Statistic
 ---------------------
 

@@ -49,7 +49,8 @@ typedef enum
 {
   GSL_FILTER_SCALE_MAD, /* median absolute deviation */
   GSL_FILTER_SCALE_IQR, /* interquartile range */
-  GSL_FILTER_SCALE_SN   /* S_n scale statistic */
+  GSL_FILTER_SCALE_SN,  /* S_n scale statistic */
+  GSL_FILTER_SCALE_QN   /* Q_n scale statistic */
 } gsl_filter_scale_t;
 
 /* workspace for Gaussian filter */

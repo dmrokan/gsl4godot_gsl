@@ -33,7 +33,7 @@ Statistics such as the mean and standard deviation of the window :math:`W_i^{H,J
 may be computed, and then the window is shifted forward by one sample to
 focus on :math:`x_{i+1}`. The total number of samples in the window is
 :math:`K = H + J + 1`. To define a symmetric window centered on :math:`x_i`,
-one would set :math:`H = J = K / 2`.
+one would set :math:`H = J = \left\lfloor K / 2 \right\rfloor`.
 
 Handling Endpoints
 ==================
@@ -81,7 +81,7 @@ Allocation for Moving Window Statistics
 .. function:: gsl_movstat_workspace * gsl_movstat_alloc(const size_t K)
 
    This function allocates a workspace for computing symmetric, centered moving statistics with a window
-   length of :math:`K` samples. In this case, :math:`H = J = K/2`. The size of the workspace
+   length of :math:`K` samples. In this case, :math:`H = J = \left\lfloor K/2 \right\rfloor`. The size of the workspace
    is :math:`O(7K)`.
 
 .. function:: gsl_movstat_workspace * gsl_movstat_alloc2(const size_t H, const size_t J)

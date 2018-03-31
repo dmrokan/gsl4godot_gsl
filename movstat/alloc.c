@@ -23,6 +23,8 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
+#include "sumacc.c"
+
 /*
 gsl_movstat_alloc()
   Allocate a workspace for moving window statistics.
@@ -70,6 +72,7 @@ gsl_movstat_workspace *
 gsl_movstat_alloc2(const size_t H, const size_t J)
 {
   gsl_movstat_workspace *w;
+  size_t state_size = 0;
 
   w = calloc(1, sizeof(gsl_movstat_workspace));
   if (w == 0)
@@ -80,6 +83,19 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
   w->H = H;
   w->J = J;
   w->K = H + J + 1;
+
+  /*
+   * determine maximum number of bytes needed for the various accumulators;
+   * the accumulators will all share the same workspace
+   */
+  state_size = GSL_MAX(state_size, sumacc_size(w->K));
+
+  w->state = malloc(state_size);
+  if (w->state == 0)
+    {
+      gsl_movstat_free(w);
+      GSL_ERROR_NULL ("failed to allocate space for accumulator state", GSL_ENOMEM);
+    }
 
   w->minmaxacc_workspace_p = gsl_movstat_minmaxacc_alloc(w->K);
   if (w->minmaxacc_workspace_p == 0)
@@ -108,6 +124,9 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
 void
 gsl_movstat_free(gsl_movstat_workspace * w)
 {
+  if (w->state)
+    free(w->state);
+
   if (w->minmaxacc_workspace_p)
     gsl_movstat_minmaxacc_free(w->minmaxacc_workspace_p);
 

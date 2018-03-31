@@ -93,6 +93,9 @@ typedef struct
   size_t J;     /* number of after samples in window */
   size_t K;     /* window size K = H + J + 1 */
   double *work; /* workspace, size K */
+
+  void *state;  /* state workspace for various accumulators */
+
   gsl_movstat_medacc_workspace *medacc_workspace_p;
   gsl_movstat_minmaxacc_workspace *minmaxacc_workspace_p;
 } gsl_movstat_workspace;
@@ -113,6 +116,7 @@ int gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                    gsl_vector * xscale, gsl_movstat_workspace * w);
 int gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                    gsl_vector * xscale, gsl_movstat_workspace * w);
+int gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 
 __END_DECLS
 

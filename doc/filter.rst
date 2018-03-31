@@ -135,18 +135,21 @@ computing the scale estimate :math:`S_i`, all of which are robust to the presenc
       This option specifies the interquartile range (IQR) scale estimate, defined as the difference between
       the 75th and 25th percentiles of the window :math:`W_i^H`,
 
-      .. math:: S_i = Q_{0.75} - Q_{0.25}
+      .. math:: S_i = 0.7413 \left( Q_{0.75} - Q_{0.25} \right)
 
       where :math:`Q_p` is the p-quantile of the window :math:`W_i^H`. The idea is to throw away the largest
       and smallest 25% of the window samples (where the outliers would be), and estimate a scale from the middle 50%.
+      The factor :math:`0.7413` provides an unbiased estimate of the standard deviation for Gaussian data.
 
    .. macro:: GSL_FILTER_SCALE_SN
 
-      This option specifies the so-called :math:`S_n` statistic proposed by Croux and Rousseeuw, defined by
-
-      .. math:: S_i = 1.1926 \times \textrm{median}_j \left\{ \textrm{median}_k \left( \left| x_j - x_k \right| \right) \right\}, \quad x_j,x_k \in W_i^H
-
+      This option specifies the so-called :math:`S_n` statistic proposed by Croux and Rousseeuw.
       See :ref:`here <sec_Sn-statistic>` for more information.
+
+   .. macro:: GSL_FILTER_SCALE_QN
+
+      This option specifies the so-called :math:`Q_n` statistic proposed by Croux and Rousseeuw.
+      See :ref:`here <sec_Qn-statistic>` for more information.
 
 .. warning::
 
