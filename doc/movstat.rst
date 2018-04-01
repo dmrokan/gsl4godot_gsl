@@ -334,8 +334,8 @@ Sample Range :math:`\sigma`
 
 Additionally, about 1% of the samples are perturbed to represent outliers by adding
 :math:`\pm 15` to the random Gaussian variate.
-The program calculates the moving statistics MAD, IQR, :math:`S_n`, and :math:`Q_n`, using
-a moving window of length :math:`K = 41`. The results are shown in
+The program calculates the moving statistics MAD, IQR, :math:`S_n`, :math:`Q_n`, and
+the standard deviation using a moving window of length :math:`K = 41`. The results are shown in
 :numref:`fig_movstat2`.
 
 .. _fig_movstat2:
@@ -345,10 +345,11 @@ a moving window of length :math:`K = 41`. The results are shown in
 
    Top: time series of piecewise constant variance. Bottom: scale estimates using a moving
    window; the true sigma value is in light blue, MAD in green, IQR in red, :math:`S_n` in yellow, and
-   :math:`Q_n` in dark blue.
+   :math:`Q_n` in dark blue. The moving standard deviation is shown in gray.
 
 The robust statistics follow the true standard deviation piecewise changes well, without being
-influenced by the outliers. The program is given below.
+influenced by the outliers. The moving standard deviation (gray curve) is heavily influenced by
+the presence of the outliers. The program is given below.
 
 .. include:: examples/movstat2.c
    :code:

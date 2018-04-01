@@ -20,6 +20,7 @@ main(void)
   gsl_vector *xiqr = gsl_vector_alloc(N);
   gsl_vector *xSn = gsl_vector_alloc(N);
   gsl_vector *xQn = gsl_vector_alloc(N);
+  gsl_vector *xsd = gsl_vector_alloc(N);
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
   gsl_movstat_workspace * w = gsl_movstat_alloc(K);
   size_t idx = 0;
@@ -43,6 +44,7 @@ main(void)
   gsl_movstat_qqr(GSL_MOVSTAT_END_PADZERO, x, 0.25, xiqr, w);
   gsl_movstat_Sn(GSL_MOVSTAT_END_PADZERO, x, xSn, w);
   gsl_movstat_Qn(GSL_MOVSTAT_END_PADZERO, x, xQn, w);
+  gsl_movstat_sd(GSL_MOVSTAT_END_PADZERO, x, xsd, w);
 
   /*
    * scale MAD and IQR by factors to approximate standard deviation;
@@ -55,14 +57,15 @@ main(void)
   idx = 0;
   for (i = 0; i < N; ++i)
     {
-      printf("%zu %f %f %f %f %f %f\n",
+      printf("%zu %f %f %f %f %f %f %f\n",
              i,
              gsl_vector_get(x, i),
              sigma[idx],
              gsl_vector_get(xmad, i),
              gsl_vector_get(xiqr, i),
              gsl_vector_get(xSn, i),
-             gsl_vector_get(xQn, i));
+             gsl_vector_get(xQn, i),
+             gsl_vector_get(xsd, i));
 
       if (i == N_sigma[idx] - 1)
         ++idx;
@@ -74,6 +77,7 @@ main(void)
   gsl_vector_free(xiqr);
   gsl_vector_free(xSn);
   gsl_vector_free(xQn);
+  gsl_vector_free(xsd);
   gsl_rng_free(r);
   gsl_movstat_free(w);
 
