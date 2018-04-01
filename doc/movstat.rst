@@ -99,7 +99,7 @@ Moving Mean
 
 The moving window mean calculates the mean of the values of each window :math:`W_i^{H,J}`.
 
-.. math:: y_i = \frac{1}{K} \sum_{m=1}^K x_m, \quad x_m \in W_i^{H,J}
+.. math:: \hat{\mu}_i = \frac{1}{K} \sum_{m=1}^K x_m, \quad x_m \in W_i^{H,J}
 
 .. function:: int gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 
@@ -107,6 +107,31 @@ The moving window mean calculates the mean of the values of each window :math:`W
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
    the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
    for an in-place moving mean.
+
+Moving Variance and Standard Deviation
+======================================
+
+The moving window variance calculates the *sample variance* of the values of each window :math:`W_i^{H,J}`,
+defined by
+
+.. math:: \hat{\sigma}_i^2 = \frac{1}{\left( K - 1 \right)} \sum_{m=1}^K \left( x_m - \hat{\mu}_i \right)^2, \quad x_m \in W_i^{H,J}
+
+where :math:`\hat{\mu}_i` is the mean of :math:`W_i^{H,J}` defined above. The standard deviation :math:`\hat{\sigma}_i`
+is the square root of the variance.
+
+.. function:: int gsl_movstat_variance(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+
+   This function computes the moving window variance of the input vector :data:`x`, storing
+   the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
+   the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
+   for an in-place moving variance.
+
+.. function:: int gsl_movstat_sd(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+
+   This function computes the moving window standard deviation of the input vector :data:`x`, storing
+   the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
+   the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
+   for an in-place moving standard deviation.
 
 Moving Minimum and Maximum
 ==========================
@@ -310,7 +335,7 @@ Sample Range :math:`\sigma`
 Additionally, about 1% of the samples are perturbed to represent outliers by adding
 :math:`\pm 15` to the random Gaussian variate.
 The program calculates the moving statistics MAD, IQR, :math:`S_n`, and :math:`Q_n`, using
-a moving window of length :math:`K = 40`. The results are shown in
+a moving window of length :math:`K = 41`. The results are shown in
 :numref:`fig_movstat2`.
 
 .. _fig_movstat2:

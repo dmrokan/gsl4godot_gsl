@@ -1,6 +1,9 @@
 /* movstat/mvacc.c
  *
- * Moving window mean/variance accumulator
+ * Moving window mean/variance accumulator - based on a modification
+ * to Welford's algorithm, discussed here:
+ *
+ * https://stackoverflow.com/a/6664212
  * 
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -32,6 +35,7 @@ typedef struct
   size_t n;      /* window size */
   size_t k;      /* number of samples currently in window */
   double mean;   /* current window mean */
+  double M2;     /* current window M2 */
   ringbuf *rbuf; /* ring buffer storing current window */
 } mvacc_state_t;
 
@@ -54,6 +58,7 @@ mvacc_init(const size_t n, void * vstate)
   state->n = n;
   state->k = 0;
   state->mean = 0.0;
+  state->M2 = 0.0;
 
   state->rbuf = vstate + sizeof(mvacc_state_t);
   ringbuf_init(n, state->rbuf);
@@ -69,12 +74,20 @@ mvacc_add(const double x, void * vstate)
   if (ringbuf_is_full(state->rbuf))
     {
       /* remove oldest window element and add new one */
-      state->mean += (x - ringbuf_peek_back(state->rbuf)) / (double) state->n;
+      double old = ringbuf_peek_back(state->rbuf);
+      double prev_mean = state->mean;
+
+      state->mean += (x - old) / (double) state->n;
+      state->M2 += (x + old - prev_mean - state->mean) * (x - old);
     }
   else
     {
-      state->mean += (x - state->mean) / (state->k + 1.0);
+      double delta;
+
       ++(state->k);
+      delta = x - state->mean;
+      state->mean += delta / (double) state->k;
+      state->M2 += delta * (x - state->mean);
     }
 
   /* add new element to ring buffer */
@@ -104,4 +117,22 @@ mvacc_mean(const void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
   return state->mean;
+}
+
+static double
+mvacc_variance(const void * vstate)
+{
+  mvacc_state_t * state = (mvacc_state_t *) vstate;
+
+  if (state->k < 2)
+    return (0.0);
+  else
+    return (state->M2 / (state->k - 1.0));
+}
+
+static double
+mvacc_sd(const void * vstate)
+{
+  double variance = mvacc_variance(vstate);
+  return (sqrt(variance));
 }

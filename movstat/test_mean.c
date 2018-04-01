@@ -122,10 +122,9 @@ test_mean_proc(const double tol, const size_t n, const size_t H, const size_t J,
 }
 
 static void
-test_mean(void)
+test_mean(gsl_rng * rng_p)
 {
   const double eps = 1.0e-10;
-  gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);
 
   test_mean_proc(eps, 1000, 3, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_mean_proc(eps, 1000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -153,6 +152,4 @@ test_mean(void)
   test_mean_proc(eps, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_mean_proc(eps, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_mean_proc(eps, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-
-  gsl_rng_free(rng_p);
 }

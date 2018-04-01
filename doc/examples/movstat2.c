@@ -13,7 +13,7 @@ main(void)
   const size_t N = 1000;                                 /* length of time series */
   const double sigma[] = { 1.0, 5.0, 1.0, 3.0, 5.0 };    /* variances */
   const size_t N_sigma[] = { 200, 450, 600, 850, 1000 }; /* samples where variance changes */
-  const size_t K = 40;                                   /* window size */
+  const size_t K = 41;                                   /* window size */
   gsl_vector *x = gsl_vector_alloc(N);
   gsl_vector *xmedian = gsl_vector_alloc(N);
   gsl_vector *xmad = gsl_vector_alloc(N);
