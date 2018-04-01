@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#ifndef __GSL_RINGBUF_C__
+#define __GSL_RINGBUF_C__
+
 /*typedef int ringbuf_type;*/
 
 typedef struct
@@ -137,7 +140,7 @@ ringbuf_pop_back(ringbuf * b)
         {
           b->tail = b->size - 1;
         }
-      else
+      else                    /* decrement tail */
         {
           --(b->tail);
         }
@@ -171,3 +174,5 @@ ringbuf_peek_back(const ringbuf * b)
       return b->array[b->tail];
     }
 }
+
+#endif /* __GSL_RINGBUF_C__ */

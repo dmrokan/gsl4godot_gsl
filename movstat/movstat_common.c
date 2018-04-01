@@ -16,6 +16,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
+#ifndef __GSL_MOVSTAT_COMMON_C__
+#define __GSL_MOVSTAT_COMMON_C__
  
 #include <config.h>
 #include <stdlib.h>
@@ -110,7 +113,7 @@ Notes:
 1) It is allowed to have x = y for in-place moving statistics
 */
 
-int
+static int
 movstat_apply(const gsl_movstat_end_t endtype,
               const gsl_vector * x,
               gsl_vector * y,
@@ -175,8 +178,11 @@ movstat_apply(const gsl_movstat_end_t endtype,
 
           for (i = idx1; i <= idx2; ++i)
             {
-              /* delete oldest window sample as we move closer to edge */
-              (*acc_delete)(w->state);
+              if (i - H > 0)
+                {
+                  /* delete oldest window sample as we move closer to edge */
+                  (*acc_delete)(w->state);
+                }
 
               /* yi = acc_get [ work(i:K-2) ] */
               gsl_vector_set(y, i, (*acc_get)(w->state));
@@ -199,3 +205,5 @@ movstat_apply(const gsl_movstat_end_t endtype,
       return GSL_SUCCESS;
     }
 }
+
+#endif /* __GSL_MOVSTAT_COMMON_C__ */

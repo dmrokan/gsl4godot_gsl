@@ -23,6 +23,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
+#include "mvacc.c"
 #include "sumacc.c"
 
 /*
@@ -88,6 +89,7 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
    * determine maximum number of bytes needed for the various accumulators;
    * the accumulators will all share the same workspace
    */
+  state_size = GSL_MAX(state_size, mvacc_size(w->K));
   state_size = GSL_MAX(state_size, sumacc_size(w->K));
 
   w->state = malloc(state_size);

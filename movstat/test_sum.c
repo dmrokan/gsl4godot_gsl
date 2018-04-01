@@ -25,8 +25,8 @@
 
 /* compute moving sum by explicitely constructing window and summing elements */
 int
-slow_sum(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
-         const int H, const int J)
+slow_movsum(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
+            const int H, const int J)
 {
   const int n = (int) x->size;
   const int K = H + J + 1;
@@ -101,7 +101,7 @@ test_sum_proc(const double tol, const size_t n, const size_t H, const size_t J,
   random_vector(x, rng_p);
 
   /* y = sum(x) with slow brute force method */
-  slow_sum(etype, x, y, H, J);
+  slow_movsum(etype, x, y, H, J);
 
   /* y = sum(x) with fast method */
   gsl_movstat_sum(etype, x, z, w);
@@ -133,18 +133,27 @@ test_sum(void)
   test_sum_proc(GSL_DBL_EPSILON, 1000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 10, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 5, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
 
   test_sum_proc(GSL_DBL_EPSILON, 1000, 3, 3, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 0, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 5, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 10, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 5, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
   test_sum_proc(GSL_DBL_EPSILON, 1000, 3, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 10, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 2000, 5, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_sum_proc(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 
   gsl_rng_free(rng_p);
 }
