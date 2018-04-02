@@ -78,14 +78,20 @@ mvacc_add(const double x, void * vstate)
       double prev_mean = state->mean;
 
       state->mean += (x - old) / (double) state->n;
-      state->M2 += (x + old - prev_mean - state->mean) * (x - old);
+      state->M2 += ((old - prev_mean) + (x - state->mean)) * (x - old);
     }
   else
     {
-      double delta;
+      double delta = x - state->mean;
+
+      /*
+       * Welford algorithm:
+       *
+       * mu_new = mu_old + (x - mu_old) / n
+       * M2_new = M2_old + (x - mu_old) * (x - mu_new)
+       */
 
       ++(state->k);
-      delta = x - state->mean;
       state->mean += delta / (double) state->k;
       state->M2 += delta * (x - state->mean);
     }
@@ -101,10 +107,28 @@ mvacc_delete(void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
 
-  if (!ringbuf_is_empty(state->rbuf) && state->k > 0)
+  if (!ringbuf_is_empty(state->rbuf))
     {
-      double old = ringbuf_peek_back(state->rbuf);
-      state->mean += (state->mean - old) / (state->k - 1.0);
+      if (state->k > 1)
+        {
+          /*
+           * mu_new = mu_old + (mu_old - x_old) / (n - 1)
+           * M2_new = M2_old - (mu_old - x_old) * (mu_new - x_old)
+           */
+
+          double old = ringbuf_peek_back(state->rbuf);
+          double prev_mean = state->mean;
+          double delta = prev_mean - old;
+
+          state->mean += delta / (state->k - 1.0);
+          state->M2 -= delta * (state->mean - old);
+        }
+      else if (state->k == 1)
+        {
+          state->mean = 0.0;
+          state->M2 = 0.0;
+        }
+
       ringbuf_pop_back(state->rbuf);
       --(state->k);
     }

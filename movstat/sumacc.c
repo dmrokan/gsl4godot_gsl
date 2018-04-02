@@ -58,7 +58,7 @@ sumacc_init(const size_t n, void * vstate)
 }
 
 static int
-sumacc_add(const double x, void * vstate)
+sumacc_insert(const double x, void * vstate)
 {
   sumacc_state_t * state = (sumacc_state_t *) vstate;
 

@@ -77,7 +77,11 @@ slow_movvar(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
             }
         }
 
-      variance = gsl_stats_variance(window, 1, wsize);
+      if (wsize > 1)
+        variance = gsl_stats_variance(window, 1, wsize);
+      else
+        variance = 0.0;
+
       gsl_vector_set(y, i, variance);
     }
 
@@ -140,7 +144,11 @@ slow_movsd(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
             }
         }
 
-      sd = gsl_stats_sd(window, 1, wsize);
+      if (wsize > 1)
+        sd = gsl_stats_sd(window, 1, wsize);
+      else
+        sd = 0.0;
+
       gsl_vector_set(y, i, sd);
     }
 
@@ -228,7 +236,6 @@ test_variance(gsl_rng * rng_p)
   test_variance_proc(eps, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_variance_proc(eps, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
-#if 0 /*XXX*/
   test_variance_proc(eps, 1000, 3, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 1000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 1000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
@@ -237,5 +244,4 @@ test_variance(gsl_rng * rng_p)
   test_variance_proc(eps, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-#endif
 }

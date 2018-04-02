@@ -2,18 +2,31 @@
 
 set term pngcairo enh col size 1600,800
 
+load 'grid.cfg'
+
+set xlabel "time"
+set point 1
+
+set out "../images/movstat1.png"
+file = "../examples/movstat1.txt"
+load 'lines2.cfg'
+
+mylw = 4
+
+plot file us 1:2 w lp lw mylw ti "Original signal", \
+     file us 1:3 w li lw mylw ti "Moving mean", \
+     file us 1:4 w li lw mylw ti "Moving minimum", \
+     file us 1:5 w li lw mylw ti "Moving maximum"
+
 set out "../images/movstat2.png"
 file = "../examples/movstat2.txt"
 
-load 'grid.cfg'
+load 'lines.cfg'
 set key left
 
 set multiplot layout 2,1
 
 plot file us 1:2 w li lc rgb "black" ti "x(t)"
-
-set xlabel "time"
-#set yrange [0:10]
 
 plot file us 1:3 w li ti "True sigma", \
      file us 1:4 w li ti "MAD", \

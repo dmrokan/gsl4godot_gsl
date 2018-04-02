@@ -44,25 +44,6 @@ typedef enum
 
 /****** Accumulators *******/
 
-typedef double gsl_movstat_medacc_t;
-
-/* workspace for tracking median of a fixed-size moving window */
-typedef struct
-{
-  gsl_movstat_medacc_t *data; /* circular queue of values, size k */
-  int *pos;                    /* index into `heap` for each value, size 2*k */
-  int *heap;                   /* max/median/min heap holding indices into `data`. */
-  int k;                       /* window size */
-  int idx;                     /* position in circular queue */
-  int ct;                      /* count of items in queue */
-} gsl_movstat_medacc_workspace;
-
-gsl_movstat_medacc_workspace *gsl_movstat_medacc_alloc(const size_t k);
-void gsl_movstat_medacc_free(gsl_movstat_medacc_workspace * w);
-int gsl_movstat_medacc_reset(gsl_movstat_medacc_workspace * w);
-int gsl_movstat_medacc_insert(const gsl_movstat_medacc_t v, gsl_movstat_medacc_workspace * w);
-gsl_movstat_medacc_t gsl_movstat_medacc_median(const gsl_movstat_medacc_workspace * w);
-
 /* workspace for tracking minimum/maximum of a fixed-size moving window */
 typedef struct
 {
@@ -96,7 +77,6 @@ typedef struct
 
   void *state;  /* state workspace for various accumulators */
 
-  gsl_movstat_medacc_workspace *medacc_workspace_p;
   gsl_movstat_minmaxacc_workspace *minmaxacc_workspace_p;
 } gsl_movstat_workspace;
 

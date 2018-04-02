@@ -23,6 +23,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
+#include "medacc.c"
 #include "mvacc.c"
 #include "sumacc.c"
 
@@ -91,6 +92,7 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
    */
   state_size = GSL_MAX(state_size, mvacc_size(w->K));
   state_size = GSL_MAX(state_size, sumacc_size(w->K));
+  state_size = GSL_MAX(state_size, medacc_size(w->K));
 
   w->state = malloc(state_size);
   if (w->state == 0)
@@ -104,13 +106,6 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
     {
       gsl_movstat_free(w);
       GSL_ERROR_NULL ("failed to allocate space for minmaxacc workspace", GSL_ENOMEM);
-    }
-
-  w->medacc_workspace_p = gsl_movstat_medacc_alloc(w->K);
-  if (w->medacc_workspace_p == 0)
-    {
-      gsl_movstat_free(w);
-      GSL_ERROR_NULL ("failed to allocate space for mediator workspace", GSL_ENOMEM);
     }
 
   w->work = malloc(w->K * sizeof(double));
@@ -131,9 +126,6 @@ gsl_movstat_free(gsl_movstat_workspace * w)
 
   if (w->minmaxacc_workspace_p)
     gsl_movstat_minmaxacc_free(w->minmaxacc_workspace_p);
-
-  if (w->medacc_workspace_p)
-    gsl_movstat_medacc_free(w->medacc_workspace_p);
 
   if (w->work)
     free(w->work);

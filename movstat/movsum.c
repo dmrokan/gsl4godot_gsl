@@ -41,6 +41,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(endtype, x, y, sumacc_init, sumacc_add, sumacc_delete, sumacc_get, w);
+  int status = movstat_apply(endtype, x, y, sumacc_init, sumacc_insert, sumacc_delete, sumacc_get, w);
   return status;
 }

@@ -59,6 +59,7 @@ gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vecto
     }
   else
     {
+#if 0 /*XXX*/
       const int H = (int) w->H; /* number of samples to left of current sample */
       size_t i, j;
 
@@ -95,6 +96,7 @@ gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vecto
 
           gsl_vector_set(xmad, i, gsl_movstat_medacc_median(w->medacc_workspace_p));
         }
+#endif
 
       return GSL_SUCCESS;
     }

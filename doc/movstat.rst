@@ -232,6 +232,33 @@ estimated from the remaining (middle) 50%.
    The inputs :data:`x` and :data:`xqqr` must be the same length.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
 
+Moving :math:`S_n`
+------------------
+
+The :math:`S_n` statistic proposed by Croux and Rousseeuw is based on pairwise differences between
+all samples in the window. It has an efficiency of 58%, significantly higher than the MAD.
+See :ref:`here <sec_Sn-statistic>` for more information.
+
+.. function:: int gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xscale, gsl_movstat_workspace * w)
+
+   This function computes the moving :math:`S_n` of the input vector :data:`x` and stores the output
+   in :data:`xscale`. The inputs :data:`x` and :data:`xscale` must be the same length.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+   It is allowed for :data:`x` = :data:`xscale` for an in-place moving window :math:`S_n`.
+
+Moving :math:`Q_n`
+------------------
+
+The :math:`Q_n` statistic proposed by Croux and Rousseeuw is loosely based on the Hodges-Lehmann location
+estimator. It has a relatively high efficiency of 82%. See :ref:`here <sec_Qn-statistic>` for more information.
+
+.. function:: int gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xscale, gsl_movstat_workspace * w)
+
+   This function computes the moving :math:`Q_n` of the input vector :data:`x` and stores the output
+   in :data:`xscale`. The inputs :data:`x` and :data:`xscale` must be the same length.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+   It is allowed for :data:`x` = :data:`xscale` for an in-place moving window :math:`Q_n`.
+
 Accumulators
 ============
 
@@ -315,8 +342,27 @@ current sliding window, using the algorithm by D. Lemire.
 Examples
 ========
 
-Robust Scale Example
---------------------
+Example 1
+---------
+
+The following example program computes the moving mean, minimum and maximum of a noisy
+sinusoid signal of length :math:`N = 100` with a symmetric moving window of size :math:`K = 5`.
+
+.. _fig_movstat1:
+
+.. figure:: /images/movstat1.png
+   :scale: 60%
+
+   Original signal time series (red) with moving mean (green), moving minimum (blue),
+   and moving maximum (orange).
+
+The program is given below.
+
+.. include:: examples/movstat1.c
+   :code:
+
+Example 2: Robust Scale
+-----------------------
 
 The following example program analyzes a time series of length :math:`N = 1000` composed
 of Gaussian random variates with zero mean whose standard deviation changes in a piecewise constant fashion

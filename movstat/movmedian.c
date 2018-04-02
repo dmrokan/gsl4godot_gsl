@@ -25,6 +25,9 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
+#include "movstat_common.c"
+#include "medacc.c"
+
 /*
 gsl_movstat_median()
   Apply median filter to input vector
@@ -38,6 +41,10 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
+#if 1
+  int status = movstat_apply(endtype, x, y, medacc_init, medacc_insert, medacc_delete, medacc_get, w);
+  return status;
+#else
   if (x->size != y->size)
     {
       GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
@@ -131,4 +138,5 @@ gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
       return GSL_SUCCESS;
     }
+#endif
 }
