@@ -75,7 +75,7 @@ gsl_movstat_workspace *
 gsl_movstat_alloc2(const size_t H, const size_t J)
 {
   gsl_movstat_workspace *w;
-  size_t state_size = 0;
+  size_t state_size;
 
   w = calloc(1, sizeof(gsl_movstat_workspace));
   if (w == 0)
@@ -91,23 +91,17 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
    * determine maximum number of bytes needed for the various accumulators;
    * the accumulators will all share the same workspace
    */
-  state_size = GSL_MAX(state_size, mvacc_size(w->K));
-  state_size = GSL_MAX(state_size, mmacc_size(w->K));
-  state_size = GSL_MAX(state_size, sumacc_size(w->K));
-  state_size = GSL_MAX(state_size, medacc_size(w->K));
+  state_size = w->K * sizeof(double);                  /* w->work, size K */
+  state_size = GSL_MAX(state_size, mvacc_size(w->K));  /* mean/variance accumulator */
+  state_size = GSL_MAX(state_size, mmacc_size(w->K));  /* min/max accumulator */
+  state_size = GSL_MAX(state_size, sumacc_size(w->K)); /* sum accumulator */
+  state_size = GSL_MAX(state_size, medacc_size(w->K)); /* median accumulator */
 
   w->state = malloc(state_size);
   if (w->state == 0)
     {
       gsl_movstat_free(w);
       GSL_ERROR_NULL ("failed to allocate space for accumulator state", GSL_ENOMEM);
-    }
-
-  w->work = malloc(w->K * sizeof(double));
-  if (w->work == 0)
-    {
-      gsl_movstat_free(w);
-      GSL_ERROR_NULL ("failed to allocate space for work", GSL_ENOMEM);
     }
 
   return w;
@@ -118,9 +112,6 @@ gsl_movstat_free(gsl_movstat_workspace * w)
 {
   if (w->state)
     free(w->state);
-
-  if (w->work)
-    free(w->work);
 
   free(w);
 }

@@ -49,9 +49,12 @@ typedef struct
   size_t H;     /* number of previous samples in window */
   size_t J;     /* number of after samples in window */
   size_t K;     /* window size K = H + J + 1 */
-  double *work; /* workspace, size K */
 
-  void *state;  /* state workspace for various accumulators */
+  union
+    {
+      void *state;  /* state workspace for various accumulators */
+      double *work; /* workspace, size K */
+    };
 } gsl_movstat_workspace;
 
 /* alloc.c */

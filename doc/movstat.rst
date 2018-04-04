@@ -99,7 +99,11 @@ Moving Mean
 
 The moving window mean calculates the mean of the values of each window :math:`W_i^{H,J}`.
 
-.. math:: \hat{\mu}_i = \frac{1}{K} \sum_{m=1}^K x_m, \quad x_m \in W_i^{H,J}
+.. math:: \hat{\mu}_i = \frac{1}{\left| W_i^{H,J} \right|} \sum_{x_m \in W_i^{H,J}} x_m
+
+Here, :math:`\left| W_i^{H,J} \right|` represents the number of elements in the window
+:math:`W_i^{H,J}`. This will normally be :math:`K`, unless the :macro:`GSL_MOVSTAT_END_TRUNCATE`
+option is selected, in which case it could be less than :math:`K` near the signal end points.
 
 .. function:: int gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 
@@ -114,7 +118,7 @@ Moving Variance and Standard Deviation
 The moving window variance calculates the *sample variance* of the values of each window :math:`W_i^{H,J}`,
 defined by
 
-.. math:: \hat{\sigma}_i^2 = \frac{1}{\left( K - 1 \right)} \sum_{m=1}^K \left( x_m - \hat{\mu}_i \right)^2, \quad x_m \in W_i^{H,J}
+.. math:: \hat{\sigma}_i^2 = \frac{1}{\left( \left| W_i^{H,J} \right| - 1 \right)} \sum_{x_m \in W_i^{H,J}} \left( x_m - \hat{\mu}_i \right)^2
 
 where :math:`\hat{\mu}_i` is the mean of :math:`W_i^{H,J}` defined above. The standard deviation :math:`\hat{\sigma}_i`
 is the square root of the variance.
@@ -141,8 +145,8 @@ each window :math:`W_i^{H,J}`.
 
 .. math::
 
-   y_i &= \min \left( W_i^{H,J} \right) \\
-   z_i &= \max \left( W_i^{H,J} \right)
+   y_i^{min} &= \min \left( W_i^{H,J} \right) \\
+   y_i^{max} &= \max \left( W_i^{H,J} \right)
 
 
 .. function:: int gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w)
@@ -156,7 +160,7 @@ Moving Sum
 
 The moving window sum calculates the sum of the values of each window :math:`W_i^{H,J}`.
 
-.. math:: y_i = \sum_{m=1}^K x_m, \quad x_m \in W_i^{H,J}
+.. math:: y_i = \sum_{x_m \in W_i^{H,J}} x_m
 
 .. function:: int gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 
