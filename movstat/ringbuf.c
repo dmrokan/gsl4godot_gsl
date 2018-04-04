@@ -26,7 +26,7 @@
 
 typedef struct
 {
-  ringbuf_type *array;
+  ringbuf_type_t *array;
   int head;
   int tail;
   int size;       /* total elements allocated */
@@ -36,10 +36,11 @@ static size_t ringbuf_size(const size_t n);
 static int ringbuf_empty(ringbuf * d);
 static int ringbuf_is_empty(const ringbuf * d);
 static int ringbuf_is_full(const ringbuf * d);
-static int ringbuf_add(const ringbuf_type x, ringbuf * d);
+static int ringbuf_insert(const ringbuf_type_t x, ringbuf * d);
 static int ringbuf_pop_back(ringbuf * b);
-static ringbuf_type ringbuf_peek_front(const ringbuf * d);
-static ringbuf_type ringbuf_peek_back(const ringbuf * d);
+static ringbuf_type_t ringbuf_peek(const int i, const ringbuf * b);
+static ringbuf_type_t ringbuf_peek_front(const ringbuf * d);
+static ringbuf_type_t ringbuf_peek_back(const ringbuf * d);
 
 static size_t
 ringbuf_size(const size_t n)
@@ -47,7 +48,7 @@ ringbuf_size(const size_t n)
   size_t size = 0;
 
   size += sizeof(ringbuf);
-  size += n * sizeof(ringbuf_type); /* b->array */
+  size += n * sizeof(ringbuf_type_t); /* b->array */
 
   return size;
 }
@@ -86,9 +87,9 @@ ringbuf_is_full(const ringbuf * b)
           (b->head == b->tail + 1));
 }
 
-/* add element to buffer, overwriting oldest element if necessary */
+/* insert element into buffer, overwriting oldest element if necessary */
 static int
-ringbuf_add(const ringbuf_type x, ringbuf * b)
+ringbuf_insert(const ringbuf_type_t x, ringbuf * b)
 {
   if (b->head == -1)     /* buffer is empty */
     {
@@ -149,7 +150,20 @@ ringbuf_pop_back(ringbuf * b)
     }
 }
 
-static ringbuf_type
+static ringbuf_type_t
+ringbuf_peek(const int i, const ringbuf * b)
+{
+  if (ringbuf_is_empty(b))
+    {
+      GSL_ERROR("buffer is empty", GSL_EBADLEN);
+    }
+  else
+    {
+      return b->array[(b->head + i) % b->size];
+    }
+}
+
+static ringbuf_type_t
 ringbuf_peek_front(const ringbuf * b)
 {
   if (ringbuf_is_empty(b))
@@ -162,7 +176,7 @@ ringbuf_peek_front(const ringbuf * b)
     }
 }
 
-static ringbuf_type
+static ringbuf_type_t
 ringbuf_peek_back(const ringbuf * b)
 {
   if (ringbuf_is_empty(b) || b->tail < 0)

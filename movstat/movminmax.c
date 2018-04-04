@@ -25,6 +25,9 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
+#include "movstat_common.c"
+#include "mmacc.c"
+
 /*
 gsl_movstat_minmax()
   Apply minmax filter to input vector
@@ -55,20 +58,12 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
       int i;
       double x1 = 0.0;    /* pad values for data edges */
       double xN = 0.0;
-      int idx1, idx2;
 
-      if (endtype == GSL_MOVSTAT_END_TRUNCATE)
-        {
-          /* reset minmaxacc since it might contain old samples from previous calls */
-          gsl_movstat_minmaxacc_reset(w->minmaxacc_workspace_p);
+      /* initialize sum accumulator */
+      (*mmacc_init)(w->K, w->state);
 
-          /* save last K - 1 samples of x for later (needed for in-place input/output) */
-          idx1 = GSL_MAX(n - J - H, 0);
-          idx2 = n - 1;
-          for (i = idx1; i <= idx2; ++i)
-            w->work[i - idx1] = gsl_vector_get(x, i);
-        }
-      else
+      /* pad initial window if necessary */
+      if (endtype != GSL_MOVSTAT_END_TRUNCATE)
         {
           if (endtype == GSL_MOVSTAT_END_PADZERO)
             {
@@ -83,7 +78,7 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
           /* pad initial windows with H values */
           for (i = 0; i < H; ++i)
-            gsl_movstat_minmaxacc_insert(x1, w->minmaxacc_workspace_p);
+            (*mmacc_insert)(x1, w->state);
         }
 
       /* process input vector and fill y(0:n - J - 1) */
@@ -92,39 +87,32 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
           double xi = gsl_vector_get(x, i);
           int idx = i - J;
 
-          gsl_movstat_minmaxacc_insert(xi, w->minmaxacc_workspace_p);
+          (*mmacc_insert)(xi, w->state);
 
           if (idx >= 0)
             {
-              double *y_min_ptr = gsl_vector_ptr(y_min, idx);
-              double *y_max_ptr = gsl_vector_ptr(y_max, idx);
-
-              gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
+              gsl_vector_set(y_min, idx, (*mmacc_min)(w->state));
+              gsl_vector_set(y_max, idx, (*mmacc_max)(w->state));
             }
         }
 
       if (endtype == GSL_MOVSTAT_END_TRUNCATE)
         {
-          int wsize = n - GSL_MAX(n - J - H, 0); /* size of work array */
-
           /* need to fill y(n-J:n-1) using shrinking windows */
-          idx1 = GSL_MAX(n - J, 0);
-          idx2 = n - 1;
+          int idx1 = GSL_MAX(n - J, 0);
+          int idx2 = n - 1;
 
           for (i = idx1; i <= idx2; ++i)
             {
-              double *y_min_ptr = gsl_vector_ptr(y_min, i);
-              double *y_max_ptr = gsl_vector_ptr(y_max, i);
-              int nsamp = n - GSL_MAX(i - H, 0); /* number of samples in this window */
-              int j;
+              if (i - H > 0)
+                {
+                  /* delete oldest window sample as we move closer to edge */
+                  (*mmacc_delete)(w->state);
+                }
 
-              gsl_movstat_minmaxacc_reset(w->minmaxacc_workspace_p);
-
-              for (j = wsize - nsamp; j < wsize; ++j)
-                gsl_movstat_minmaxacc_insert(w->work[j], w->minmaxacc_workspace_p);
-
-              /* [ymini,ymaxi] = minmax [ work(i:K-2) ] */
-              gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
+              /* yi = acc_get [ work(i:K-2) ] */
+              gsl_vector_set(y_min, i, (*mmacc_min)(w->state));
+              gsl_vector_set(y_max, i, (*mmacc_max)(w->state));
             }
         }
       else
@@ -134,18 +122,50 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
             {
               int idx = n - J + i;
 
-              gsl_movstat_minmaxacc_insert(xN, w->minmaxacc_workspace_p);
+              (*mmacc_insert)(xN, w->state);
 
               if (idx >= 0)
                 {
-                  double *y_min_ptr = gsl_vector_ptr(y_min, idx);
-                  double *y_max_ptr = gsl_vector_ptr(y_max, idx);
-
-                  gsl_movstat_minmaxacc_minmax(y_min_ptr, y_max_ptr, w->minmaxacc_workspace_p);
+                  gsl_vector_set(y_min, idx, (*mmacc_min)(w->state));
+                  gsl_vector_set(y_max, idx, (*mmacc_max)(w->state));
                 }
             }
         }
 
       return GSL_SUCCESS;
     }
+}
+
+/*
+gsl_movstat_min()
+  Apply minimum filter to input vector
+
+Inputs: endtype - end point handling criteria
+        x       - input vector, size n
+        y       - output vector of minimum values, size n
+        w       - workspace
+*/
+
+int
+gsl_movstat_min(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+{
+  int status = movstat_apply(endtype, x, y, mmacc_init, mmacc_insert, mmacc_delete, mmacc_min, w);
+  return status;
+}
+
+/*
+gsl_movstat_max()
+  Apply maximum filter to input vector
+
+Inputs: endtype - end point handling criteria
+        x       - input vector, size n
+        y       - output vector of maximum values, size n
+        w       - workspace
+*/
+
+int
+gsl_movstat_max(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+{
+  int status = movstat_apply(endtype, x, y, mmacc_init, mmacc_insert, mmacc_delete, mmacc_max, w);
+  return status;
 }

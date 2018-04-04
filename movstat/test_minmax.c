@@ -23,7 +23,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_movstat.h>
 
-/* compute filtered data by explicitely constructing window, sorting it and finding min/max */
+/* compute filtered data by explicitely constructing window and finding min/max */
 int
 slow_minmax(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max,
             const int H, const int J)
@@ -52,6 +52,53 @@ slow_minmax(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y_
   return GSL_SUCCESS;
 }
 
+static void
+test_minmax_x(const double tol, const gsl_vector * x, const int H, const int J,
+              const gsl_movstat_end_t endtype, const char * desc)
+{
+  const size_t n = x->size;
+  gsl_vector * u_min = gsl_vector_alloc(n);
+  gsl_vector * y_min = gsl_vector_alloc(n);
+  gsl_vector * z_min = gsl_vector_alloc(n);
+  gsl_vector * u_max = gsl_vector_alloc(n);
+  gsl_vector * y_max = gsl_vector_alloc(n);
+  gsl_vector * z_max = gsl_vector_alloc(n);
+  gsl_movstat_workspace * w = gsl_movstat_alloc2(H, J);
+  size_t i;
+
+  /* compute moving min/max */
+  gsl_movstat_min(endtype, x, u_min, w);
+  gsl_movstat_max(endtype, x, u_max, w);
+  gsl_movstat_minmax(endtype, x, y_min, y_max, w);
+
+  /* compute moving min/max with slow brute force method */
+  slow_minmax(endtype, x, z_min, z_max, H, J);
+
+  for (i = 0; i < n; ++i)
+    {
+      double umini = gsl_vector_get(u_min, i);
+      double ymini = gsl_vector_get(y_min, i);
+      double zmini = gsl_vector_get(z_min, i);
+      double umaxi = gsl_vector_get(u_max, i);
+      double ymaxi = gsl_vector_get(y_max, i);
+      double zmaxi = gsl_vector_get(z_max, i);
+
+      gsl_test_rel(umini, zmini, tol, "test_minmax: %s min minimum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
+      gsl_test_rel(umaxi, zmaxi, tol, "test_minmax: %s max maximum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
+
+      gsl_test_rel(ymini, zmini, tol, "test_minmax: %s minmax minimum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
+      gsl_test_rel(ymaxi, zmaxi, tol, "test_minmax: %s minmax maximum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
+    }
+
+  gsl_vector_free(u_min);
+  gsl_vector_free(y_min);
+  gsl_vector_free(z_min);
+  gsl_vector_free(u_max);
+  gsl_vector_free(y_max);
+  gsl_vector_free(z_max);
+  gsl_movstat_free(w);
+}
+
 /* test alternating sequence [a,b,a,b,...] input */
 static void
 test_minmax_alt(const double tol, const size_t n, const int H, const int J,
@@ -60,9 +107,6 @@ test_minmax_alt(const double tol, const size_t n, const int H, const int J,
   const double a = 5.0;
   const double b = -5.0;
   gsl_vector * x = gsl_vector_alloc(n);
-  gsl_vector * y_min = gsl_vector_alloc(n);
-  gsl_vector * y_max = gsl_vector_alloc(n);
-  gsl_movstat_workspace * w = gsl_movstat_alloc2(H, J);
   size_t i;
 
   for (i = 0; i < n; ++i)
@@ -73,22 +117,9 @@ test_minmax_alt(const double tol, const size_t n, const int H, const int J,
         gsl_vector_set(x, i, b);
     }
 
-  /* compute moving min/max */
-  gsl_movstat_minmax(endtype, x, y_min, y_max, w);
-
-  for (i = 0; i < n; ++i)
-    {
-      double ymini = gsl_vector_get(y_min, i);
-      double ymaxi = gsl_vector_get(y_max, i);
-
-      gsl_test_rel(ymini, b, tol, "test_minmax_alt: min[%zu] endtype=%d n=%zu H=%d J=%d", i, endtype, n, H, J);
-      gsl_test_rel(ymaxi, a, tol, "test_minmax_alt: max[%zu] endtype=%d n=%zu H=%d J=%d", i, endtype, n, H, J);
-    }
+  test_minmax_x(tol, x, H, J, endtype, "alternating");
 
   gsl_vector_free(x);
-  gsl_vector_free(y_min);
-  gsl_vector_free(y_max);
-  gsl_movstat_free(w);
 }
 
 /* test noisy sine wave input */
@@ -97,63 +128,92 @@ test_minmax_sine(const double tol, const size_t n, const int H, const int J,
                  const gsl_movstat_end_t endtype, gsl_rng * rng_p)
 {
   gsl_vector * x = gsl_vector_alloc(n);
-  gsl_vector * y_min = gsl_vector_alloc(n);
-  gsl_vector * y_max = gsl_vector_alloc(n);
-  gsl_vector * z_min = gsl_vector_alloc(n);
-  gsl_vector * z_max = gsl_vector_alloc(n);
-  gsl_movstat_workspace * w = gsl_movstat_alloc2(H, J);
-  size_t i;
 
   /* construct noisy sine signal */
   test_noisy_sine(0.5, x, rng_p);
 
-  /* compute moving min/max with different algorithms */
-  gsl_movstat_minmax(endtype, x, y_min, y_max, w);
-  slow_minmax(endtype, x, z_min, z_max, H, J);
-
-  for (i = 0; i < n; ++i)
-    {
-      double ymini = gsl_vector_get(y_min, i);
-      double ymaxi = gsl_vector_get(y_max, i);
-      double zmini = gsl_vector_get(z_min, i);
-      double zmaxi = gsl_vector_get(z_max, i);
-
-      gsl_test_rel(ymini, zmini, tol, "test_minmax_sine: min endtype=%d n=%zu H=%d J=%d", endtype, n, H, J);
-      gsl_test_rel(ymaxi, zmaxi, tol, "test_minmax_sine: max endtype=%d n=%zu H=%d J=%d", endtype, n, H, J);
-    }
+  test_minmax_x(tol, x, H, J, endtype, "noisy_sine");
 
   gsl_vector_free(x);
-  gsl_vector_free(y_min);
-  gsl_vector_free(y_max);
-  gsl_vector_free(z_min);
-  gsl_vector_free(z_max);
-  gsl_movstat_free(w);
+}
+
+/* test random input */
+static void
+test_minmax_random(const double tol, const size_t n, const int H, const int J,
+                   const gsl_movstat_end_t endtype, gsl_rng * rng_p)
+{
+  gsl_vector * x = gsl_vector_alloc(n);
+
+  /* construct random input signal */
+  random_vector(x, rng_p);
+
+  test_minmax_x(tol, x, H, J, endtype, "random");
+
+  gsl_vector_free(x);
 }
 
 static void
-test_minmax(void)
+test_minmax(gsl_rng * rng_p)
 {
-  gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);
-
   /* alternating input */
 
   test_minmax_alt(GSL_DBL_EPSILON, 1000, 7, 7, GSL_MOVSTAT_END_PADZERO);
   test_minmax_alt(GSL_DBL_EPSILON, 1000, 5, 2, GSL_MOVSTAT_END_PADZERO);
   test_minmax_alt(GSL_DBL_EPSILON, 500, 1, 3, GSL_MOVSTAT_END_PADZERO);
+  test_minmax_alt(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADZERO);
+  test_minmax_alt(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADZERO);
 
   /* noisy sine wave input */
 
   test_minmax_sine(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
 
   test_minmax_sine(GSL_DBL_EPSILON, 500, 5, 7, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 1000, 10, 20, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 1000, 3, 3, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
   test_minmax_sine(GSL_DBL_EPSILON, 500, 5, 7, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 1000, 10, 20, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_minmax_sine(GSL_DBL_EPSILON, 1000, 3, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 1000, 30, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 1000, 5, 30, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_sine(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 
-  gsl_rng_free(rng_p);
+  /* random input */
+
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 10, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 5, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
+
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 10, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 5, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
+
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 10, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 500, 5, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_minmax_random(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 }

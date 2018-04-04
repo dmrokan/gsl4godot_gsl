@@ -1,0 +1,220 @@
+/* movstat/mmacc.c
+ *
+ * Copyright (C) 2018 Patrick Alken
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
+/*
+ * This module contains routines for tracking minimum/maximum values of a
+ * moving fixed-sized window. It is based on the algorithm of:
+ *
+ * [1] Daniel Lemire, Streaming Maximum-Minimum Filter Using No More than Three Comparisons per Element,
+ *     Nordic Journal of Computing, Volume 13, Number 4, pages 328-339, 2006
+ *
+ * Also available as a preprint here: https://arxiv.org/abs/cs/0610046
+ */
+
+#include <config.h>
+#include <stdlib.h>
+#include <math.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_movstat.h>
+
+typedef double mmacc_type_t;
+typedef mmacc_type_t ringbuf_type_t;
+
+#include "deque.c"
+#include "ringbuf.c"
+
+typedef struct
+{
+  size_t n;             /* window size */
+  size_t k;             /* number of samples in current window */
+  size_t idx;           /* where to store next sample */
+  mmacc_type_t xprev;   /* previous sample added to window */
+  ringbuf *rbuf;        /* ring buffer storing current window, size n */
+  deque *minque;        /* double-ended queue of min values (L) */
+  deque *maxque;        /* double-ended queue of max values (U) */
+} mmacc_state_t;
+
+static size_t mmacc_size(const size_t n);
+static int mmacc_init(const size_t n, void * vstate);
+static int mmacc_insert(const mmacc_type_t x, void * vstate);
+static int mmacc_delete(void * vstate);
+static mmacc_type_t mmacc_min(const void * vstate);
+static mmacc_type_t mmacc_max(const void * vstate);
+
+static size_t
+mmacc_size(const size_t n)
+{
+  size_t size = 0;
+
+  size += sizeof(mmacc_state_t);
+  size += ringbuf_size(n);          /* rbuf */
+  size += 2 * deque_size(n + 1);    /* minque/maxque */
+
+  return size;
+}
+
+static int
+mmacc_init(const size_t n, void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  state->n = n;
+  state->k = 0;
+  state->idx = 0;
+  state->xprev = 0.0;
+
+  state->rbuf = vstate + sizeof(mmacc_state_t);
+  state->minque = (void *) state->rbuf + ringbuf_size(n);
+  state->maxque = (void *) state->minque + deque_size(n + 1);
+
+  ringbuf_init(n, state->rbuf);
+  deque_init(n + 1, state->minque);
+  deque_init(n + 1, state->maxque);
+
+  return GSL_SUCCESS;
+}
+
+static int
+mmacc_insert(const mmacc_type_t x, void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+  int head, tail;
+
+  if (state->k == 0)
+    {
+      /* first sample */
+      ringbuf_insert(x, state->rbuf);
+      head = state->rbuf->head;
+      deque_push_back(head, state->maxque);
+      deque_push_back(head, state->minque);
+    }
+  else
+    {
+      if (x > state->xprev)
+        {
+          deque_pop_back(state->maxque);
+
+          while (!deque_is_empty(state->maxque))
+            {
+              if (x <= state->rbuf->array[deque_peek_back(state->maxque)])
+                break;
+
+              deque_pop_back(state->maxque);
+            }
+        }
+      else
+        {
+          deque_pop_back(state->minque);
+
+          while (!deque_is_empty(state->minque))
+            {
+              if (x >= state->rbuf->array[deque_peek_back(state->minque)])
+                break;
+
+              deque_pop_back(state->minque);
+            }
+        }
+
+      /* store new sample into ring buffer */
+      tail = state->rbuf->tail;
+      ringbuf_insert(x, state->rbuf);
+      head = state->rbuf->head;
+
+      deque_push_back(head, state->maxque);
+      deque_push_back(head, state->minque);
+
+      if (state->k == state->n)
+        {
+          /*
+           * window is full - check if oldest window element is a global minimum/maximum
+           * of current window - if so pop it from U/L queues;
+           * the check head != tail ensures there is more than 1 element in the
+           * queue, do not pop if queue has only 1 element, since this element would
+           * be the newest sample
+           */
+          if (state->maxque->head != state->maxque->tail && tail == deque_peek_front(state->maxque))
+            deque_pop_front(state->maxque);
+          else if (state->minque->head != state->minque->tail && tail == deque_peek_front(state->minque))
+            deque_pop_front(state->minque);
+        }
+    }
+
+  if (state->k < state->n)
+    ++(state->k);
+
+  state->xprev = x;
+
+  return GSL_SUCCESS;
+}
+
+static int
+mmacc_delete(void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  if (state->k > 0)
+    {
+      /*
+       * check if oldest window element is a global minimum/maximum; if so
+       * pop it from U/L queues
+       */
+      if (state->rbuf->tail == deque_peek_front(state->maxque))
+        deque_pop_front(state->maxque);
+      else if (state->rbuf->tail == deque_peek_front(state->minque))
+        deque_pop_front(state->minque);
+
+      /* remove oldest element from ring buffer */
+      ringbuf_pop_back(state->rbuf);
+
+      --(state->k);
+    }
+
+  return GSL_SUCCESS;
+}
+
+static mmacc_type_t
+mmacc_min(const void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  if (state->k == 0)
+    {
+      GSL_ERROR_VAL ("no samples yet added to workspace", GSL_EINVAL, 0.0);
+    }
+  else
+    {
+      return (state->rbuf->array[deque_peek_front(state->minque)]);
+    }
+}
+
+static mmacc_type_t
+mmacc_max(const void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  if (state->k == 0)
+    {
+      GSL_ERROR_VAL ("no samples yet added to workspace", GSL_EINVAL, 0.0);
+    }
+  else
+    {
+      return (state->rbuf->array[deque_peek_front(state->maxque)]);
+    }
+}

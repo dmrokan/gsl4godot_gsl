@@ -19,27 +19,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-typedef int deque_type;
+typedef int deque_type_t;
 
 typedef struct
 {
-  deque_type *array;
   int head;
   int tail;
   int size;       /* total elements allocated */
+  deque_type_t *array;
 } deque;
 
+static size_t deque_size(const size_t n);
+static int deque_init(const size_t n, deque * d);
 static deque *deque_alloc(const size_t n);
 static void deque_free(deque * d);
 static int deque_empty(deque * d);
 static int deque_is_empty(const deque * d);
 static int deque_is_full(const deque * d);
-static int deque_push_front(const deque_type x, deque * d);
-static int deque_push_back(const deque_type x, deque * d);
+static int deque_push_front(const deque_type_t x, deque * d);
+static int deque_push_back(const deque_type_t x, deque * d);
 static int deque_pop_front(deque * d);
 static int deque_pop_back(deque * d);
-static deque_type deque_peek_front(const deque * d);
-static deque_type deque_peek_back(const deque * d);
+static deque_type_t deque_peek_front(const deque * d);
+static deque_type_t deque_peek_back(const deque * d);
+
+static size_t
+deque_size(const size_t n)
+{
+  size_t size = 0;
+
+  size += sizeof(deque);
+  size += n * sizeof(deque_type_t); /* array */
+
+  return size;
+}
+
+static int
+deque_init(const size_t n, deque * d)
+{
+  d->head = -1;
+  d->tail = 0;
+  d->size = (int) n;
+  d->array = (void *) d + sizeof(deque);
+
+  return GSL_SUCCESS;
+}
 
 static deque *
 deque_alloc(const size_t n)
@@ -50,7 +74,7 @@ deque_alloc(const size_t n)
   if (d == NULL)
     return NULL;
 
-  d->array = malloc(n * sizeof(deque_type));
+  d->array = malloc(n * sizeof(deque_type_t));
   if (d->array == NULL)
     {
       deque_free(d);
@@ -94,11 +118,11 @@ static int
 deque_is_full(const deque * d)
 {
   return ((d->head == 0 && d->tail == d->size - 1) ||
-           (d->head == d->tail + 1));
+          (d->head == d->tail + 1));
 }
 
 static int
-deque_push_front(const deque_type x, deque * d)
+deque_push_front(const deque_type_t x, deque * d)
 {
   if (deque_is_full(d))
     {
@@ -128,7 +152,7 @@ deque_push_front(const deque_type x, deque * d)
 }
 
 static int
-deque_push_back(const deque_type x, deque * d)
+deque_push_back(const deque_type_t x, deque * d)
 {
   if (deque_is_full(d))
     {
@@ -211,7 +235,7 @@ deque_pop_back(deque * d)
     }
 }
 
-static deque_type
+static deque_type_t
 deque_peek_front(const deque * d)
 {
   if (deque_is_empty(d))
@@ -224,7 +248,7 @@ deque_peek_front(const deque * d)
     }
 }
 
-static deque_type
+static deque_type_t
 deque_peek_back(const deque * d)
 {
   if (deque_is_empty(d) || d->tail < 0)

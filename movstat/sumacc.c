@@ -24,7 +24,8 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
 
-typedef double ringbuf_type;
+typedef double ringbuf_type_t;
+
 #include "ringbuf.c"
 
 typedef struct
@@ -70,7 +71,7 @@ sumacc_insert(const double x, void * vstate)
 
   /* add new element to sum and ring buffer */
   state->sum += x;
-  ringbuf_add(x, state->rbuf);
+  ringbuf_insert(x, state->rbuf);
 
   return GSL_SUCCESS;
 }

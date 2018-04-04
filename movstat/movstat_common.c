@@ -104,7 +104,7 @@ Inputs: endtype    - end point handling criteria
         x          - input vector, size n
         y          - output vector, size n
         acc_init   - initialize accumulator
-        acc_add    - add a single sample to accumulator
+        acc_insert - add a single sample to accumulator
         acc_delete - delete oldest sample from accumulator
         acc_get    - get current accumulated value
         w          - workspace
@@ -118,7 +118,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
               const gsl_vector * x,
               gsl_vector * y,
               int (*acc_init)(const size_t n, void * vstate),
-              int (*acc_add)(const double x, void * vstate),
+              int (*acc_insert)(const double x, void * vstate),
               int (*acc_delete)(void * vstate),
               double (*acc_get)(const void * vstate),
               gsl_movstat_workspace * w)
@@ -155,7 +155,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
 
           /* pad initial windows with H values */
           for (i = 0; i < H; ++i)
-            (*acc_add)(x1, w->state);
+            (*acc_insert)(x1, w->state);
         }
 
       /* process input vector and fill y(0:n - J - 1) */
@@ -164,7 +164,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
           double xi = gsl_vector_get(x, i);
           int idx = i - J;
 
-          (*acc_add)(xi, w->state);
+          (*acc_insert)(xi, w->state);
 
           if (idx >= 0)
             gsl_vector_set(y, idx, (*acc_get)(w->state));
@@ -195,7 +195,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
             {
               int idx = n - J + i;
 
-              (*acc_add)(xN, w->state);
+              (*acc_insert)(xN, w->state);
 
               if (idx >= 0)
                 gsl_vector_set(y, idx, (*acc_get)(w->state));

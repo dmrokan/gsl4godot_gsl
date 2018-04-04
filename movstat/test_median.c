@@ -25,57 +25,20 @@
 
 /* compute filtered data by explicitely constructing window, sorting it and finding median */
 int
-slow_median(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
-            const int H, const int J)
+slow_movmedian(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
+               const int H, const int J)
 {
   const int n = (int) x->size;
   const int K = H + J + 1;
   double *window = malloc(K * sizeof(double));
-  int i, j;
+  int i;
 
   for (i = 0; i < n; ++i)
     {
       double yi;
-      int idx1, idx2, wsize;
+      int wsize;
 
-      if (etype == GSL_MOVSTAT_END_TRUNCATE)
-        {
-          idx1 = GSL_MAX(i - H, 0);
-          idx2 = GSL_MIN(i + J, n - 1);
-        }
-      else
-        {
-          idx1 = i - H;
-          idx2 = i + J;
-        }
-
-      wsize = idx2 - idx1 + 1;
-
-      /* fill sliding window */
-      for (j = idx1; j <= idx2; ++j)
-        {
-          int widx = j - idx1;
-
-          if (j < 0)
-            {
-              /* initial condition */
-              if (etype == GSL_MOVSTAT_END_PADZERO)
-                window[widx] = 0.0;
-              else if (etype == GSL_MOVSTAT_END_PADVALUE)
-                window[widx] = gsl_vector_get(x, 0);
-            }
-          else if (j >= (int) n)
-            {
-              if (etype == GSL_MOVSTAT_END_PADZERO)
-                window[widx] = 0.0;
-              else if (etype == GSL_MOVSTAT_END_PADVALUE)
-                window[widx] = gsl_vector_get(x, n - 1);
-            }
-          else
-            {
-              window[widx] = gsl_vector_get(x, j);
-            }
-        }
+      wsize = test_window(etype, i, H, J, x, window);
 
       yi = median_find(wsize, window);
       gsl_vector_set(y, i, yi);
@@ -129,7 +92,7 @@ test_median_symmetric(const double tol, const size_t n, const size_t K,
   random_vector(x, rng_p);
 
   /* y = median(x) with slow brute force algorithm */
-  slow_median(etype, x, y, w->H, w->J);
+  slow_movmedian(etype, x, y, w->H, w->J);
 
   /* z = median(x) */
   gsl_movstat_median(etype, x, z, w);
@@ -225,7 +188,7 @@ test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, cons
   random_vector(x, rng_p);
 
   /* y = median(x) with slow brute force algorithm */
-  slow_median(etype, x, y, w->H, w->J);
+  slow_movmedian(etype, x, y, w->H, w->J);
 
   /* z = median(x) */
   gsl_movstat_median(etype, x, z, w);

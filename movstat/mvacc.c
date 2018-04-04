@@ -27,7 +27,8 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
 
-typedef double ringbuf_type;
+typedef double ringbuf_type_t;
+
 #include "ringbuf.c"
 
 typedef struct
@@ -67,7 +68,7 @@ mvacc_init(const size_t n, void * vstate)
 }
 
 static int
-mvacc_add(const double x, void * vstate)
+mvacc_insert(const double x, void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
 
@@ -97,7 +98,7 @@ mvacc_add(const double x, void * vstate)
     }
 
   /* add new element to ring buffer */
-  ringbuf_add(x, state->rbuf);
+  ringbuf_insert(x, state->rbuf);
 
   return GSL_SUCCESS;
 }

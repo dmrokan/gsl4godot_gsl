@@ -159,7 +159,6 @@ test_window(const gsl_movstat_end_t endtype, const int idx, const int H, const i
 #include "test_mean.c"
 #include "test_median.c"
 #include "test_minmax.c"
-#include "test_minmaxacc.c"
 #include "test_sum.c"
 #include "test_Sn.c"
 #include "test_variance.c"
@@ -169,12 +168,9 @@ main()
 {
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
 
-  /*XXXtest_medacc();*/
-  test_minmaxacc();
-
   test_mean(r);
   test_median();
-  test_minmax();
+  test_minmax(r);
   /*XXXtest_mad();*/
   test_sum();
   test_Sn();

@@ -42,30 +42,6 @@ typedef enum
   GSL_MOVSTAT_END_TRUNCATE
 } gsl_movstat_end_t;
 
-/****** Accumulators *******/
-
-/* workspace for tracking minimum/maximum of a fixed-size moving window */
-typedef struct
-{
-  size_t n;           /* window size */
-  double *window;     /* samples in current window, size n */
-  size_t idx;         /* index where to store next sample */
-  int init;           /* 0 if no samples have been added yet */
-  double xprev;       /* previous sample added to window */
-  void *minque;       /* double-ended queue of min values (L) */
-  void *maxque;       /* double-ended queue of max values (U) */
-} gsl_movstat_minmaxacc_workspace;
-
-gsl_movstat_minmaxacc_workspace *gsl_movstat_minmaxacc_alloc(const size_t n);
-void gsl_movstat_minmaxacc_free(gsl_movstat_minmaxacc_workspace * w);
-int gsl_movstat_minmaxacc_reset(gsl_movstat_minmaxacc_workspace * w);
-int gsl_movstat_minmaxacc_insert(const double x, gsl_movstat_minmaxacc_workspace * w);
-int gsl_movstat_minmaxacc_minmax(double * min, double * max, const gsl_movstat_minmaxacc_workspace * w);
-double gsl_movstat_minmaxacc_min(const gsl_movstat_minmaxacc_workspace * w);
-double gsl_movstat_minmaxacc_max(const gsl_movstat_minmaxacc_workspace * w);
-
-/********* Routines accepting full vector inputs/outputs ***********/
-
 /* workspace for moving window statistics */
 
 typedef struct
@@ -76,8 +52,6 @@ typedef struct
   double *work; /* workspace, size K */
 
   void *state;  /* state workspace for various accumulators */
-
-  gsl_movstat_minmaxacc_workspace *minmaxacc_workspace_p;
 } gsl_movstat_workspace;
 
 /* alloc.c */
@@ -90,6 +64,8 @@ int gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_
 int gsl_movstat_variance(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_sd(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_median(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
+int gsl_movstat_min(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
+int gsl_movstat_max(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w);
 int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian,
                     gsl_vector * xmad, gsl_movstat_workspace * w);
