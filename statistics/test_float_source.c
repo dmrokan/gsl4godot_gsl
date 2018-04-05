@@ -302,6 +302,37 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
                    NAME(gsl_stats) "_median_from_sorted_data");
   }
 
+  {
+    BASE * work = (BASE *) malloc (stridea * na * sizeof(BASE));
+    double expected = 0.07505;
+    double median;
+
+    for (i = 0; i < na; i++)
+      work[i * stridea] = (BASE) rawa[i];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, na) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (even)");
+
+    free(work);
+  }
+
+  {
+    BASE * work = (BASE *) malloc (stridea * (na - 1) * sizeof(BASE));
+    double expected = 0.0728;
+    double median;
+
+    for (i = 0; i < na - 1; i++)
+      work[i * stridea] = (BASE) sorted[i * stridea];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, na - 1) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (odd)");
+
+    free(work);
+  }
 
   {
     double zeroth = FUNCTION(gsl_stats,quantile_from_sorted_data)(sorted, stridea, na, 0.0) ;
@@ -330,6 +361,27 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     gsl_test_rel  (median,expected, rel,
                    NAME(gsl_stats) "_quantile_from_sorted_data (50odd)");
 
+  }
+
+  {
+    size_t k;
+    BASE * work = (BASE *) malloc (stridea * na * sizeof(BASE));
+
+    for (k = 0; k < na; ++k)
+      {
+        double expected = sorted[k * stridea];
+        double kselect;
+
+        /* copy rawa[] for each k, since gsl_stats_select() changes input array */
+        for (i = 0; i < na; i++)
+          work[i * stridea] = (BASE) rawa[i];
+
+        kselect = FUNCTION(gsl_stats,select)(work, stridea, na, k);
+
+        gsl_test_rel(kselect, expected, rel, NAME(gsl_stats) "_select");
+      }
+
+    free(work);
   }
 
   /* Test for IEEE handling - set third element to NaN */

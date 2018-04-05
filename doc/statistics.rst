@@ -606,10 +606,12 @@ Median and Percentiles
 ======================
 
 The median and percentile functions described in this section operate on
-sorted data.  For convenience we use *quantiles*, measured on a scale
+sorted data in :math:`O(1)` time. There is also a routine for computing
+the median of an unsorted input array in average :math:`O(n)` time using
+the quickselect algorithm. For convenience we use *quantiles*, measured on a scale
 of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
-.. function:: double gsl_stats_median_from_sorted_data (const double sorted_data[], size_t stride, size_t n)
+.. function:: double gsl_stats_median_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
 
    This function returns the median value of :data:`sorted_data`, a dataset
    of length :data:`n` with stride :data:`stride`.  The elements of the array
@@ -623,6 +625,14 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
    elements :math:`(n-1)/2` and :math:`n/2`.  Since the algorithm for
    computing the median involves interpolation this function always returns
    a floating-point number, even for integer data types.
+
+.. function:: double gsl_stats_median (double data[], const size_t stride, const size_t n)
+
+   This function returns the median value of :data:`data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The median is found
+   using the quickselect algorithm. The input array does not need to be
+   sorted, but note that the algorithm rearranges the array and so the input
+   is not preserved on output.
 
 .. function:: double gsl_stats_quantile_from_sorted_data (const double sorted_data[], size_t stride, size_t n, double f)
 
@@ -672,6 +682,23 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
 .. The t-test statistic measures the difference between the means of two
 .. datasets.
+
+Order Statistics
+================
+
+The :math:`k`-th *order statistic* of a sample is equal to its :math:`k`-th smallest value.
+The :math:`k`-th order statistic of a set of :math:`n` values :math:`x = \left\{ x_i \right\}, 1 \le i \le n` is
+denoted :math:`x_{(k)}`. The median of the set :math:`x` is equal to :math:`x_{\left( \frac{n}{2} \right)}` if
+:math:`n` is odd, or the average of :math:`x_{\left( \frac{n}{2} \right)}` and :math:`x_{\left( \frac{n}{2} + 1 \right)}`
+if :math:`n` is even. The :math:`k`-th smallest element of a length :math:`n` vector can be found
+in average :math:`O(n)` time using the quickselect algorithm.
+
+.. function:: gsl_stats_select(double data[], const size_t stride, const size_t n, const size_t k)
+
+   This function finds the :data:`k`-th smallest element of the input array :data:`data`
+   of length :data:`n` and stride :data:`stride` using the quickselect method. The
+   algorithm rearranges the elements of :data:`data` and so the input array is not preserved
+   on output.
 
 Robust Scale Estimation
 =======================

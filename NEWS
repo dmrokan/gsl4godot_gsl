@@ -1,5 +1,7 @@
 * What is new in gsl-2.5:
 
+** added gsl_stats_median() and gsl_stats_select()
+
 ** added gsl_stats_Sn_from_sorted_data() and gsl_stats_Qn_from_sorted_data()
 
 ** added Romberg integration (gsl_integration_romberg)

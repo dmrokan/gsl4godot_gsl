@@ -73,7 +73,10 @@ size_t gsl_stats_ulong_max_index (const unsigned long data[], const size_t strid
 size_t gsl_stats_ulong_min_index (const unsigned long data[], const size_t stride, const size_t n);
 void gsl_stats_ulong_minmax_index (size_t * min_index, size_t * max_index, const unsigned long data[], const size_t stride, const size_t n);
 
+unsigned long gsl_stats_ulong_select(unsigned long data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_ulong_median_from_sorted_data (const unsigned long sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_ulong_median (unsigned long sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_ulong_quantile_from_sorted_data (const unsigned long sorted_data[], const size_t stride, const size_t n, const double f) ;
 
 unsigned long gsl_stats_ulong_Sn0_from_sorted_data (const unsigned long sorted_data[], const size_t stride, const size_t n, unsigned long work[]) ;

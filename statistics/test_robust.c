@@ -21,7 +21,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_test.h>
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_rng.h>
@@ -101,6 +103,26 @@ slow_Qn0(const size_t n, const double x[])
 }
 
 static int
+test_median(const double tol, const size_t n, gsl_rng * r)
+{
+  double * x = malloc(n * sizeof(double));
+  double median1, median2;
+
+  random_array(n, x, r);
+
+  median1 = gsl_stats_median(x, 1, n);
+
+  gsl_sort(x, 1, n);
+  median2 = gsl_stats_median_from_sorted_data(x, 1, n);
+
+  gsl_test_rel(median1, median2, tol, "test_median n=%zu", n);
+
+  free(x);
+
+  return 0;
+}
+
+static int
 test_Sn(const double tol, const size_t n, gsl_rng * r)
 {
   double * x = malloc(n * sizeof(double));
@@ -155,6 +177,14 @@ test_robust (void)
 {
   const double tol = 1.0e-12;
   gsl_rng * r = gsl_rng_alloc(gsl_rng_default);
+
+  test_median(GSL_DBL_EPSILON, 1, r);
+  test_median(GSL_DBL_EPSILON, 2, r);
+  test_median(GSL_DBL_EPSILON, 3, r);
+  test_median(GSL_DBL_EPSILON, 100, r);
+  test_median(GSL_DBL_EPSILON, 101, r);
+  test_median(GSL_DBL_EPSILON, 500, r);
+  test_median(GSL_DBL_EPSILON, 501, r);
 
   test_Sn(tol, 1, r);
   test_Sn(tol, 2, r);

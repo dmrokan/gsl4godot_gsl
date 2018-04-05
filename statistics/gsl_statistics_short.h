@@ -73,7 +73,10 @@ size_t gsl_stats_short_max_index (const short data[], const size_t stride, const
 size_t gsl_stats_short_min_index (const short data[], const size_t stride, const size_t n);
 void gsl_stats_short_minmax_index (size_t * min_index, size_t * max_index, const short data[], const size_t stride, const size_t n);
 
+short gsl_stats_short_select(short data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_short_median_from_sorted_data (const short sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_short_median (short sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_short_quantile_from_sorted_data (const short sorted_data[], const size_t stride, const size_t n, const double f) ;
 
 short gsl_stats_short_Sn0_from_sorted_data (const short sorted_data[], const size_t stride, const size_t n, short work[]) ;

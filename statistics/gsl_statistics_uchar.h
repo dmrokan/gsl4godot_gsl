@@ -73,7 +73,10 @@ size_t gsl_stats_uchar_max_index (const unsigned char data[], const size_t strid
 size_t gsl_stats_uchar_min_index (const unsigned char data[], const size_t stride, const size_t n);
 void gsl_stats_uchar_minmax_index (size_t * min_index, size_t * max_index, const unsigned char data[], const size_t stride, const size_t n);
 
+unsigned char gsl_stats_uchar_select(unsigned char data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_uchar_median_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_uchar_median (unsigned char sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_uchar_quantile_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, const double f) ;
 
 unsigned char gsl_stats_uchar_Sn0_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[]) ;
