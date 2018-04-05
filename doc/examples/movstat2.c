@@ -46,11 +46,7 @@ main(void)
   gsl_movstat_Qn(GSL_MOVSTAT_END_PADZERO, x, xQn, w);
   gsl_movstat_sd(GSL_MOVSTAT_END_PADZERO, x, xsd, w);
 
-  /*
-   * scale MAD and IQR by factors to approximate standard deviation;
-   * S_n and Q_n routines already include appropriate factors
-   */
-  gsl_vector_scale(xmad, 1.4826);
+  /* scale IQR by factor to approximate standard deviation */
   gsl_vector_scale(xiqr, 0.7413);
 
   /* print results */
