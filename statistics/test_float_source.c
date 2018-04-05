@@ -468,6 +468,25 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
                min_index, expected_min_index);
   }
 
+  /* restore */
+  groupa [3*stridea] = (BASE) rawa[3];
+
+  {
+    double * work = (double *) malloc (na * sizeof(double));
+    double expected = 0.02925;
+    double mad0 = FUNCTION(gsl_stats,mad0)(groupa, stridea, na, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (even)");
+    free(work);
+  }
+
+  {
+    double * work = (double *) malloc ((na - 1) * sizeof(double));
+    double expected = 0.02910;
+    double mad0 = FUNCTION(gsl_stats,mad0)(groupa, stridea, na - 1, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (odd)");
+    free(work);
+  }
+
   {
     BASE *work = malloc(na * sizeof(BASE));
     double r = FUNCTION(gsl_stats,Sn_from_sorted_data) (sorted, stridea, na, work);

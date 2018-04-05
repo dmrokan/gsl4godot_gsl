@@ -29,9 +29,35 @@
 
 #include "movstat_common.c"
 
+static int movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
+                       gsl_movstat_workspace * w);
+
 /*
 gsl_movstat_mad()
-  Apply a moving MAD to an input vector
+  Apply a moving MAD to an input vector (with scale factor to make an
+unbiased estimate of sigma)
+
+Inputs: endtype - how to handle end points
+        x       - input vector, size n
+        xmedian - (output) vector of median values of x, size n
+                  xmedian_i = median of window centered on x_i
+        xmad    - (output) vector of estimated standard deviations of x, size n
+                  xmad_i = MAD of i-th window: 1.4826 * median(|x_i - xmedian_i|)
+        w       - workspace
+*/
+
+int
+gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
+                gsl_movstat_workspace * w)
+{
+  int status = movstat_mad(endtype, 1.482602218505602, x, xmedian, xmad, w);
+  return status;
+}
+
+/*
+gsl_movstat_mad0()
+  Apply a moving MAD to an input vector (without scale factor to make an
+unbiased estimate of sigma)
 
 Inputs: endtype - how to handle end points
         x       - input vector, size n
@@ -43,8 +69,16 @@ Inputs: endtype - how to handle end points
 */
 
 int
-gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
-                gsl_movstat_workspace * w)
+gsl_movstat_mad0(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
+                 gsl_movstat_workspace * w)
+{
+  int status = movstat_mad(endtype, 1.0, x, xmedian, xmad, w);
+  return status;
+}
+
+static int
+movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
+            gsl_movstat_workspace * w)
 {
   if (x->size != xmedian->size)
     {
@@ -78,8 +112,7 @@ gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vecto
             window[j] = fabs(window[j] - xmedi);
 
           /* compute MAD for this window */
-          gsl_sort(window, 1, window_size);
-          *xmadi = gsl_stats_median_from_sorted_data(window, 1, window_size);
+          *xmadi = scale * gsl_stats_median(window, 1, window_size);
         }
 
       return GSL_SUCCESS;

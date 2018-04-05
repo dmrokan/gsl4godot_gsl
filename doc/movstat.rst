@@ -213,18 +213,19 @@ Moving MAD
 The median absolute deviation (MAD) for the window :math:`W_i^{H,J}` is defined
 to be the median of the absolute deviations from the window's median:
 
-.. math:: MAD_i = \textrm{median} \left( \left| W_i^{H,J} - \textrm{median} \left( W_i^{H,J} \right) \right| \right)
+.. math:: MAD_i = 1.4826 \times \textrm{median} \left( \left| W_i^{H,J} - \textrm{median} \left( W_i^{H,J} \right) \right| \right)
 
-In words, first the median of all samples in :math:`W_i^{H,J}` is computed. Then the median
-is subtracted from all samples in the window to find the deviation of each sample
-from the window median. The median of all absolute deviations is then the MAD.
+The MAD has an efficiency of 37%.  See :ref:`here <sec_mad-statistic>` for more information.
 
-.. function:: int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
+.. function:: int gsl_movstat_mad0(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
+              int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
 
-   This function computes the moving MAD of the input vector :data:`x` and stores the result
+   These functions compute the moving MAD of the input vector :data:`x` and store the result
    in :data:`xmad`. The medians of each window :math:`W_i^{H,J}` are stored in :data:`xmedian`
    on output. The inputs :data:`x`, :data:`xmedian`, and :data:`xmad` must all be the same length.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+   The function :code:`mad0` does not include the scale factor of :math:`1.4826`, while the
+   function :code:`mad` does include this factor.
 
 Moving QQR
 ----------
@@ -318,7 +319,7 @@ Sample Range :math:`\sigma`
 Additionally, about 1% of the samples are perturbed to represent outliers by adding
 :math:`\pm 15` to the random Gaussian variate.
 The program calculates the moving statistics MAD, IQR, :math:`S_n`, :math:`Q_n`, and
-the standard deviation using a moving window of length :math:`K = 41`. The results are shown in
+the standard deviation using a symmetric moving window of length :math:`K = 41`. The results are shown in
 :numref:`fig_movstat2`.
 
 .. _fig_movstat2:

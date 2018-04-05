@@ -79,6 +79,9 @@ double gsl_stats_uchar_median_from_sorted_data (const unsigned char sorted_data[
 double gsl_stats_uchar_median (unsigned char sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_uchar_quantile_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, const double f) ;
 
+double gsl_stats_uchar_mad0(const unsigned char data[], const size_t stride, const size_t n, double work[]);
+double gsl_stats_uchar_mad(const unsigned char data[], const size_t stride, const size_t n, double work[]);
+
 unsigned char gsl_stats_uchar_Sn0_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[]) ;
 double gsl_stats_uchar_Sn_from_sorted_data (const unsigned char sorted_data[], const size_t stride, const size_t n, unsigned char work[]) ;
 

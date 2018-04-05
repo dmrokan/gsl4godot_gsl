@@ -314,6 +314,22 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
   }
 
   {
+    double * work = (double *) malloc (ina * sizeof(double));
+    double expected = 2.0;
+    double mad0 = FUNCTION(gsl_stats,mad0)(igroupa, stridea, ina, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (even)");
+    free(work);
+  }
+
+  {
+    double * work = (double *) malloc ((ina - 1) * sizeof(double));
+    double expected = 2.0;
+    double mad0 = FUNCTION(gsl_stats,mad0)(igroupa, stridea, ina - 1, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (odd)");
+    free(work);
+  }
+
+  {
     BASE * work = malloc(ina * sizeof(BASE));
     double sn = FUNCTION(gsl_stats,Sn_from_sorted_data)(sorted, stridea, ina, work) ;
     double expected = 2.3852;

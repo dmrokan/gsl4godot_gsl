@@ -86,10 +86,8 @@ test_sum_proc(const double tol, const size_t n, const size_t H, const size_t J,
 }
 
 static void
-test_sum(void)
+test_sum(gsl_rng * rng_p)
 {
-  gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);
-
   test_sum_proc(GSL_DBL_EPSILON, 1000, 3, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 1000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -116,6 +114,4 @@ test_sum(void)
   test_sum_proc(GSL_DBL_EPSILON, 20, 50, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_sum_proc(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-
-  gsl_rng_free(rng_p);
 }

@@ -88,7 +88,7 @@ int
 main()
 {
   test_gaussian();
-  test_rmedian();
+  /*XXXtest_rmedian();*/
 
   exit (gsl_test_summary());
 }

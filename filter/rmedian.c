@@ -28,10 +28,13 @@
 #include <gsl/gsl_filter.h>
 #include <gsl/gsl_errno.h>
 
+#include "mmacc.c"
+
 gsl_filter_rmedian_workspace *
 gsl_filter_rmedian_alloc(const size_t K)
 {
   gsl_filter_rmedian_workspace *w;
+  size_t state_size;
 
   w = calloc(1, sizeof(gsl_filter_rmedian_workspace));
   if (w == 0)
@@ -39,18 +42,16 @@ gsl_filter_rmedian_alloc(const size_t K)
       GSL_ERROR_NULL ("failed to allocate space for workspace", GSL_ENOMEM);
     }
 
-  if (K % 2 == 0)
-    w->K = K + 1;
-  else
-    w->K = K;
+  w->H = K / 2;
+  w->K = 2*w->H + 1;
 
-  w->H = w->K / 2;
+  state_size = mmacc_size(w->H + 1);
 
-  w->minmaxacc_workspace_p = gsl_movstat_minmaxacc_alloc(w->H + 1);
-  if (w->minmaxacc_workspace_p == NULL)
+  w->state = malloc(state_size);
+  if (w->state == NULL)
     {
       gsl_filter_rmedian_free(w);
-      GSL_ERROR_NULL ("failed to allocate space for minmaxacc workspace", GSL_ENOMEM);
+      GSL_ERROR_NULL ("failed to allocate space for mmacc state", GSL_ENOMEM);
     }
 
   return w;
@@ -59,8 +60,8 @@ gsl_filter_rmedian_alloc(const size_t K)
 void
 gsl_filter_rmedian_free(gsl_filter_rmedian_workspace * w)
 {
-  if (w->minmaxacc_workspace_p)
-    gsl_movstat_minmaxacc_free(w->minmaxacc_workspace_p);
+  if (w->state)
+    free(w->state);
 
   free(w);
 }
@@ -80,15 +81,18 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
       double xmin, xmax, yval;
       size_t i;
 
+      mmacc_init(w->H + 1, w->state);
+
       for (i = 0; i < n; ++i)
         {
           double xi = gsl_vector_get(x, i);
 
-          gsl_movstat_minmaxacc_insert(xi, w->minmaxacc_workspace_p);
+          mmacc_insert(xi, w->state);
 
           if (i >= w->H)
             {
-              gsl_movstat_minmaxacc_minmax(&xmin, &xmax, w->minmaxacc_workspace_p);
+              xmin = mmacc_min(w->state);
+              xmax = mmacc_max(w->state);
 
               /* y_{i-H} = median [ yprev, xmin, xmax ] */
               if (yprev <= xmin)
@@ -109,11 +113,12 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
           int idx = (int) n - (int) w->H + (int) i;
 
           /* zero pad input vector */
-          gsl_movstat_minmaxacc_insert(0.0, w->minmaxacc_workspace_p);
+          mmacc_insert(0.0, w->state);
 
           if (idx >= 0)
             {
-              gsl_movstat_minmaxacc_minmax(&xmin, &xmax, w->minmaxacc_workspace_p);
+              xmin = mmacc_min(w->state);
+              xmax = mmacc_max(w->state);
 
               /* y_{n-H+i} = median [ yprev, xmin, xmax ] */
               if (yprev <= xmin)

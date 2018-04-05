@@ -69,9 +69,9 @@ int gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector
 /* workspace for recursive median filter */
 typedef struct
 {
-  size_t H;        /* window half-length (K / 2) */
-  size_t K;        /* window size */
-  gsl_movstat_minmaxacc_workspace *minmaxacc_workspace_p;
+  size_t H;    /* window half-length (K / 2) */
+  size_t K;    /* window size */
+  void *state; /* workspace for min/max accumulator */
 } gsl_filter_rmedian_workspace;
 
 gsl_filter_rmedian_workspace *gsl_filter_rmedian_alloc(const size_t K);

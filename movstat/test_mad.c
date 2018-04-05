@@ -75,7 +75,7 @@ test_mad_proc(const double tol, const size_t n, const size_t H, const size_t J,
   slow_movmad(etype, x, y, H, J);
 
   /* z = MAD(x) */
-  gsl_movstat_mad(etype, x, med1, z, w);
+  gsl_movstat_mad0(etype, x, med1, z, w);
 
   /* med2 = median(x) */
   gsl_movstat_median(etype, x, med2, w);

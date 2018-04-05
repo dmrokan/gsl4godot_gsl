@@ -166,9 +166,6 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
           /* calculate the window medians and MADs */
           case GSL_FILTER_SCALE_MAD:
             {
-              /* multiplication factor for MAD to estimate stddev for Gaussian signal */
-              scale = 1.482602218505602;
-
               /* compute window medians and MADs */
               gsl_movstat_mad(endtype, x, xmedian, xsigma, w->movstat_workspace_p);
 

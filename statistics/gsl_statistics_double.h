@@ -99,6 +99,9 @@ double gsl_stats_median_from_sorted_data (const double sorted_data[], const size
 double gsl_stats_median (double sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_quantile_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, const double f) ;
 
+double gsl_stats_mad0(const double data[], const size_t stride, const size_t n, double work[]);
+double gsl_stats_mad(const double data[], const size_t stride, const size_t n, double work[]);
+
 double gsl_stats_Sn0_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[]) ;
 double gsl_stats_Sn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[]) ;
 

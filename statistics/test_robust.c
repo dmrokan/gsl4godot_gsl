@@ -42,6 +42,31 @@ random_array(const size_t n, double * x, gsl_rng * r)
   return 0;
 }
 
+/* calculate MAD statistic for input vector using slow/naive algorithm */
+static double
+slow_MAD(const size_t n, const double x[])
+{
+  double *work = malloc(n * sizeof(double));
+  double median, mad;
+  size_t i;
+
+  for (i = 0; i < n; ++i)
+    work[i] = x[i];
+
+  gsl_sort(work, 1, n);
+  median = gsl_stats_median_from_sorted_data(work, 1, n);
+
+  for (i = 0; i < n; ++i)
+    work[i] = fabs(x[i] - median);
+
+  gsl_sort(work, 1, n);
+  mad = gsl_stats_median_from_sorted_data(work, 1, n);
+
+  free(work);
+
+  return mad;
+}
+
 /* calculate S_n statistic for input vector using slow/naive algorithm */
 static double
 slow_Sn0(const size_t n, const double x[])
@@ -123,6 +148,28 @@ test_median(const double tol, const size_t n, gsl_rng * r)
 }
 
 static int
+test_mad(const double tol, const size_t n, gsl_rng * r)
+{
+  double * x = malloc(n * sizeof(double));
+  double * work = malloc(n * sizeof(double));
+  double mad1, mad2;
+
+  random_array(n, x, r);
+
+  mad1 = slow_MAD(n, x);
+
+  gsl_sort(x, 1, n);
+  mad2 = gsl_stats_mad0(x, 1, n, work);
+
+  gsl_test_rel(mad1, mad2, tol, "test_mad n=%zu", n);
+
+  free(x);
+  free(work);
+
+  return 0;
+}
+
+static int
 test_Sn(const double tol, const size_t n, gsl_rng * r)
 {
   double * x = malloc(n * sizeof(double));
@@ -185,6 +232,14 @@ test_robust (void)
   test_median(GSL_DBL_EPSILON, 101, r);
   test_median(GSL_DBL_EPSILON, 500, r);
   test_median(GSL_DBL_EPSILON, 501, r);
+
+  test_mad(GSL_DBL_EPSILON, 1, r);
+  test_mad(GSL_DBL_EPSILON, 2, r);
+  test_mad(GSL_DBL_EPSILON, 3, r);
+  test_mad(GSL_DBL_EPSILON, 100, r);
+  test_mad(GSL_DBL_EPSILON, 101, r);
+  test_mad(GSL_DBL_EPSILON, 500, r);
+  test_mad(GSL_DBL_EPSILON, 501, r);
 
   test_Sn(tol, 1, r);
   test_Sn(tol, 2, r);

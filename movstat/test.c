@@ -61,19 +61,6 @@ random_vector(gsl_vector * v, gsl_rng * r)
     }
 }
 
-/* generate random vector of integers with elements in [a,b] */
-static void
-random_vector_int(const int a, const int b, gsl_vector * v, gsl_rng * r)
-{
-  size_t i;
-
-  for (i = 0; i < v->size; ++i)
-    {
-      int vi = (int) ((b - a) * gsl_rng_uniform(r) + (double) a); /* in [a,b] */
-      gsl_vector_set(v, i, (double) vi);
-    }
-}
-
 /* find median of array z of length n by sorting */
 static double
 median_find(const size_t n, double * z)
@@ -155,7 +142,6 @@ test_window(const gsl_movstat_end_t endtype, const int idx, const int H, const i
 }
 
 #include "test_mad.c"
-/*#include "test_medacc.c"*/
 #include "test_mean.c"
 #include "test_median.c"
 #include "test_minmax.c"
@@ -172,7 +158,7 @@ main()
   test_median(r);
   test_minmax(r);
   test_mad(r);
-  test_sum();
+  test_sum(r);
   test_Sn();
   test_variance(r);
 
