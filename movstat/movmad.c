@@ -24,6 +24,10 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_movstat.h>
+#include <gsl/gsl_sort.h>
+#include <gsl/gsl_statistics.h>
+
+#include "movstat_common.c"
 
 /*
 gsl_movstat_mad()
@@ -42,61 +46,41 @@ int
 gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad,
                 gsl_movstat_workspace * w)
 {
-  const size_t n = x->size;
-  const size_t k = w->K;
-
-  if (n != xmedian->size)
+  if (x->size != xmedian->size)
     {
       GSL_ERROR("x and xmedian vectors must have same length", GSL_EBADLEN);
     }
-  else if (n != xmad->size)
+  else if (x->size != xmad->size)
     {
       GSL_ERROR("x and xmad vectors must have same length", GSL_EBADLEN);
     }
-  else if (k > n)
-    {
-      GSL_ERROR("window size must be less than input vector length", GSL_EBADLEN);
-    }
   else
     {
-#if 0 /*XXX*/
+      const int n = (int) x->size;
       const int H = (int) w->H; /* number of samples to left of current sample */
-      size_t i, j;
+      const int J = (int) w->J; /* number of samples to right of current sample */
+      double *window = w->work;
+      int i;
 
       /* first calculate median values of each window in x */
       gsl_movstat_median(endtype, x, xmedian, w);
 
-      /* loop over windows */
+      /* loop over windows and compute MAD */
       for (i = 0; i < n; ++i)
         {
+          int window_size = movstat_fill_window(endtype, i, H, J, x, window); /* fill window centered on x_i */
           double xmedi = gsl_vector_get(xmedian, i);
-          int idx_base = (int) i - H; /* index of first sample in window i */
+          double *xmadi = gsl_vector_ptr(xmad, i);
+          int j;
 
-          /* loop over samples inside this window */
-          for (j = 0; j < k; ++j)
-            {
-              int idx = idx_base + (int) j;
+          /* compute absolute deviations from median for this window */
+          for (j = 0; j < window_size; ++j)
+            window[j] = fabs(window[j] - xmedi);
 
-              /* check for samples near edge */
-              if (idx >= 0 && idx < (int) n)
-                {
-                  double xj = gsl_vector_get(x, idx);
-                  double absdev = fabs(xj - xmedi); /* absolute deviation for this sample inside window i */
-
-                  /* add absolute deviation for this sample to median accumulator */
-                  gsl_movstat_medacc_insert(absdev, w->medacc_workspace_p);
-                }
-              else
-                {
-                  /* zero pad window at edges xj = 0, absdev = |xj - xmedi| */
-                  double absdev = fabs(xmedi); /* absolute deviation for this sample inside window i */
-                  gsl_movstat_medacc_insert(absdev, w->medacc_workspace_p);
-                }
-            }
-
-          gsl_vector_set(xmad, i, gsl_movstat_medacc_median(w->medacc_workspace_p));
+          /* compute MAD for this window */
+          gsl_sort(window, 1, window_size);
+          *xmadi = gsl_stats_median_from_sorted_data(window, 1, window_size);
         }
-#endif
 
       return GSL_SUCCESS;
     }

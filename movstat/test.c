@@ -169,9 +169,9 @@ main()
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
 
   test_mean(r);
-  test_median();
+  test_median(r);
   test_minmax(r);
-  /*XXXtest_mad();*/
+  test_mad(r);
   test_sum();
   test_Sn();
   test_variance(r);

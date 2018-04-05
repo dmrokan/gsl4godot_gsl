@@ -35,10 +35,9 @@ slow_movsum(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
 
   for (i = 0; i < n; ++i)
     {
-      int wsize, j;
+      int wsize = test_window(etype, i, H, J, x, window);
       double sum = 0.0;
-
-      wsize = test_window(etype, i, H, J, x, window);
+      int j;
 
       for (j = 0; j < wsize; ++j)
         sum += window[j];

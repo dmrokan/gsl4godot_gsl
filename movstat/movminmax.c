@@ -60,7 +60,7 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
       double xN = 0.0;
 
       /* initialize sum accumulator */
-      (*mmacc_init)(w->K, w->state);
+      mmacc_init(w->K, w->state);
 
       /* pad initial window if necessary */
       if (endtype != GSL_MOVSTAT_END_TRUNCATE)
@@ -78,7 +78,7 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
 
           /* pad initial windows with H values */
           for (i = 0; i < H; ++i)
-            (*mmacc_insert)(x1, w->state);
+            mmacc_insert(x1, w->state);
         }
 
       /* process input vector and fill y(0:n - J - 1) */
@@ -87,12 +87,12 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
           double xi = gsl_vector_get(x, i);
           int idx = i - J;
 
-          (*mmacc_insert)(xi, w->state);
+          mmacc_insert(xi, w->state);
 
           if (idx >= 0)
             {
-              gsl_vector_set(y_min, idx, (*mmacc_min)(w->state));
-              gsl_vector_set(y_max, idx, (*mmacc_max)(w->state));
+              gsl_vector_set(y_min, idx, mmacc_min(w->state));
+              gsl_vector_set(y_max, idx, mmacc_max(w->state));
             }
         }
 
@@ -107,12 +107,12 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
               if (i - H > 0)
                 {
                   /* delete oldest window sample as we move closer to edge */
-                  (*mmacc_delete)(w->state);
+                  mmacc_delete(w->state);
                 }
 
               /* yi = acc_get [ work(i:K-2) ] */
-              gsl_vector_set(y_min, i, (*mmacc_min)(w->state));
-              gsl_vector_set(y_max, i, (*mmacc_max)(w->state));
+              gsl_vector_set(y_min, i, mmacc_min(w->state));
+              gsl_vector_set(y_max, i, mmacc_max(w->state));
             }
         }
       else
@@ -122,12 +122,12 @@ gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_ve
             {
               int idx = n - J + i;
 
-              (*mmacc_insert)(xN, w->state);
+              mmacc_insert(xN, w->state);
 
               if (idx >= 0)
                 {
-                  gsl_vector_set(y_min, idx, (*mmacc_min)(w->state));
-                  gsl_vector_set(y_max, idx, (*mmacc_max)(w->state));
+                  gsl_vector_set(y_min, idx, mmacc_min(w->state));
+                  gsl_vector_set(y_max, idx, mmacc_max(w->state));
                 }
             }
         }

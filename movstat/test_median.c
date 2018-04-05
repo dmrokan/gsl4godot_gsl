@@ -35,12 +35,9 @@ slow_movmedian(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector *
 
   for (i = 0; i < n; ++i)
     {
-      double yi;
-      int wsize;
+      int wsize = test_window(etype, i, H, J, x, window);
+      double yi = median_find(wsize, window);
 
-      wsize = test_window(etype, i, H, J, x, window);
-
-      yi = median_find(wsize, window);
       gsl_vector_set(y, i, yi);
     }
 
@@ -76,132 +73,39 @@ test_median_root(const double tol, const size_t n, const size_t K, const gsl_mov
   gsl_movstat_free(w);
 }
 
-/* symmetric window */
 static void
-test_median_symmetric(const double tol, const size_t n, const size_t K,
-                      const gsl_movstat_end_t etype, gsl_rng *rng_p)
+test_median_proc(const double tol, const size_t n, const size_t H, const size_t J,
+                 const gsl_movstat_end_t etype, gsl_rng *rng_p)
 {
-  gsl_movstat_workspace *w = gsl_movstat_alloc(K);
-  gsl_vector *x = gsl_vector_alloc(n);
-  gsl_vector *y = gsl_vector_alloc(n);
-  gsl_vector *z = gsl_vector_alloc(n);
-  char buf[2048];
-
-  /* test median filter with random input */
-
-  random_vector(x, rng_p);
-
-  /* y = median(x) with slow brute force algorithm */
-  slow_movmedian(etype, x, y, w->H, w->J);
-
-  /* z = median(x) */
-  gsl_movstat_median(etype, x, z, w);
-
-  /* test y = z */
-  sprintf(buf, "n=%zu k=%zu endtype=%u median symmetric random slow test", n, K, etype);
-  compare_vectors(tol, z, y, buf);
-
-  /* z = median(x) in-place */
-  gsl_vector_memcpy(z, x);
-  gsl_movstat_median(etype, z, z, w);
-
-  sprintf(buf, "n=%zu k=%zu endtype=%u median symmetric random in-place", n, K, etype);
-  compare_vectors(tol, z, y, buf);
-
-  gsl_vector_free(x);
-  gsl_vector_free(y);
-  gsl_vector_free(z);
-  gsl_movstat_free(w);
-}
-
-/* non-symmetric window */
-static void
-test_median_nonsymmetric(const gsl_movstat_end_t etype)
-{
-  const double tol = GSL_DBL_EPSILON;
-  const size_t n = 20;
-  const double data[] = { 4.38, 3.81, 7.65, 7.95, 1.86, 4.89, 4.45, 6.46, 0.09, 7.54,
-                          2.76, 6.79, 6.55, 1.62, 1.18, 4.98, 9.59, 3.40, 5.85, 2.23 };
-  const double expected_y1[] = { 0.0, 1.905, 2.835, 4.095, 4.415, 4.67, 4.67, 5.675, 4.67, 4.67,
-                                 5.675, 5.455, 4.61, 3.87, 5.765, 4.19, 5.415, 4.19, 2.815, 2.815 }; /* H=5, J=2 */
-  const double expected_y2[] = { 4.38, 4.38, 4.89, 4.89, 4.89, 4.45, 4.89, 4.45, 6.46, 6.55,
-                                 6.55, 2.76, 4.98, 4.98, 3.40, 4.98, 4.98, 3.40, 2.23, 0.0 };        /* H=1, J=3 */
-  const double expected_y3[] = { 0.0, 0.0, 3.81, 4.38, 4.38, 4.89, 4.89, 4.89, 4.45, 4.89,
-                                 4.45, 6.46, 6.55, 6.55, 2.76, 4.98, 4.98, 3.40, 4.98, 4.98 };       /* H=4, J=0 */
   gsl_movstat_workspace *w;
-  gsl_vector *y = gsl_vector_alloc(n);
-  gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
-  gsl_vector_const_view y1 = gsl_vector_const_view_array(expected_y1, n);
-  gsl_vector_const_view y2 = gsl_vector_const_view_array(expected_y2, n);
-  gsl_vector_const_view y3 = gsl_vector_const_view_array(expected_y3, n);
-  size_t H, J;
-
-  /* test 1: H = 5, J = 2 */
-  H = 5;
-  J = 2;
-  w = gsl_movstat_alloc2(H, J);
-
-  /* y = median(x) */
-  gsl_movstat_median(etype, &x.vector, y, w);
-  compare_vectors(tol, y, &y1.vector, "SMF nonsymmetric H=5 J=2");
-
-  gsl_movstat_free(w);
-
-  /* test 2: H = 1, J = 3 */
-  H = 1;
-  J = 3;
-  w = gsl_movstat_alloc2(H, J);
-
-  /* y = median(x) */
-  gsl_movstat_median(etype, &x.vector, y, w);
-  compare_vectors(tol, y, &y2.vector, "SMF nonsymmetric H=1 J=3");
-
-  gsl_movstat_free(w);
-
-  /* test 3: H = 4, J = 0 */
-  H = 4;
-  J = 0;
-  w = gsl_movstat_alloc2(H, J);
-
-  /* y = median(x) */
-  gsl_movstat_median(etype, &x.vector, y, w);
-  compare_vectors(tol, y, &y3.vector, "SMF nonsymmetric H=4 J=0");
-
-  gsl_movstat_free(w);
-
-  gsl_vector_free(y);
-}
-
-/* nonsymmetric window */
-static void
-test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, const size_t J,
-                          const gsl_movstat_end_t etype, gsl_rng *rng_p)
-{
-  gsl_movstat_workspace *w = gsl_movstat_alloc2(H, J);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *y = gsl_vector_alloc(n);
   gsl_vector *z = gsl_vector_alloc(n);
   char buf[2048];
 
-  /* test median filter with random input */
+  if (H == J)
+    w = gsl_movstat_alloc(2*H + 1);
+  else
+    w = gsl_movstat_alloc2(H, J);
 
+  /* test moving median with random input */
   random_vector(x, rng_p);
 
   /* y = median(x) with slow brute force algorithm */
-  slow_movmedian(etype, x, y, w->H, w->J);
+  slow_movmedian(etype, x, y, H, J);
 
   /* z = median(x) */
   gsl_movstat_median(etype, x, z, w);
 
   /* test y = z */
-  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u median nonsymmetric random slow test", n, H, J, etype);
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u median random", n, H, J, etype);
   compare_vectors(tol, z, y, buf);
 
   /* z = median(x) in-place */
   gsl_vector_memcpy(z, x);
   gsl_movstat_median(etype, z, z, w);
 
-  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u median nonsymmetric random in-place", n, H, J, etype);
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u median random in-place", n, H, J, etype);
   compare_vectors(tol, z, y, buf);
 
   gsl_vector_free(x);
@@ -211,47 +115,42 @@ test_median_nonsymmetric2(const double tol, const size_t n, const size_t H, cons
 }
 
 static void
-test_median(void)
+test_median(gsl_rng * rng_p)
 {
-  gsl_rng *rng_p = gsl_rng_alloc(gsl_rng_default);
-
   test_median_root(GSL_DBL_EPSILON, 1000, 3, GSL_MOVSTAT_END_PADZERO);
   test_median_root(GSL_DBL_EPSILON, 200, 15, GSL_MOVSTAT_END_PADVALUE);
-  /*XXXtest_median_root(GSL_DBL_EPSILON, 100, 5, GSL_MOVSTAT_END_TRUNCATE);*/
+  test_median_root(GSL_DBL_EPSILON, 100, 5, GSL_MOVSTAT_END_TRUNCATE);
 
-  test_median_symmetric(GSL_DBL_EPSILON, 1000, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 100, 301, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 5000, 17, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 150, 150, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
 
-  test_median_symmetric(GSL_DBL_EPSILON, 2000, 31, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 200, 501, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 1000, 501, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 150, 150, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
-#if 0 /*XXX*/
-  test_median_symmetric(GSL_DBL_EPSILON, 400, 11, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 200, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_symmetric(GSL_DBL_EPSILON, 100, 205, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-#endif
-
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 5, 4, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 2000, 7, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 500, 0, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
-
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 1, 2, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 1000, 20, 40, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 500, 2, 30, GSL_MOVSTAT_END_PADVALUE, rng_p);
-
-#if 0 /*XXX*/
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 3, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 1, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 10, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 200, 0, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 1000, 50, 75, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 3, 50, 75, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 5, 3, 45, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 10, 30, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_nonsymmetric2(GSL_DBL_EPSILON, 10, 30, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-#endif
-
-  gsl_rng_free(rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 150, 150, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 }

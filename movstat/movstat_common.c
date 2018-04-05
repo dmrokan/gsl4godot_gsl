@@ -136,7 +136,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
       double x1 = 0.0;    /* pad values for data edges */
       double xN = 0.0;
 
-      /* initialize sum accumulator */
+      /* initialize accumulator */
       (*acc_init)(w->K, w->state);
 
       /* pad initial window if necessary */
@@ -157,6 +157,15 @@ movstat_apply(const gsl_movstat_end_t endtype,
           for (i = 0; i < H; ++i)
             (*acc_insert)(x1, w->state);
         }
+      else if (acc_delete == NULL) /* FIXME XXX */
+        {
+          /* save last K - 1 samples of x for later (needed for in-place input/output) */
+          int idx1 = GSL_MAX(n - J - H, 0);
+          int idx2 = n - 1;
+
+          for (i = idx1; i <= idx2; ++i)
+            w->work[i - idx1] = gsl_vector_get(x, i);
+        }
 
       /* process input vector and fill y(0:n - J - 1) */
       for (i = 0; i < n; ++i)
@@ -176,16 +185,37 @@ movstat_apply(const gsl_movstat_end_t endtype,
           int idx1 = GSL_MAX(n - J, 0);
           int idx2 = n - 1;
 
-          for (i = idx1; i <= idx2; ++i)
+          if (acc_delete == NULL)
             {
-              if (i - H > 0)
-                {
-                  /* delete oldest window sample as we move closer to edge */
-                  (*acc_delete)(w->state);
-                }
+              int wsize = n - GSL_MAX(n - J - H, 0); /* size of work array */
 
-              /* yi = acc_get [ work(i:K-2) ] */
-              gsl_vector_set(y, i, (*acc_get)(w->state));
+              for (i = idx1; i <= idx2; ++i)
+                {
+                  int nsamp = n - GSL_MAX(i - H, 0); /* number of samples in this window */
+                  int j;
+
+                  (*acc_init)(w->K, w->state);
+
+                  for (j = wsize - nsamp; j < wsize; ++j)
+                    (*acc_insert)(w->work[j], w->state);
+
+                  /* yi = acc_get [ work(i:K-2) ] */
+                  gsl_vector_set(y, i, (*acc_get)(w->state));
+                }
+            }
+          else
+            {
+              for (i = idx1; i <= idx2; ++i)
+                {
+                  if (i - H > 0)
+                    {
+                      /* delete oldest window sample as we move closer to edge */
+                      (*acc_delete)(w->state);
+                    }
+
+                  /* yi = acc_get [ work(i:K-2) ] */
+                  gsl_vector_set(y, i, (*acc_get)(w->state));
+                }
             }
         }
       else

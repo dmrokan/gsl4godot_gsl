@@ -35,15 +35,8 @@ slow_movvar(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
 
   for (i = 0; i < n; ++i)
     {
-      int wsize;
-      double variance;
-
-      wsize = test_window(etype, i, H, J, x, window);
-
-      if (wsize > 1)
-        variance = gsl_stats_variance(window, 1, wsize);
-      else
-        variance = 0.0;
+      int wsize = test_window(etype, i, H, J, x, window);
+      double variance = (wsize > 1) ? gsl_stats_variance(window, 1, wsize) : 0.0;
 
       gsl_vector_set(y, i, variance);
     }
@@ -65,15 +58,8 @@ slow_movsd(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
 
   for (i = 0; i < n; ++i)
     {
-      int wsize;
-      double sd;
-
-      wsize = test_window(etype, i, H, J, x, window);
-
-      if (wsize > 1)
-        sd = gsl_stats_sd(window, 1, wsize);
-      else
-        sd = 0.0;
+      int wsize = test_window(etype, i, H, J, x, window);
+      double sd = (wsize > 1) ? gsl_stats_sd(window, 1, wsize) : 0.0;
 
       gsl_vector_set(y, i, sd);
     }

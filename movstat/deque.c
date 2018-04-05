@@ -31,8 +31,6 @@ typedef struct
 
 static size_t deque_size(const size_t n);
 static int deque_init(const size_t n, deque * d);
-static deque *deque_alloc(const size_t n);
-static void deque_free(deque * d);
 static int deque_empty(deque * d);
 static int deque_is_empty(const deque * d);
 static int deque_is_full(const deque * d);
@@ -63,38 +61,6 @@ deque_init(const size_t n, deque * d)
   d->array = (void *) d + sizeof(deque);
 
   return GSL_SUCCESS;
-}
-
-static deque *
-deque_alloc(const size_t n)
-{
-  deque *d;
-
-  d = calloc(1, sizeof(deque));
-  if (d == NULL)
-    return NULL;
-
-  d->array = malloc(n * sizeof(deque_type_t));
-  if (d->array == NULL)
-    {
-      deque_free(d);
-      return NULL;
-    }
-
-  d->head = -1;
-  d->tail = 0;
-  d->size = (int) n;
-
-  return d;
-}
-
-static void
-deque_free(deque * d)
-{
-  if (d->array)
-    free(d->array);
-
-  free(d);
 }
 
 /* empty the queue */

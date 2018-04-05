@@ -35,11 +35,9 @@ slow_movmean(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y
 
   for (i = 0; i < n; ++i)
     {
-      int wsize;
-      double mean;
+      int wsize = test_window(etype, i, H, J, x, window);
+      double mean = gsl_stats_mean(window, 1, wsize);
 
-      wsize = test_window(etype, i, H, J, x, window);
-      mean = gsl_stats_mean(window, 1, wsize);
       gsl_vector_set(y, i, mean);
     }
 

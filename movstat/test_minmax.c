@@ -35,14 +35,11 @@ slow_minmax(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y_
 
   for (i = 0; i < n; ++i)
     {
-      int wsize;
-      gsl_vector_view v;
+      int wsize = test_window(etype, i, H, J, x, window);
+      gsl_vector_view v = gsl_vector_view_array(window, wsize);
       double min, max;
 
-      wsize = test_window(etype, i, H, J, x, window);
-      v = gsl_vector_view_array(window, wsize);
       gsl_vector_minmax(&v.vector, &min, &max);
-
       gsl_vector_set(y_min, i, min);
       gsl_vector_set(y_max, i, max);
     }
@@ -64,7 +61,7 @@ test_minmax_x(const double tol, const gsl_vector * x, const int H, const int J,
   gsl_vector * y_max = gsl_vector_alloc(n);
   gsl_vector * z_max = gsl_vector_alloc(n);
   gsl_movstat_workspace * w = gsl_movstat_alloc2(H, J);
-  size_t i;
+  char buf[2048];
 
   /* compute moving min/max */
   gsl_movstat_min(endtype, x, u_min, w);
@@ -74,21 +71,31 @@ test_minmax_x(const double tol, const gsl_vector * x, const int H, const int J,
   /* compute moving min/max with slow brute force method */
   slow_minmax(endtype, x, z_min, z_max, H, J);
 
-  for (i = 0; i < n; ++i)
-    {
-      double umini = gsl_vector_get(u_min, i);
-      double ymini = gsl_vector_get(y_min, i);
-      double zmini = gsl_vector_get(z_min, i);
-      double umaxi = gsl_vector_get(u_max, i);
-      double ymaxi = gsl_vector_get(y_max, i);
-      double zmaxi = gsl_vector_get(z_max, i);
+  sprintf(buf, "test_minmax: %s min endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, u_min, z_min, buf);
 
-      gsl_test_rel(umini, zmini, tol, "test_minmax: %s min minimum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
-      gsl_test_rel(umaxi, zmaxi, tol, "test_minmax: %s max maximum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
+  sprintf(buf, "test_minmax: %s max endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, u_max, z_max, buf);
 
-      gsl_test_rel(ymini, zmini, tol, "test_minmax: %s minmax minimum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
-      gsl_test_rel(ymaxi, zmaxi, tol, "test_minmax: %s minmax maximum[%zu] endtype=%d n=%zu H=%d J=%d", desc, i, endtype, n, H, J);
-    }
+  sprintf(buf, "test_minmax: %s minmax(minimum) endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, y_min, z_min, buf);
+
+  sprintf(buf, "test_minmax: %s minmax(maximum) endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, y_max, z_max, buf);
+
+  /* in-place tests */
+  
+  gsl_vector_memcpy(u_min, x);
+  gsl_vector_memcpy(u_max, x);
+
+  gsl_movstat_min(endtype, u_min, u_min, w);
+  gsl_movstat_max(endtype, u_max, u_max, w);
+
+  sprintf(buf, "test_minmax: %s in-place min endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, u_min, z_min, buf);
+
+  sprintf(buf, "test_minmax: %s in-place max endtype=%d n=%zu H=%d J=%d", desc, endtype, n, H, J);
+  compare_vectors(tol, u_max, z_max, buf);
 
   gsl_vector_free(u_min);
   gsl_vector_free(y_min);

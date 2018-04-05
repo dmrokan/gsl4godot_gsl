@@ -21,141 +21,120 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_test.h>
 
-static void
-test_mad_symmetric(void)
+/* compute filtered data by explicitely constructing window and finding MAD */
+int
+slow_movmad(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y,
+            const int H, const int J)
 {
-  const double tol = GSL_DBL_EPSILON;
-
-  /* test movmad on a dataset with a 3-point sliding window */
-  {
-    const size_t n = 8;
-    const size_t k = 3;
-    const double data[] = { -1.0, 5.7, 3.4, 1.1, 9.5, -23.7, -5.6, 0.2 };
-    const double expected_median[] = { 0.0, 3.4, 3.4, 3.4, 1.1, -5.6, -5.6, 0.0 };
-    const double expected_MAD[] = { 1.0, 2.3, 2.3, 2.3, 8.4, 15.1, 5.8, 0.2 };
-    gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
-    gsl_movstat_workspace *w = gsl_movstat_alloc(k);
-    gsl_vector *xmedian = gsl_vector_alloc(n);
-    gsl_vector *xmad = gsl_vector_alloc(n);
-    size_t i;
-
-    gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, &x.vector, xmedian, xmad, w);
-
-    for (i = 0; i < n; ++i)
-      {
-        double xmedi = gsl_vector_get(xmedian, i);
-        double xmadi = gsl_vector_get(xmad, i);
-
-        gsl_test_rel(xmedi, expected_median[i], tol, "movmad symm[1] median i=%zu", i);
-        gsl_test_rel(xmadi, expected_MAD[i], tol, "movmad symm[1] MAD i=%zu", i);
-      }
-
-    gsl_vector_free(xmedian);
-    gsl_vector_free(xmad);
-    gsl_movstat_free(w);
-  }
-
-  /* test movmad on the dataset x = [1:100] with alternating signs with a 7-point window */
-  {
-    const size_t n = 100;
-    const size_t k = 7;
-    gsl_vector *x = gsl_vector_alloc(n);
-    gsl_vector *xmedian = gsl_vector_alloc(n);
-    gsl_vector *xmad = gsl_vector_alloc(n);
-    gsl_movstat_workspace *w = gsl_movstat_alloc(k);
-    size_t i;
-    double s = 1.0;
-
-    /* x = [1 -2 3 -4 ... 99 -100] */
-    for (i = 0; i < n; ++i)
-      {
-        gsl_vector_set(x, i, s * (i + 1.0));
-        s *= -1.0;
-      }
-
-    gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, x, xmedian, xmad, w);
-
-    /* test median results (compared with MATLAB medfilt1) */
-
-    gsl_test_abs(gsl_vector_get(xmedian, 0), 0.0, tol, "movmad symm[2] median i=%zu", 0);
-    gsl_test_abs(gsl_vector_get(xmedian, 1), 0.0, tol, "movmad symm[2] median i=%zu", 1);
-    gsl_test_abs(gsl_vector_get(xmedian, 2), 0.0, tol, "movmad symm[2] median i=%zu", 2);
-
-    gsl_test_abs(gsl_vector_get(xmedian, n - 1), 0.0, tol, "movmad symm[2] median i=%zu", n - 1);
-    gsl_test_abs(gsl_vector_get(xmedian, n - 2), 0.0, tol, "movmad symm[2] median i=%zu", n - 2);
-    gsl_test_abs(gsl_vector_get(xmedian, n - 3), 0.0, tol, "movmad symm[2] median i=%zu", n - 3);
-
-    s = 1.0;
-    for (i = 3; i < n - 3; ++i)
-      {
-        double xmedi = gsl_vector_get(xmedian, i);
-        gsl_test_rel(xmedi, s * (i - 2.0), tol, "movmad symm[2] median i=%zu", i);
-        s *= -1.0;
-      }
-
-    /* test MAD results (compared with MATLAB movmad) */
-
-    gsl_test_abs(gsl_vector_get(xmad, 0), 1.0, tol, "movmad symm[2] MAD i=%zu", 0);
-    gsl_test_abs(gsl_vector_get(xmad, 1), 2.0, tol, "movmad symm[2] MAD i=%zu", 1);
-    gsl_test_abs(gsl_vector_get(xmad, 2), 3.0, tol, "movmad symm[2] MAD i=%zu", 2);
-    gsl_test_abs(gsl_vector_get(xmad, 3), 4.0, tol, "movmad symm[2] MAD i=%zu", 3);
-    gsl_test_abs(gsl_vector_get(xmad, 4), 5.0, tol, "movmad symm[2] MAD i=%zu", 4);
-
-    gsl_test_abs(gsl_vector_get(xmad, n - 1), 97.0, tol, "movmad symm[2] MAD i=%zu", n - 1);
-    gsl_test_abs(gsl_vector_get(xmad, n - 2), 97.0, tol, "movmad symm[2] MAD i=%zu", n - 2);
-    gsl_test_abs(gsl_vector_get(xmad, n - 3), 97.0, tol, "movmad symm[2] MAD i=%zu", n - 3);
-
-    for (i = 5; i < n - 3; ++i)
-      {
-        double xmadi = gsl_vector_get(xmad, i);
-        gsl_test_rel(xmadi, 6.0, tol, "movmad symm[2] MAD i=%zu", i);
-      }
-
-    gsl_vector_free(x);
-    gsl_vector_free(xmedian);
-    gsl_vector_free(xmad);
-    gsl_movstat_free(w);
-  }
-}
-
-static void
-test_mad_nonsymmetric(void)
-{
-  const double tol = 1.0e-12;
-  const size_t n = 20;
-  const size_t H = 5;
-  const size_t J = 2;
-  const double data[] = { 4.38, 3.81, 7.65, 7.95, 1.86, 4.89, 4.45, 6.46, 0.09, 7.54,
-                          2.76, 6.79, 6.55, 1.62, 1.18, 4.98, 9.59, 3.40, 5.85, 2.23 };
-  const double expected_median[] = { 0.0, 1.905, 2.835, 4.095, 4.415, 4.67, 4.67, 5.675, 4.67, 4.67,
-                                     5.675, 5.455, 4.61, 3.87, 5.765, 4.19, 5.415, 4.19, 2.815, 2.815 };
-  const double expected_MAD[] = { 0.0, 1.905, 2.835, 2.895, 1.58, 1.325, 2.30, 1.92, 2.36, 2.015,
-                                  1.17, 1.71, 2.555, 2.685, 2.39, 2.465, 1.695, 2.16, 1.90, 2.49 };
-  gsl_vector_const_view x = gsl_vector_const_view_array(data, n);
-  gsl_movstat_workspace *w = gsl_movstat_alloc2(H, J);
-  gsl_vector *xmedian = gsl_vector_alloc(n);
-  gsl_vector *xmad = gsl_vector_alloc(n);
-  size_t i;
-
-  gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, &x.vector, xmedian, xmad, w);
+  const int n = (int) x->size;
+  const int K = H + J + 1;
+  double *window = malloc(K * sizeof(double));
+  int i;
 
   for (i = 0; i < n; ++i)
     {
-      double xmedi = gsl_vector_get(xmedian, i);
-      double xmadi = gsl_vector_get(xmad, i);
+      int wsize = test_window(etype, i, H, J, x, window);
+      double median = median_find(wsize, window);
+      double mad;
+      int j;
 
-      gsl_test_rel(xmedi, expected_median[i], tol, "movmad[3] median i=%zu", i);
-      gsl_test_rel(xmadi, expected_MAD[i], tol, "movmad[3] MAD i=%zu", i);
+      for (j = 0; j < wsize; ++j)
+        window[j] = fabs(window[j] - median);
+
+      mad = median_find(wsize, window);
+
+      gsl_vector_set(y, i, mad);
     }
 
-  gsl_vector_free(xmedian);
-  gsl_vector_free(xmad);
+  free(window);
+
+  return GSL_SUCCESS;
+}
+
+static void
+test_mad_proc(const double tol, const size_t n, const size_t H, const size_t J,
+              const gsl_movstat_end_t etype, gsl_rng *rng_p)
+{
+  gsl_movstat_workspace *w;
+  gsl_vector *x = gsl_vector_alloc(n);
+  gsl_vector *y = gsl_vector_alloc(n);
+  gsl_vector *z = gsl_vector_alloc(n);
+  gsl_vector *med1 = gsl_vector_alloc(n);
+  gsl_vector *med2 = gsl_vector_alloc(n);
+  char buf[2048];
+
+  if (H == J)
+    w = gsl_movstat_alloc(2*H + 1);
+  else
+    w = gsl_movstat_alloc2(H, J);
+
+  /* test moving MAD with random input */
+  random_vector(x, rng_p);
+
+  /* y = MAD(x) with slow brute force algorithm */
+  slow_movmad(etype, x, y, H, J);
+
+  /* z = MAD(x) */
+  gsl_movstat_mad(etype, x, med1, z, w);
+
+  /* med2 = median(x) */
+  gsl_movstat_median(etype, x, med2, w);
+
+  /* test y = z */
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u MAD random", n, H, J, etype);
+  compare_vectors(tol, z, y, buf);
+
+  /* test med1 = med2 */
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u MAD random median test", n, H, J, etype);
+  compare_vectors(tol, med1, med2, buf);
+
+#if 0 /*XXX*/
+  /* z = MAD(x) in-place */
+  gsl_vector_memcpy(z, x);
+  gsl_movstat_mad(etype, z, med1, z, w);
+
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u MAD random in-place", n, H, J, etype);
+  compare_vectors(tol, z, y, buf);
+#endif
+
+  gsl_vector_free(x);
+  gsl_vector_free(y);
+  gsl_vector_free(z);
+  gsl_vector_free(med1);
+  gsl_vector_free(med2);
   gsl_movstat_free(w);
 }
 
 static void
-test_mad(void)
+test_mad(gsl_rng * rng_p)
 {
-  test_mad_symmetric();
-  test_mad_nonsymmetric();
+  test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
+
+  test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
+
+  test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 15, 10, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 5000, 10, 15, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 150, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_mad_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_TRUNCATE, rng_p);
 }
