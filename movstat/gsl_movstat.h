@@ -42,6 +42,16 @@ typedef enum
   GSL_MOVSTAT_END_TRUNCATE
 } gsl_movstat_end_t;
 
+/* accumuator struct */
+typedef struct
+{
+  size_t (*size) (const size_t n);
+  int (*init) (const size_t n, void * vstate);
+  int (*insert) (const double x, void * vstate);
+  int (*delete) (void * vstate);
+  double (*get) (const void * vstate);
+} gsl_movstat_accum;
+
 /* workspace for moving window statistics */
 
 typedef struct
@@ -78,6 +88,18 @@ int gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
 int gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                    gsl_vector * xscale, gsl_movstat_workspace * w);
 int gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
+
+/* accumulator variables */
+
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_max;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_mean;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_median;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_min;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sd;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Sn;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sum;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Qn;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_variance;
 
 __END_DECLS
 

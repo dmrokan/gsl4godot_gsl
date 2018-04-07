@@ -23,6 +23,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_movstat.h>
 
 typedef double ringbuf_type_t;
 
@@ -96,3 +97,14 @@ sumacc_get(const void * vstate)
   sumacc_state_t * state = (sumacc_state_t *) vstate;
   return state->sum;
 }
+
+static const gsl_movstat_accum sum_accum_type =
+{
+  sumacc_size,
+  sumacc_init,
+  sumacc_insert,
+  sumacc_delete,
+  sumacc_get
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_sum = &sum_accum_type;

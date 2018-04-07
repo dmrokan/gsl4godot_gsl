@@ -26,7 +26,6 @@
 #include <gsl/gsl_movstat.h>
 
 #include "movstat_common.c"
-#include "sumacc.c"
 
 /*
 gsl_movstat_sum()
@@ -41,6 +40,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(endtype, x, y, sumacc_init, sumacc_insert, sumacc_delete, sumacc_get, w);
+  int status = movstat_apply(gsl_movstat_accum_sum, endtype, x, y, w);
   return status;
 }

@@ -30,7 +30,6 @@
 #include <gsl/gsl_statistics.h>
 
 #include "movstat_common.c"
-#include "qnacc.c"
 
 /*
 gsl_movstat_Qn()
@@ -47,40 +46,6 @@ int
 gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
-#if 1
-  int status = movstat_apply(endtype, x, xscale, qnacc_init, qnacc_insert, qnacc_delete, qnacc_get, w);
+  int status = movstat_apply(gsl_movstat_accum_Qn, endtype, x, xscale, w);
   return status;
-#else
-  if (x->size != xscale->size)
-    {
-      GSL_ERROR("x and xscale vectors must have same length", GSL_EBADLEN);
-    }
-  else
-    {
-      const int n = (int) x->size;
-      const int H = (int) w->H; /* number of samples to left of current sample */
-      const int J = (int) w->J; /* number of samples to right of current sample */
-      double *window = w->work;
-      double *work2 = malloc(3 * w->K * sizeof(double)); /*FIXME*/
-      int *work_int = malloc(5 * w->K * sizeof(int));
-      size_t window_size;
-      int i;
-
-      for (i = 0; i < n; ++i)
-        {
-          double *xscalei = gsl_vector_ptr(xscale, i);
-
-          /* fill window centered on x_i */
-          window_size = movstat_fill_window(endtype, i, H, J, x, window);
-
-          /* compute Q_n for this window FIXME: this is inefficient */
-          gsl_sort(window, 1, window_size);
-          *xscalei = gsl_stats_Qn_from_sorted_data(window, 1, window_size, work2, work_int);
-        }
-
-      free(work2);
-
-      return GSL_SUCCESS;
-    }
-#endif
 }

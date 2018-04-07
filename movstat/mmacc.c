@@ -218,3 +218,25 @@ mmacc_max(const void * vstate)
       return (state->rbuf->array[deque_peek_front(state->maxque)]);
     }
 }
+
+static const gsl_movstat_accum min_accum_type =
+{
+  mmacc_size,
+  mmacc_init,
+  mmacc_insert,
+  mmacc_delete,
+  mmacc_min
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_min = &min_accum_type;
+
+static const gsl_movstat_accum max_accum_type =
+{
+  mmacc_size,
+  mmacc_init,
+  mmacc_insert,
+  mmacc_delete,
+  mmacc_max
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_max = &max_accum_type;

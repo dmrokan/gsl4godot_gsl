@@ -23,6 +23,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_movstat.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_statistics.h>
 
@@ -103,3 +104,14 @@ qnacc_get(const void * vstate)
 
   return Qn;
 }
+
+static const gsl_movstat_accum qn_accum_type =
+{
+  qnacc_size,
+  qnacc_init,
+  qnacc_insert,
+  qnacc_delete,
+  qnacc_get
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_Qn = &qn_accum_type;

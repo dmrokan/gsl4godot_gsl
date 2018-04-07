@@ -23,13 +23,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
-#include "medacc.c"
-#include "mmacc.c"
-#include "mvacc.c"
-#include "qnacc.c"
-#include "snacc.c"
-#include "sumacc.c"
-
 /*
 gsl_movstat_alloc()
   Allocate a workspace for moving window statistics.
@@ -93,12 +86,12 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
    * determine maximum number of bytes needed for the various accumulators;
    * the accumulators will all share the same workspace
    */
-  state_size = GSL_MAX(state_size, mvacc_size(w->K));  /* mean/variance accumulator */
-  state_size = GSL_MAX(state_size, mmacc_size(w->K));  /* min/max accumulator */
-  state_size = GSL_MAX(state_size, sumacc_size(w->K)); /* sum accumulator */
-  state_size = GSL_MAX(state_size, medacc_size(w->K)); /* median accumulator */
-  state_size = GSL_MAX(state_size, qnacc_size(w->K));  /* Q_n accumulator */
-  state_size = GSL_MAX(state_size, snacc_size(w->K));  /* S_n accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_mean->size)(w->K));   /* mean/variance/sd accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_min->size)(w->K));    /* min/max accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_sum->size)(w->K));    /* sum accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_median->size)(w->K)); /* median accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_Qn->size)(w->K));     /* Q_n accumulator */
+  state_size = GSL_MAX(state_size, (gsl_movstat_accum_Sn->size)(w->K));     /* S_n accumulator */
 
   w->state = malloc(state_size);
   if (w->state == 0)

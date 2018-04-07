@@ -100,13 +100,10 @@ movstat_apply()
 routine to handle window endpoints and apply a given accumulator to
 the input vector.
 
-Inputs: endtype    - end point handling criteria
+Inputs: accum      - accumulator to apply moving window statistic
+        endtype    - end point handling criteria
         x          - input vector, size n
         y          - output vector, size n
-        acc_init   - initialize accumulator
-        acc_insert - add a single sample to accumulator
-        acc_delete - delete oldest sample from accumulator
-        acc_get    - get current accumulated value
         w          - workspace
 
 Notes:
@@ -114,13 +111,10 @@ Notes:
 */
 
 static int
-movstat_apply(const gsl_movstat_end_t endtype,
+movstat_apply(const gsl_movstat_accum * accum,
+              const gsl_movstat_end_t endtype,
               const gsl_vector * x,
               gsl_vector * y,
-              int (*acc_init)(const size_t n, void * vstate),
-              int (*acc_insert)(const double x, void * vstate),
-              int (*acc_delete)(void * vstate),
-              double (*acc_get)(const void * vstate),
               gsl_movstat_workspace * w)
 {
   if (x->size != y->size)
@@ -137,7 +131,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
       double xN = 0.0;
 
       /* initialize accumulator */
-      (*acc_init)(w->K, w->state);
+      (accum->init)(w->K, w->state);
 
       /* pad initial window if necessary */
       if (endtype != GSL_MOVSTAT_END_TRUNCATE)
@@ -155,9 +149,9 @@ movstat_apply(const gsl_movstat_end_t endtype,
 
           /* pad initial windows with H values */
           for (i = 0; i < H; ++i)
-            (*acc_insert)(x1, w->state);
+            (accum->insert)(x1, w->state);
         }
-      else if (acc_delete == NULL) /* FIXME XXX */
+      else if (accum->delete == NULL) /* FIXME XXX */
         {
           /* save last K - 1 samples of x for later (needed for in-place input/output) */
           int idx1 = GSL_MAX(n - J - H, 0);
@@ -173,10 +167,10 @@ movstat_apply(const gsl_movstat_end_t endtype,
           double xi = gsl_vector_get(x, i);
           int idx = i - J;
 
-          (*acc_insert)(xi, w->state);
+          (accum->insert)(xi, w->state);
 
           if (idx >= 0)
-            gsl_vector_set(y, idx, (*acc_get)(w->state));
+            gsl_vector_set(y, idx, (accum->get)(w->state));
         }
 
       if (endtype == GSL_MOVSTAT_END_TRUNCATE)
@@ -185,7 +179,7 @@ movstat_apply(const gsl_movstat_end_t endtype,
           int idx1 = GSL_MAX(n - J, 0);
           int idx2 = n - 1;
 
-          if (acc_delete == NULL)
+          if (accum->delete == NULL)
             {
               int wsize = n - GSL_MAX(n - J - H, 0); /* size of work array */
 
@@ -194,13 +188,13 @@ movstat_apply(const gsl_movstat_end_t endtype,
                   int nsamp = n - GSL_MAX(i - H, 0); /* number of samples in this window */
                   int j;
 
-                  (*acc_init)(w->K, w->state);
+                  (accum->init)(w->K, w->state);
 
                   for (j = wsize - nsamp; j < wsize; ++j)
-                    (*acc_insert)(w->work[j], w->state);
+                    (accum->insert)(w->work[j], w->state);
 
                   /* yi = acc_get [ work(i:K-2) ] */
-                  gsl_vector_set(y, i, (*acc_get)(w->state));
+                  gsl_vector_set(y, i, (accum->get)(w->state));
                 }
             }
           else
@@ -210,11 +204,11 @@ movstat_apply(const gsl_movstat_end_t endtype,
                   if (i - H > 0)
                     {
                       /* delete oldest window sample as we move closer to edge */
-                      (*acc_delete)(w->state);
+                      (accum->delete)(w->state);
                     }
 
                   /* yi = acc_get [ work(i:K-2) ] */
-                  gsl_vector_set(y, i, (*acc_get)(w->state));
+                  gsl_vector_set(y, i, (accum->get)(w->state));
                 }
             }
         }
@@ -225,10 +219,10 @@ movstat_apply(const gsl_movstat_end_t endtype,
             {
               int idx = n - J + i;
 
-              (*acc_insert)(xN, w->state);
+              (accum->insert)(xN, w->state);
 
               if (idx >= 0)
-                gsl_vector_set(y, idx, (*acc_get)(w->state));
+                gsl_vector_set(y, idx, (accum->get)(w->state));
             }
         }
 

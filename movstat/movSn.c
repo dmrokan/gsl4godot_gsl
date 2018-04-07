@@ -30,7 +30,6 @@
 #include <gsl/gsl_statistics.h>
 
 #include "movstat_common.c"
-#include "snacc.c"
 
 /*
 gsl_movstat_Sn()
@@ -47,6 +46,6 @@ int
 gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(endtype, x, xscale, snacc_init, snacc_insert, snacc_delete, snacc_get, w);
+  int status = movstat_apply(gsl_movstat_accum_Sn, endtype, x, xscale, w);
   return status;
 }

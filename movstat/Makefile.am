@@ -4,7 +4,23 @@ pkginclude_HEADERS = gsl_movstat.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-libgslmovstat_la_SOURCES = alloc.c medacc.c movmad.c movmean.c movmedian.c movminmax.c movsum.c movSn.c movQn.c movqqr.c movvariance.c
+libgslmovstat_la_SOURCES = \
+  alloc.c                  \
+	medacc.c                 \
+	mmacc.c                  \
+	movmad.c                 \
+	movmean.c                \
+	movmedian.c              \
+	movminmax.c              \
+	movsum.c                 \
+	movSn.c                  \
+	movQn.c                  \
+	movqqr.c                 \
+	movvariance.c            \
+	mvacc.c                  \
+	qnacc.c                  \
+	snacc.c                  \
+	sumacc.c
 
 check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)

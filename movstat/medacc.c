@@ -250,3 +250,14 @@ maxSortUp(medacc_state_t * state, int i)
 
   return (i == 0);
 }
+
+static const gsl_movstat_accum median_accum_type =
+{
+  medacc_size,
+  medacc_init,
+  medacc_insert,
+  NULL, /* XXX FIXME */
+  medacc_get
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_median = &median_accum_type;

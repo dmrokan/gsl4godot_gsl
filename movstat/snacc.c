@@ -23,6 +23,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_movstat.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_statistics.h>
 
@@ -99,3 +100,14 @@ snacc_get(const void * vstate)
 
   return Sn;
 }
+
+static const gsl_movstat_accum sn_accum_type =
+{
+  snacc_size,
+  snacc_init,
+  snacc_insert,
+  snacc_delete,
+  snacc_get
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_Sn = &sn_accum_type;

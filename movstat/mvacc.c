@@ -26,6 +26,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_movstat.h>
 
 typedef double ringbuf_type_t;
 
@@ -161,3 +162,36 @@ mvacc_sd(const void * vstate)
   double variance = mvacc_variance(vstate);
   return (sqrt(variance));
 }
+
+static const gsl_movstat_accum mean_accum_type =
+{
+  mvacc_size,
+  mvacc_init,
+  mvacc_insert,
+  mvacc_delete,
+  mvacc_mean
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_mean = &mean_accum_type;
+
+static const gsl_movstat_accum variance_accum_type =
+{
+  mvacc_size,
+  mvacc_init,
+  mvacc_insert,
+  mvacc_delete,
+  mvacc_variance
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_variance = &variance_accum_type;
+
+static const gsl_movstat_accum sd_accum_type =
+{
+  mvacc_size,
+  mvacc_init,
+  mvacc_insert,
+  mvacc_delete,
+  mvacc_sd
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_sd = &sd_accum_type;

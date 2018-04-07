@@ -26,7 +26,6 @@
 #include <gsl/gsl_movstat.h>
 
 #include "movstat_common.c"
-#include "mvacc.c"
 
 /*
 gsl_movstat_mean()
@@ -41,6 +40,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(endtype, x, y, mvacc_init, mvacc_insert, mvacc_delete, mvacc_mean, w);
+  int status = movstat_apply(gsl_movstat_accum_mean, endtype, x, y, w);
   return status;
 }
