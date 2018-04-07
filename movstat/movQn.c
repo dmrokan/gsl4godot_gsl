@@ -30,6 +30,7 @@
 #include <gsl/gsl_statistics.h>
 
 #include "movstat_common.c"
+#include "qnacc.c"
 
 /*
 gsl_movstat_Qn()
@@ -46,6 +47,10 @@ int
 gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
+#if 1
+  int status = movstat_apply(endtype, x, xscale, qnacc_init, qnacc_insert, qnacc_delete, qnacc_get, w);
+  return status;
+#else
   if (x->size != xscale->size)
     {
       GSL_ERROR("x and xscale vectors must have same length", GSL_EBADLEN);
@@ -77,4 +82,5 @@ gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
 
       return GSL_SUCCESS;
     }
+#endif
 }

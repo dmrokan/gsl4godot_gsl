@@ -26,6 +26,8 @@
 #include "medacc.c"
 #include "mmacc.c"
 #include "mvacc.c"
+#include "qnacc.c"
+#include "snacc.c"
 #include "sumacc.c"
 
 /*
@@ -95,6 +97,8 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
   state_size = GSL_MAX(state_size, mmacc_size(w->K));  /* min/max accumulator */
   state_size = GSL_MAX(state_size, sumacc_size(w->K)); /* sum accumulator */
   state_size = GSL_MAX(state_size, medacc_size(w->K)); /* median accumulator */
+  state_size = GSL_MAX(state_size, qnacc_size(w->K));  /* Q_n accumulator */
+  state_size = GSL_MAX(state_size, snacc_size(w->K));  /* S_n accumulator */
 
   w->state = malloc(state_size);
   if (w->state == 0)

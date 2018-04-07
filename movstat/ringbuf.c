@@ -41,6 +41,7 @@ static int ringbuf_pop_back(ringbuf * b);
 static ringbuf_type_t ringbuf_peek(const int i, const ringbuf * b);
 static ringbuf_type_t ringbuf_peek_front(const ringbuf * d);
 static ringbuf_type_t ringbuf_peek_back(const ringbuf * d);
+static size_t ringbuf_copy(double * dest, const ringbuf * b);
 
 static size_t
 ringbuf_size(const size_t n)
@@ -186,6 +187,25 @@ ringbuf_peek_back(const ringbuf * b)
   else
     {
       return b->array[b->tail];
+    }
+}
+
+static size_t
+ringbuf_copy(double * dest, const ringbuf * b)
+{
+  if (ringbuf_is_empty(b) || b->tail < 0)
+    {
+      return 0;
+    }
+  else
+    {
+      const int n = (b->head > b->tail) ? (b->size - b->head + b->tail + 1) : (b->tail - b->head + 1);
+      int i;
+
+      for (i = 0; i < n; ++i)
+        dest[i] = b->array[(b->head + i) % b->size];
+
+      return (size_t) n;
     }
 }
 

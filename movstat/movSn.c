@@ -30,6 +30,7 @@
 #include <gsl/gsl_statistics.h>
 
 #include "movstat_common.c"
+#include "snacc.c"
 
 /*
 gsl_movstat_Sn()
@@ -46,34 +47,6 @@ int
 gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
-  if (x->size != xscale->size)
-    {
-      GSL_ERROR("x and xscale vectors must have same length", GSL_EBADLEN);
-    }
-  else
-    {
-      const int n = (int) x->size;
-      const int H = (int) w->H; /* number of samples to left of current sample */
-      const int J = (int) w->J; /* number of samples to right of current sample */
-      double *window = w->work;
-      double *work2 = malloc(w->K * sizeof(double)); /*FIXME*/
-      size_t window_size;
-      int i;
-
-      for (i = 0; i < n; ++i)
-        {
-          double *xscalei = gsl_vector_ptr(xscale, i);
-
-          /* fill window centered on x_i */
-          window_size = movstat_fill_window(endtype, i, H, J, x, window);
-
-          /* compute S_n for this window */
-          gsl_sort(window, 1, window_size);
-          *xscalei = gsl_stats_Sn_from_sorted_data(window, 1, window_size, work2);
-        }
-
-      free(work2);
-
-      return GSL_SUCCESS;
-    }
+  int status = movstat_apply(endtype, x, xscale, snacc_init, snacc_insert, snacc_delete, snacc_get, w);
+  return status;
 }

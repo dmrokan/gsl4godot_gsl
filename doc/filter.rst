@@ -125,10 +125,8 @@ computing the scale estimate :math:`S_i`, all of which are robust to the presenc
 
       .. math:: S_i = 1.4826 \times \textrm{median} \left\{ | W_i^H - m_i | \right\}
 
-      In words, it takes the median of all the absolute deviations of each sample in the window :math:`W_i^H`
-      from its local window median :math:`m_i`. The factor :math:`1.4826` makes :math:`S_i` an unbiased estimate of
-      the standard deviation for Gaussian data. The MAD has a statistical efficiency of 37%.
       This choice of scale estimate is also known as the *Hampel filter* in the statistical literature.
+      See :ref:`here <sec_mad-statistic>` for more information.
 
    .. macro:: GSL_FILTER_SCALE_IQR
 
