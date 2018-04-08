@@ -90,6 +90,7 @@ test_qqr(gsl_rng * rng_p)
 {
   const double eps = 1.0e-10;
 
+  test_qqr_proc(eps, 0.1, 100, 0, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_qqr_proc(eps, 0.1, 1000, 3, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_qqr_proc(eps, 0.2, 1000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_qqr_proc(eps, 0.3, 1000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -99,6 +100,7 @@ test_qqr(gsl_rng * rng_p)
   test_qqr_proc(eps, 0.25, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_qqr_proc(eps, 0.25, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
 
+  test_qqr_proc(eps, 0.1, 100, 0, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_qqr_proc(eps, 0.1, 1000, 3, 3, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_qqr_proc(eps, 0.2, 1000, 0, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_qqr_proc(eps, 0.3, 1000, 5, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
@@ -108,6 +110,7 @@ test_qqr(gsl_rng * rng_p)
   test_qqr_proc(eps, 0.25, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_qqr_proc(eps, 0.25, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
+  test_qqr_proc(eps, 0.1, 100, 0, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_qqr_proc(eps, 0.1, 1000, 3, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_qqr_proc(eps, 0.2, 1000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_qqr_proc(eps, 0.3, 1000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);

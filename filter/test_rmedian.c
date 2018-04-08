@@ -204,9 +204,13 @@ test_rmedian(void)
   test_rmedian_random(100, 1001, rng_p);
   test_rmedian_random(5, 7, rng_p);
 
+#if 0
   test_rmedian_sine(1000, 5, rng_p);
   test_rmedian_sine(5000, 71, rng_p);
   test_rmedian_sine(5000, 201, rng_p);
+#else
+  test_rmedian_sine(500000, 6001, rng_p);
+#endif
 
   gsl_rng_free(rng_p);
 }

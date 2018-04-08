@@ -101,7 +101,7 @@ ringbuf_insert(const ringbuf_type_t x, ringbuf * b)
     {
       b->head = b->size - 1;
 
-      if (b->tail == b->head)
+      if (b->tail == b->head && b->size > 1)
         --(b->tail);     /* buffer is full so decrease tail */
     }
   else                   /* decrement head */

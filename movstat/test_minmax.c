@@ -197,6 +197,7 @@ test_minmax(gsl_rng * rng_p)
 
   /* random input */
 
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -206,6 +207,7 @@ test_minmax(gsl_rng * rng_p)
   test_minmax_random(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
 
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
@@ -215,6 +217,7 @@ test_minmax(gsl_rng * rng_p)
   test_minmax_random(GSL_DBL_EPSILON, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
+  test_minmax_random(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 1000, 5, 7, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 2000, 0, 2, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_minmax_random(GSL_DBL_EPSILON, 500, 3, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);

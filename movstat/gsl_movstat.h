@@ -42,7 +42,14 @@ typedef enum
   GSL_MOVSTAT_END_TRUNCATE
 } gsl_movstat_end_t;
 
-/* accumuator struct */
+/* accumuator struct
+ * size   - return number of bytes needed for accumulator with maximum of n elements
+ * init   - initialize accumulator state
+ * insert - insert a single sample into accumulator; if there are already n
+ *          samples in accumulator, oldest sample is overwritten
+ * delete - delete oldest sample from accumulator
+ * get    - return accumulated value
+ */
 typedef struct
 {
   size_t (*size) (const size_t n);

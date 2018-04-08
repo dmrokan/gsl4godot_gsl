@@ -96,6 +96,7 @@ test_Qn_proc(const double tol, const size_t n, const size_t H, const size_t J,
 static void
 test_Qn(gsl_rng * rng_p)
 {
+  test_Qn_proc(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 2, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 2, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -105,6 +106,7 @@ test_Qn(gsl_rng * rng_p)
   test_Qn_proc(GSL_DBL_EPSILON, 20, 1, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 20, 50, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
 
+  test_Qn_proc(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 2, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 2, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
@@ -114,6 +116,7 @@ test_Qn(gsl_rng * rng_p)
   test_Qn_proc(GSL_DBL_EPSILON, 20, 1, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 20, 50, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
+  test_Qn_proc(GSL_DBL_EPSILON, 1000, 0, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 5, 2, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_Qn_proc(GSL_DBL_EPSILON, 1000, 2, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);

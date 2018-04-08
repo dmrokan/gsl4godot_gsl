@@ -130,6 +130,7 @@ test_variance(gsl_rng * rng_p)
 {
   const double eps = 1.0e-10;
 
+  test_variance_proc(eps, 1000, 0, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_variance_proc(eps, 1000, 3, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_variance_proc(eps, 1000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_variance_proc(eps, 1000, 5, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -139,6 +140,7 @@ test_variance(gsl_rng * rng_p)
   test_variance_proc(eps, 20, 10, 50, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_variance_proc(eps, 20, 50, 10, GSL_MOVSTAT_END_PADZERO, rng_p);
 
+  test_variance_proc(eps, 1000, 0, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_variance_proc(eps, 1000, 3, 3, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_variance_proc(eps, 1000, 1, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_variance_proc(eps, 1000, 5, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
@@ -148,6 +150,7 @@ test_variance(gsl_rng * rng_p)
   test_variance_proc(eps, 20, 10, 50, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_variance_proc(eps, 20, 50, 10, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
+  test_variance_proc(eps, 1000, 0, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 1000, 3, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 1000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_variance_proc(eps, 1000, 5, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);

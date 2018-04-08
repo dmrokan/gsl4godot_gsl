@@ -108,6 +108,7 @@ test_mad_proc(const double tol, const size_t n, const size_t H, const size_t J,
 static void
 test_mad(gsl_rng * rng_p)
 {
+  test_mad_proc(GSL_DBL_EPSILON, 100, 0, 0, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
@@ -118,6 +119,7 @@ test_mad(gsl_rng * rng_p)
   test_mad_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADZERO, rng_p);
 
+  test_mad_proc(GSL_DBL_EPSILON, 100, 0, 0, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
@@ -128,6 +130,7 @@ test_mad(gsl_rng * rng_p)
   test_mad_proc(GSL_DBL_EPSILON, 50, 150, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 50, 100, 100, GSL_MOVSTAT_END_PADVALUE, rng_p);
 
+  test_mad_proc(GSL_DBL_EPSILON, 100, 0, 0, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 1000, 1, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 8, 8, GSL_MOVSTAT_END_TRUNCATE, rng_p);
   test_mad_proc(GSL_DBL_EPSILON, 5000, 0, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
