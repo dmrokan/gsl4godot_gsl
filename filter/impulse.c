@@ -105,7 +105,7 @@ gsl_filter_impulse2()
 y_i = { x_i, |x_i - m_i| <= t * S_i OR S_i < epsilon
       { m_i, |x_i - m_i| > t * S_i
 
-where m_i is the median of the window W_i^H and S_i is the scale estimate (MAD, IQR, etc)
+where m_i is the median of the window W_i^H and S_i is the scale estimate (MAD, IQR, S_n, Q_n)
 
 Inputs: endtype    - how to handle signal end points
         scale_type - which statistic to use for scale estimate (MAD, IQR, etc)
@@ -163,7 +163,6 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
 
       switch (scale_type)
         {
-          /* calculate the window medians and MADs */
           case GSL_FILTER_SCALE_MAD:
             {
               /* compute window medians and MADs */

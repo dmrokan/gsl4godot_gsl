@@ -57,31 +57,7 @@ gsl_movstat_qqr(const gsl_movstat_end_t endtype, const gsl_vector * x, const dou
     }
   else
     {
-      const int n = (int) x->size;
-      const int H = (int) w->H; /* number of samples to left of current sample */
-      const int J = (int) w->J; /* number of samples to right of current sample */
-      double *window = w->work;
-      int window_size, i;
-
-      for (i = 0; i < n; ++i)
-        {
-          double *xqqri = gsl_vector_ptr(xqqr, i);
-          double quant1, quant2;
-
-          /* fill window centered on x_i */
-          window_size = movstat_fill_window(endtype, i, H, J, x, window);
-
-          /* sort window */
-          gsl_sort(window, 1, window_size);
-
-          /* compute q-quantile and (1-q)-quantile */
-          quant1 = gsl_stats_quantile_from_sorted_data(window, 1, window_size, q);
-          quant2 = gsl_stats_quantile_from_sorted_data(window, 1, window_size, 1.0 - q);
-
-          /* compute q-quantile range */
-          *xqqri = quant2 - quant1;
-        }
-
-      return GSL_SUCCESS;
+      int status = movstat_apply(gsl_movstat_accum_qqr, endtype, x, xqqr, (void *) &q, w);
+      return status;
     }
 }

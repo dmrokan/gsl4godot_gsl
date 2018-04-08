@@ -28,8 +28,6 @@
 #include <gsl/gsl_filter.h>
 #include <gsl/gsl_errno.h>
 
-#include "mmacc.c"
-
 gsl_filter_rmedian_workspace *
 gsl_filter_rmedian_alloc(const size_t K)
 {
@@ -44,14 +42,16 @@ gsl_filter_rmedian_alloc(const size_t K)
 
   w->H = K / 2;
   w->K = 2*w->H + 1;
+  w->minacc = gsl_movstat_accum_min;
+  w->maxacc = gsl_movstat_accum_max;
 
-  state_size = mmacc_size(w->H + 1);
+  state_size = (w->maxacc->size)(w->H + 1);
 
   w->state = malloc(state_size);
   if (w->state == NULL)
     {
       gsl_filter_rmedian_free(w);
-      GSL_ERROR_NULL ("failed to allocate space for mmacc state", GSL_ENOMEM);
+      GSL_ERROR_NULL ("failed to allocate space for min/max state", GSL_ENOMEM);
     }
 
   return w;
@@ -65,6 +65,15 @@ gsl_filter_rmedian_free(gsl_filter_rmedian_workspace * w)
 
   free(w);
 }
+
+/*
+gsl_filter_rmedian()
+  Recursive median filter
+
+Inputs: x - input vector
+        y - output vector
+        w - workspace
+*/
 
 int
 gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w)
@@ -81,18 +90,18 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
       double xmin, xmax, yval;
       size_t i;
 
-      mmacc_init(w->H + 1, w->state);
+      (w->minacc->init)(w->H + 1, w->state);
 
       for (i = 0; i < n; ++i)
         {
           double xi = gsl_vector_get(x, i);
 
-          mmacc_insert(xi, w->state);
+          (w->minacc->insert)(xi, w->state);
 
           if (i >= w->H)
             {
-              xmin = mmacc_min(w->state);
-              xmax = mmacc_max(w->state);
+              xmin = (w->minacc->get)(NULL, w->state);
+              xmax = (w->maxacc->get)(NULL, w->state);
 
               /* y_{i-H} = median [ yprev, xmin, xmax ] */
               if (yprev <= xmin)
@@ -113,12 +122,12 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
           int idx = (int) n - (int) w->H + (int) i;
 
           /* zero pad input vector */
-          mmacc_insert(0.0, w->state);
+          (w->minacc->insert)(0.0, w->state);
 
           if (idx >= 0)
             {
-              xmin = mmacc_min(w->state);
-              xmax = mmacc_max(w->state);
+              xmin = (w->minacc->get)(NULL, w->state);
+              xmax = (w->maxacc->get)(NULL, w->state);
 
               /* y_{n-H+i} = median [ yprev, xmin, xmax ] */
               if (yprev <= xmin)

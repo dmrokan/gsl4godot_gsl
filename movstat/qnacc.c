@@ -93,11 +93,13 @@ qnacc_delete(void * vstate)
 
 /* FIXME XXX: this is inefficient - could be improved by maintaining a sorted ring buffer */
 static qnacc_type_t
-qnacc_get(const void * vstate)
+qnacc_get(void * params, const void * vstate)
 {
   qnacc_state_t * state = (qnacc_state_t *) vstate;
   size_t n = ringbuf_copy(state->window, state->rbuf);
   double Qn;
+
+  (void) params;
 
   gsl_sort(state->window, 1, n);
   Qn = gsl_stats_Qn_from_sorted_data(state->window, 1, n, state->work, state->work_int);

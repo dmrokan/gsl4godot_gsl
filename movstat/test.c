@@ -146,6 +146,7 @@ test_window(const gsl_movstat_end_t endtype, const int idx, const int H, const i
 #include "test_median.c"
 #include "test_minmax.c"
 #include "test_Qn.c"
+#include "test_qqr.c"
 #include "test_sum.c"
 #include "test_Sn.c"
 #include "test_variance.c"
@@ -160,6 +161,7 @@ main()
   test_minmax(r);
   test_mad(r);
   test_Qn(r);
+  test_qqr(r);
   test_sum(r);
   test_Sn(r);
   test_variance(r);

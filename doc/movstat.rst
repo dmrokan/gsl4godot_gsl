@@ -194,7 +194,8 @@ each sample :math:`x_i`:
 
    This function computes the moving median of the input vector :data:`x`, storing
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
-   the ends of the input should be handled.
+   the ends of the input should be handled. It is allowed for
+   :data:`x` = :data:`y` for an in-place moving window median.
 
 Robust Scale Estimation
 =======================
@@ -215,7 +216,8 @@ to be the median of the absolute deviations from the window's median:
 
 .. math:: MAD_i = 1.4826 \times \textrm{median} \left( \left| W_i^{H,J} - \textrm{median} \left( W_i^{H,J} \right) \right| \right)
 
-The MAD has an efficiency of 37%.  See :ref:`here <sec_mad-statistic>` for more information.
+The factor of :math:`1.4826` makes the MAD an unbiased estimator of the standard deviation
+for Gaussian data. The MAD has an efficiency of 37%.  See :ref:`here <sec_mad-statistic>` for more information.
 
 .. function:: int gsl_movstat_mad0(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)
               int gsl_movstat_mad(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w)

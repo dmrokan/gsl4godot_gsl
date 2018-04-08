@@ -49,7 +49,7 @@ typedef struct
   int (*init) (const size_t n, void * vstate);
   int (*insert) (const double x, void * vstate);
   int (*delete) (void * vstate);
-  double (*get) (const void * vstate);
+  double (*get) (void * params, const void * vstate);
 } gsl_movstat_accum;
 
 /* workspace for moving window statistics */
@@ -99,6 +99,7 @@ GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sd;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Sn;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sum;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Qn;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_qqr;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_variance;
 
 __END_DECLS

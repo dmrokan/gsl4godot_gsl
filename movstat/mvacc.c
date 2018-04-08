@@ -139,16 +139,19 @@ mvacc_delete(void * vstate)
 }
 
 static double
-mvacc_mean(const void * vstate)
+mvacc_mean(void * params, const void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
+  (void) params;
   return state->mean;
 }
 
 static double
-mvacc_variance(const void * vstate)
+mvacc_variance(void * params, const void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
+
+  (void) params;
 
   if (state->k < 2)
     return (0.0);
@@ -157,9 +160,9 @@ mvacc_variance(const void * vstate)
 }
 
 static double
-mvacc_sd(const void * vstate)
+mvacc_sd(void * params, const void * vstate)
 {
-  double variance = mvacc_variance(vstate);
+  double variance = mvacc_variance(params, vstate);
   return (sqrt(variance));
 }
 

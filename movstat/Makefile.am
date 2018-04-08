@@ -19,6 +19,7 @@ libgslmovstat_la_SOURCES = \
 	movvariance.c            \
 	mvacc.c                  \
 	qnacc.c                  \
+	qqracc.c                 \
 	snacc.c                  \
 	sumacc.c
 

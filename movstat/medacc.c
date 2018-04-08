@@ -49,7 +49,7 @@ static size_t medacc_size(const size_t n);
 static int medacc_init(const size_t n, void * vstate);
 static int medacc_insert(const medacc_type_t x, void * vstate);
 static int medacc_delete(void * vstate);
-static medacc_type_t medacc_get(const void * vstate);
+static medacc_type_t medacc_get(void * params, const void * vstate);
 
 static int mmless(const medacc_state_t * state, const int i, const int j);
 static int mmexchange(medacc_state_t * state, const int i, const int j);
@@ -164,10 +164,12 @@ medacc_delete(void * vstate)
 
 /* returns median (or average of 2 when item count is even) */
 static medacc_type_t
-medacc_get(const void * vstate)
+medacc_get(void * params, const void * vstate)
 {
   medacc_state_t * state = (medacc_state_t *) vstate;
   medacc_type_t median = state->data[state->heap[0]];
+
+  (void) params;
 
   if ((state->ct & 1) == 0)
     median = ItemMean(median, state->data[state->heap[-1]]);

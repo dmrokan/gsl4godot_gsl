@@ -92,9 +92,10 @@ sumacc_delete(void * vstate)
 }
 
 static double
-sumacc_get(const void * vstate)
+sumacc_get(void * params, const void * vstate)
 {
   sumacc_state_t * state = (sumacc_state_t *) vstate;
+  (void) params;
   return state->sum;
 }
 

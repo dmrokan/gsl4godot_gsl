@@ -1,6 +1,6 @@
-/* movstat/snacc.c
+/* movstat/qqracc.c
  *
- * Moving window S_n accumulator
+ * Moving window QQR accumulator
  * 
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -27,38 +27,36 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_statistics.h>
 
-typedef double snacc_type_t;
-typedef snacc_type_t ringbuf_type_t;
+typedef double qqracc_type_t;
+typedef qqracc_type_t ringbuf_type_t;
 
 #include "ringbuf.c"
 
 typedef struct
 {
-  snacc_type_t *window; /* linear array for current window */
-  snacc_type_t *work;   /* workspace */
-  ringbuf *rbuf;        /* ring buffer storing current window */
-} snacc_state_t;
+  qqracc_type_t *window; /* linear array for current window */
+  ringbuf *rbuf;         /* ring buffer storing current window */
+} qqracc_state_t;
 
 static size_t
-snacc_size(const size_t n)
+qqracc_size(const size_t n)
 {
   size_t size = 0;
 
-  size += sizeof(snacc_state_t);
-  size += 2 * n * sizeof(snacc_type_t);
+  size += sizeof(qqracc_state_t);
+  size += n * sizeof(qqracc_type_t);
   size += ringbuf_size(n);
 
   return size;
 }
 
 static int
-snacc_init(const size_t n, void * vstate)
+qqracc_init(const size_t n, void * vstate)
 {
-  snacc_state_t * state = (snacc_state_t *) vstate;
+  qqracc_state_t * state = (qqracc_state_t *) vstate;
 
-  state->window = vstate + sizeof(snacc_state_t);
-  state->work = (void *) state->window + n * sizeof(snacc_type_t);
-  state->rbuf = (void *) state->work + n * sizeof(snacc_type_t);
+  state->window = vstate + sizeof(qqracc_state_t);
+  state->rbuf = (void *) state->window + n * sizeof(qqracc_type_t);
 
   ringbuf_init(n, state->rbuf);
 
@@ -66,9 +64,9 @@ snacc_init(const size_t n, void * vstate)
 }
 
 static int
-snacc_insert(const snacc_type_t x, void * vstate)
+qqracc_insert(const qqracc_type_t x, void * vstate)
 {
-  snacc_state_t * state = (snacc_state_t *) vstate;
+  qqracc_state_t * state = (qqracc_state_t *) vstate;
 
   /* add new element to ring buffer */
   ringbuf_insert(x, state->rbuf);
@@ -77,9 +75,9 @@ snacc_insert(const snacc_type_t x, void * vstate)
 }
 
 static int
-snacc_delete(void * vstate)
+qqracc_delete(void * vstate)
 {
-  snacc_state_t * state = (snacc_state_t *) vstate;
+  qqracc_state_t * state = (qqracc_state_t *) vstate;
 
   if (!ringbuf_is_empty(state->rbuf))
     ringbuf_pop_back(state->rbuf);
@@ -88,28 +86,31 @@ snacc_delete(void * vstate)
 }
 
 /* FIXME XXX: this is inefficient - could be improved by maintaining a sorted ring buffer */
-static snacc_type_t
-snacc_get(void * params, const void * vstate)
+static qqracc_type_t
+qqracc_get(void * params, const void * vstate)
 {
-  snacc_state_t * state = (snacc_state_t *) vstate;
+  qqracc_state_t * state = (qqracc_state_t *) vstate;
+  double q = *(double *) params;
   size_t n = ringbuf_copy(state->window, state->rbuf);
-  double Sn;
-
-  (void) params;
+  double quant1, quant2;
 
   gsl_sort(state->window, 1, n);
-  Sn = gsl_stats_Sn_from_sorted_data(state->window, 1, n, state->work);
 
-  return Sn;
+  /* compute q-quantile and (1-q)-quantile */
+  quant1 = gsl_stats_quantile_from_sorted_data(state->window, 1, n, q);
+  quant2 = gsl_stats_quantile_from_sorted_data(state->window, 1, n, 1.0 - q);
+
+  /* compute q-quantile range */
+  return (quant2 - quant1);
 }
 
-static const gsl_movstat_accum sn_accum_type =
+static const gsl_movstat_accum qqr_accum_type =
 {
-  snacc_size,
-  snacc_init,
-  snacc_insert,
-  snacc_delete,
-  snacc_get
+  qqracc_size,
+  qqracc_init,
+  qqracc_insert,
+  qqracc_delete,
+  qqracc_get
 };
 
-const gsl_movstat_accum *gsl_movstat_accum_Sn = &sn_accum_type;
+const gsl_movstat_accum *gsl_movstat_accum_qqr = &qqr_accum_type;

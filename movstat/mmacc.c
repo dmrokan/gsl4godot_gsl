@@ -55,8 +55,8 @@ static size_t mmacc_size(const size_t n);
 static int mmacc_init(const size_t n, void * vstate);
 static int mmacc_insert(const mmacc_type_t x, void * vstate);
 static int mmacc_delete(void * vstate);
-static mmacc_type_t mmacc_min(const void * vstate);
-static mmacc_type_t mmacc_max(const void * vstate);
+static mmacc_type_t mmacc_min(void * params, const void * vstate);
+static mmacc_type_t mmacc_max(void * params, const void * vstate);
 
 static size_t
 mmacc_size(const size_t n)
@@ -190,9 +190,11 @@ mmacc_delete(void * vstate)
 }
 
 static mmacc_type_t
-mmacc_min(const void * vstate)
+mmacc_min(void * params, const void * vstate)
 {
   mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  (void) params;
 
   if (state->k == 0)
     {
@@ -205,9 +207,11 @@ mmacc_min(const void * vstate)
 }
 
 static mmacc_type_t
-mmacc_max(const void * vstate)
+mmacc_max(void * params, const void * vstate)
 {
   mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  (void) params;
 
   if (state->k == 0)
     {
