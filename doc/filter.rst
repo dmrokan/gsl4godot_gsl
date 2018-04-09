@@ -82,7 +82,7 @@ Impulse Detection Filter
 
 Impulsive noise is characterized by short sequences of data points distinct from those in the
 surrounding neighborhood. This section describes a powerful class of filters, also known as
-*decision-based filters*, designed to detect and remove such outliers from data.
+*impulse rejection filters* and *decision-based filters*, designed to detect and remove such outliers from data.
 The filter's response is given by
 
 .. math:: y_i = \left\{
@@ -195,3 +195,30 @@ The function :func:`gsl_filter_impulse` sets :math:`\epsilon = 0`.
    the locations of flagged outliers are stored in the boolean array :data:`ioutlier`. The input
    :data:`ioutlier` may be :code:`NULL` if not desired. It  is allowed to have :data:`x` = :data:`y` for an
    in-place filter.
+
+Examples
+========
+
+Impulse Detection Example
+-------------------------
+
+The following example program illustrates the impulse detection filter. First,
+it constructs a sinusoid signal of length :math:`N = 1000` with Gaussian noise
+added. Then, about 1% of the data are perturbed to represent large outliers. An
+impulse detecting filter is applied with a window size :math:`K = 25` and
+tuning parameter :math:`t = 4`, using the :math:`Q_n` statistic as the robust
+measure of scale. The results are plotted in :numref:`fig_impulse`.
+
+.. _fig_impulse:
+
+.. figure:: /images/impulse.png
+   :scale: 60%
+
+   Original time series is in blue, filter output is in green, upper and
+   lower intervals for detecting outliers are in red and yellow respectively.
+   Detected outliers are marked with squares.
+
+The program is given below.
+
+.. include:: examples/impulse.c
+   :code:

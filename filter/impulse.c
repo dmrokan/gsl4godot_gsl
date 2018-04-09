@@ -192,6 +192,8 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
       
               /* calculate window S_n values */
               gsl_movstat_Sn(endtype, x, xsigma, w->movstat_workspace_p);
+
+              break;
             }
 
           case GSL_FILTER_SCALE_QN:
@@ -201,6 +203,8 @@ gsl_filter_impulse2(const gsl_filter_end_t endtype, const gsl_filter_scale_t sca
       
               /* calculate window Q_n values */
               gsl_movstat_Qn(endtype, x, xsigma, w->movstat_workspace_p);
+
+              break;
             }
 
           default:
