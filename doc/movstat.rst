@@ -279,6 +279,92 @@ estimator. It has a relatively high efficiency of 82%. See :ref:`here <sec_Qn-st
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
    It is allowed for :data:`x` = :data:`xscale` for an in-place moving window :math:`Q_n`.
 
+Accumulators
+============
+
+Many of the algorithms of this chapter are based on an accumulator design, which
+process the input vector one sample at a time, updating calculations of the
+desired statistic for the current window. Each accumulator is stored in the
+following structure:
+
+.. type:: gsl_movstat_accum
+
+   Structure specifying accumulator for moving window statistics::
+
+     typedef struct
+     {
+       size_t (* size) (const size_t n);
+       int (* init) (const size_t n, void * vstate);
+       int (* insert) (const double x, void * vstate);
+       int (* delete) (void * vstate);
+       int (* get) (void * params, double * result, const void * vstate);
+     } gsl_movstat_accum;
+
+   The structure contains function pointers responsible for performing
+   different tasks for the accumulator.
+
+   .. member:: size_t (* size) (const size_t n)
+
+        This function returns the size of the workspace (in bytes) needed by the accumulator
+        for a moving window of length :data:`n`.
+
+   .. member:: int (* init) (const size_t n, void * vstate)
+
+        This function initializes the workspace :data:`vstate` for a moving window of length :data:`n`.
+
+   .. member:: int (* insert) (const double x, void * vstate)
+
+        This function inserts a single sample :data:`x` into the accumulator, updating internal
+        calculations of the desired statistic. If the accumulator is full (i.e. :math:`n` samples
+        have already been inserted), then the oldest sample is deleted from the accumulator.
+
+   .. member:: int (* delete) (void * vstate)
+
+        This function deletes the oldest sample from the accumulator, updating internal
+        calculations of the desired statistic.
+
+   .. member:: int (* get) (void * params, double * result, const void * vstate)
+
+        This function stores the desired statistic for the current window in
+        :data:`result`. The input :data:`params` specifies optional parameters
+        for calculating the statistic.
+
+The following accumulators of type :type:`gsl_movstat_accum` are defined by GSL to perform moving window statistics
+calculations.
+
+.. var:: gsl_movstat_accum_min
+         gsl_movstat_accum_max
+         gsl_movstat_accum_minmax
+
+   These accumulators calculate moving window minimum/maximums efficiently, using
+   the algorithm of D. Lemire.
+
+.. var:: gsl_movstat_accum_mean
+         gsl_movstat_accum_sd
+         gsl_movstat_accum_variance
+
+   These accumulators calculate the moving window mean, standard deviation, and variance,
+   using the algorithm of B. P. Welford.
+
+.. var:: gsl_movstat_median
+
+   This accumulator calculates the moving window median using the min/max heap algorithm
+   of Härdle and Steiger.
+
+.. var:: gsl_movstat_accum_Sn
+         gsl_movstat_accum_Qn
+
+   These accumulators calculate the moving window :math:`S_n` and :math:`Q_n` statistics
+   developed by Croux and Rousseeuw.
+
+.. var:: gsl_movstat_accum_sum
+
+   This accumulator calculates the moving window sum.
+
+.. var:: gsl_movstat_accum_qqr
+
+   This accumulator calculates the moving window q-quantile range.
+
 Examples
 ========
 
@@ -286,7 +372,7 @@ Example 1
 ---------
 
 The following example program computes the moving mean, minimum and maximum of a noisy
-sinusoid signal of length :math:`N = 100` with a symmetric moving window of size :math:`K = 5`.
+sinusoid signal of length :math:`N = 500` with a symmetric moving window of size :math:`K = 11`.
 
 .. _fig_movstat1:
 
@@ -350,3 +436,6 @@ in this chapter,
 
 * D. Lemire, *Streaming Maximum-Minimum Filter Using No More than Three Comparisons per Element*,
   Nordic Journal of Computing, 13 (4), 2006 (https://arxiv.org/abs/cs/0610046).
+
+* B. P. Welford, *Note on a method for calculating corrected sums of squares and products*,
+  Technometrics, 4 (3), 1962.

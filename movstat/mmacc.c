@@ -44,7 +44,6 @@ typedef struct
 {
   size_t n;             /* window size */
   size_t k;             /* number of samples in current window */
-  size_t idx;           /* where to store next sample */
   mmacc_type_t xprev;   /* previous sample added to window */
   ringbuf *rbuf;        /* ring buffer storing current window, size n */
   deque *minque;        /* double-ended queue of min values (L) */
@@ -55,8 +54,9 @@ static size_t mmacc_size(const size_t n);
 static int mmacc_init(const size_t n, void * vstate);
 static int mmacc_insert(const mmacc_type_t x, void * vstate);
 static int mmacc_delete(void * vstate);
-static mmacc_type_t mmacc_min(void * params, const void * vstate);
-static mmacc_type_t mmacc_max(void * params, const void * vstate);
+static int mmacc_min(void * params, mmacc_type_t * result, const void * vstate);
+static int mmacc_max(void * params, mmacc_type_t * result, const void * vstate);
+static int mmacc_minmax(void * params, mmacc_type_t * result, const void * vstate);
 
 static size_t
 mmacc_size(const size_t n)
@@ -77,7 +77,6 @@ mmacc_init(const size_t n, void * vstate)
 
   state->n = n;
   state->k = 0;
-  state->idx = 0;
   state->xprev = 0.0;
 
   state->rbuf = vstate + sizeof(mmacc_state_t);
@@ -189,8 +188,8 @@ mmacc_delete(void * vstate)
   return GSL_SUCCESS;
 }
 
-static mmacc_type_t
-mmacc_min(void * params, const void * vstate)
+static int
+mmacc_min(void * params, mmacc_type_t * result, const void * vstate)
 {
   mmacc_state_t * state = (mmacc_state_t *) vstate;
 
@@ -198,16 +197,17 @@ mmacc_min(void * params, const void * vstate)
 
   if (state->k == 0)
     {
-      GSL_ERROR_VAL ("no samples yet added to workspace", GSL_EINVAL, 0.0);
+      GSL_ERROR ("no samples yet added to workspace", GSL_EINVAL);
     }
   else
     {
-      return (state->rbuf->array[deque_peek_front(state->minque)]);
+      *result = state->rbuf->array[deque_peek_front(state->minque)];
+      return GSL_SUCCESS;
     }
 }
 
-static mmacc_type_t
-mmacc_max(void * params, const void * vstate)
+static int
+mmacc_max(void * params, mmacc_type_t * result, const void * vstate)
 {
   mmacc_state_t * state = (mmacc_state_t *) vstate;
 
@@ -215,11 +215,31 @@ mmacc_max(void * params, const void * vstate)
 
   if (state->k == 0)
     {
-      GSL_ERROR_VAL ("no samples yet added to workspace", GSL_EINVAL, 0.0);
+      GSL_ERROR ("no samples yet added to workspace", GSL_EINVAL);
     }
   else
     {
-      return (state->rbuf->array[deque_peek_front(state->maxque)]);
+      *result = state->rbuf->array[deque_peek_front(state->maxque)];
+      return GSL_SUCCESS;
+    }
+}
+
+static int
+mmacc_minmax(void * params, mmacc_type_t * result, const void * vstate)
+{
+  mmacc_state_t * state = (mmacc_state_t *) vstate;
+
+  (void) params;
+
+  if (state->k == 0)
+    {
+      GSL_ERROR ("no samples yet added to workspace", GSL_EINVAL);
+    }
+  else
+    {
+      result[0] = state->rbuf->array[deque_peek_front(state->minque)];
+      result[1] = state->rbuf->array[deque_peek_front(state->maxque)];
+      return GSL_SUCCESS;
     }
 }
 
@@ -244,3 +264,14 @@ static const gsl_movstat_accum max_accum_type =
 };
 
 const gsl_movstat_accum *gsl_movstat_accum_max = &max_accum_type;
+
+static const gsl_movstat_accum minmax_accum_type =
+{
+  mmacc_size,
+  mmacc_init,
+  mmacc_insert,
+  mmacc_delete,
+  mmacc_minmax
+};
+
+const gsl_movstat_accum *gsl_movstat_accum_minmax = &minmax_accum_type;

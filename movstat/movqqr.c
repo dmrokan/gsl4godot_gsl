@@ -57,7 +57,7 @@ gsl_movstat_qqr(const gsl_movstat_end_t endtype, const gsl_vector * x, const dou
     }
   else
     {
-      int status = movstat_apply(gsl_movstat_accum_qqr, endtype, x, xqqr, (void *) &q, w);
+      int status = movstat_apply(gsl_movstat_accum_qqr, endtype, x, xqqr, NULL, (void *) &q, w);
       return status;
     }
 }

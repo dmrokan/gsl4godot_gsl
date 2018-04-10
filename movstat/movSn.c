@@ -46,6 +46,6 @@ int
 gsl_movstat_Sn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_Sn, endtype, x, xscale, NULL, w);
+  int status = movstat_apply(gsl_movstat_accum_Sn, endtype, x, xscale, NULL, NULL, w);
   return status;
 }

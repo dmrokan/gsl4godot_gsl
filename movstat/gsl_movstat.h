@@ -42,7 +42,7 @@ typedef enum
   GSL_MOVSTAT_END_TRUNCATE
 } gsl_movstat_end_t;
 
-/* accumuator struct
+/* accumulator struct
  * size   - return number of bytes needed for accumulator with maximum of n elements
  * init   - initialize accumulator state
  * insert - insert a single sample into accumulator; if there are already n
@@ -56,7 +56,7 @@ typedef struct
   int (*init) (const size_t n, void * vstate);
   int (*insert) (const double x, void * vstate);
   int (*delete) (void * vstate);
-  double (*get) (void * params, const void * vstate);
+  int (*get) (void * params, double * result, const void * vstate);
 } gsl_movstat_accum;
 
 /* workspace for moving window statistics */
@@ -102,6 +102,7 @@ GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_max;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_mean;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_median;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_min;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_minmax;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sd;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Sn;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sum;

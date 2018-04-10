@@ -40,7 +40,7 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_variance(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_variance, endtype, x, y, NULL, w);
+  int status = movstat_apply(gsl_movstat_accum_variance, endtype, x, y, NULL, NULL, w);
   return status;
 }
 
@@ -57,6 +57,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_sd(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_sd, endtype, x, y, NULL, w);
+  int status = movstat_apply(gsl_movstat_accum_sd, endtype, x, y, NULL, NULL, w);
   return status;
 }

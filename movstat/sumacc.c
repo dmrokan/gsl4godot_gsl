@@ -91,12 +91,13 @@ sumacc_delete(void * vstate)
   return GSL_SUCCESS;
 }
 
-static double
-sumacc_get(void * params, const void * vstate)
+static int
+sumacc_get(void * params, double * result, const void * vstate)
 {
   sumacc_state_t * state = (sumacc_state_t *) vstate;
   (void) params;
-  return state->sum;
+  *result = state->sum;
+  return GSL_SUCCESS;
 }
 
 static const gsl_movstat_accum sum_accum_type =

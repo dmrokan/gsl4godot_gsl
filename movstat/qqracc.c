@@ -86,8 +86,8 @@ qqracc_delete(void * vstate)
 }
 
 /* FIXME XXX: this is inefficient - could be improved by maintaining a sorted ring buffer */
-static qqracc_type_t
-qqracc_get(void * params, const void * vstate)
+static int
+qqracc_get(void * params, qqracc_type_t * result, const void * vstate)
 {
   qqracc_state_t * state = (qqracc_state_t *) vstate;
   double q = *(double *) params;
@@ -101,7 +101,9 @@ qqracc_get(void * params, const void * vstate)
   quant2 = gsl_stats_quantile_from_sorted_data(state->window, 1, n, 1.0 - q);
 
   /* compute q-quantile range */
-  return (quant2 - quant1);
+  *result = quant2 - quant1;
+
+  return GSL_SUCCESS;
 }
 
 static const gsl_movstat_accum qqr_accum_type =

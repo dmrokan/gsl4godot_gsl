@@ -88,19 +88,18 @@ snacc_delete(void * vstate)
 }
 
 /* FIXME XXX: this is inefficient - could be improved by maintaining a sorted ring buffer */
-static snacc_type_t
-snacc_get(void * params, const void * vstate)
+static int
+snacc_get(void * params, snacc_type_t * result, const void * vstate)
 {
   snacc_state_t * state = (snacc_state_t *) vstate;
   size_t n = ringbuf_copy(state->window, state->rbuf);
-  double Sn;
 
   (void) params;
 
   gsl_sort(state->window, 1, n);
-  Sn = gsl_stats_Sn_from_sorted_data(state->window, 1, n, state->work);
+  *result = gsl_stats_Sn_from_sorted_data(state->window, 1, n, state->work);
 
-  return Sn;
+  return GSL_SUCCESS;
 }
 
 static const gsl_movstat_accum sn_accum_type =

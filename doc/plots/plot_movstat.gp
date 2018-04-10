@@ -12,8 +12,9 @@ file = "../examples/movstat1.txt"
 load 'lines2.cfg'
 
 mylw = 4
+set key bottom right
 
-plot file us 1:2 w lp lw mylw ti "Original signal", \
+plot file us 1:2 w lp lc rgb "gray" lw mylw ti "Original signal", \
      file us 1:3 w li lw mylw ti "Moving mean", \
      file us 1:4 w li lw mylw ti "Moving minimum", \
      file us 1:5 w li lw mylw ti "Moving maximum"
@@ -22,7 +23,7 @@ set out "../images/movstat2.png"
 file = "../examples/movstat2.txt"
 
 load 'lines.cfg'
-set key left
+set key top left
 
 set multiplot layout 2,1
 

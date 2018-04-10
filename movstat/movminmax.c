@@ -41,100 +41,8 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w)
 {
-  if (x->size != y_min->size)
-    {
-      GSL_ERROR("input and y_min vectors must have same length", GSL_EBADLEN);
-    }
-  else if (x->size != y_max->size)
-    {
-      GSL_ERROR("input and y_max vectors must have same length", GSL_EBADLEN);
-    }
-  else
-    {
-      const gsl_movstat_accum * minacc = gsl_movstat_accum_min;
-      const gsl_movstat_accum * maxacc = gsl_movstat_accum_max;
-      const int n = (int) x->size;
-      const int H = w->H; /* number of samples to left of current sample */
-      const int J = w->J; /* number of samples to right of current sample */
-      int i;
-      double x1 = 0.0;    /* pad values for data edges */
-      double xN = 0.0;
-
-      /* initialize sum accumulator */
-      (minacc->init)(w->K, w->state);
-
-      /* pad initial window if necessary */
-      if (endtype != GSL_MOVSTAT_END_TRUNCATE)
-        {
-          if (endtype == GSL_MOVSTAT_END_PADZERO)
-            {
-              x1 = 0.0;
-              xN = 0.0;
-            }
-          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
-            {
-              x1 = gsl_vector_get(x, 0);
-              xN = gsl_vector_get(x, n - 1);
-            }
-
-          /* pad initial windows with H values */
-          for (i = 0; i < H; ++i)
-            (minacc->insert)(x1, w->state);
-        }
-
-      /* process input vector and fill y(0:n - J - 1) */
-      for (i = 0; i < n; ++i)
-        {
-          double xi = gsl_vector_get(x, i);
-          int idx = i - J;
-
-          (minacc->insert)(xi, w->state);
-
-          if (idx >= 0)
-            {
-              gsl_vector_set(y_min, idx, (minacc->get)(NULL, w->state));
-              gsl_vector_set(y_max, idx, (maxacc->get)(NULL, w->state));
-            }
-        }
-
-      if (endtype == GSL_MOVSTAT_END_TRUNCATE)
-        {
-          /* need to fill y(n-J:n-1) using shrinking windows */
-          int idx1 = GSL_MAX(n - J, 0);
-          int idx2 = n - 1;
-
-          for (i = idx1; i <= idx2; ++i)
-            {
-              if (i - H > 0)
-                {
-                  /* delete oldest window sample as we move closer to edge */
-                  (minacc->delete)(w->state);
-                }
-
-              /* yi = acc_get [ work(i:K-2) ] */
-              gsl_vector_set(y_min, i, (minacc->get)(NULL, w->state));
-              gsl_vector_set(y_max, i, (maxacc->get)(NULL, w->state));
-            }
-        }
-      else
-        {
-          /* pad final windows and fill y(n-J:n-1) */
-          for (i = 0; i < J; ++i)
-            {
-              int idx = n - J + i;
-
-              (minacc->insert)(xN, w->state);
-
-              if (idx >= 0)
-                {
-                  gsl_vector_set(y_min, idx, (minacc->get)(NULL, w->state));
-                  gsl_vector_set(y_max, idx, (maxacc->get)(NULL, w->state));
-                }
-            }
-        }
-
-      return GSL_SUCCESS;
-    }
+  int status = movstat_apply(gsl_movstat_accum_minmax, endtype, x, y_min, y_max, NULL, w);
+  return status;
 }
 
 /*
@@ -150,7 +58,7 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_min(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_min, endtype, x, y, NULL, w);
+  int status = movstat_apply(gsl_movstat_accum_min, endtype, x, y, NULL, NULL, w);
   return status;
 }
 
@@ -167,6 +75,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_max(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_max, endtype, x, y, NULL, w);
+  int status = movstat_apply(gsl_movstat_accum_max, endtype, x, y, NULL, NULL, w);
   return status;
 }

@@ -138,32 +138,37 @@ mvacc_delete(void * vstate)
   return GSL_SUCCESS;
 }
 
-static double
-mvacc_mean(void * params, const void * vstate)
+static int
+mvacc_mean(void * params, double * result, const void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
   (void) params;
-  return state->mean;
+  *result = state->mean;
+  return GSL_SUCCESS;
 }
 
-static double
-mvacc_variance(void * params, const void * vstate)
+static int
+mvacc_variance(void * params, double * result, const void * vstate)
 {
   mvacc_state_t * state = (mvacc_state_t *) vstate;
 
   (void) params;
 
   if (state->k < 2)
-    return (0.0);
+    *result = 0.0;
   else
-    return (state->M2 / (state->k - 1.0));
+    *result = state->M2 / (state->k - 1.0);
+
+  return GSL_SUCCESS;
 }
 
-static double
-mvacc_sd(void * params, const void * vstate)
+static int
+mvacc_sd(void * params, double * result, const void * vstate)
 {
-  double variance = mvacc_variance(params, vstate);
-  return (sqrt(variance));
+  double variance;
+  int status = mvacc_variance(params, &variance, vstate);
+  *result = sqrt(variance);
+  return status;
 }
 
 static const gsl_movstat_accum mean_accum_type =

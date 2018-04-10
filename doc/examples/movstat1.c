@@ -4,13 +4,14 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_movstat.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 #include <gsl/gsl_vector.h>
 
 int
 main(void)
 {
-  const size_t N = 100;                      /* length of time series */
-  const size_t K = 5;                        /* window size */
+  const size_t N = 500;                      /* length of time series */
+  const size_t K = 11;                       /* window size */
   gsl_movstat_workspace * w = gsl_movstat_alloc(K);
   gsl_vector *x = gsl_vector_alloc(N);
   gsl_vector *xmean = gsl_vector_alloc(N);
@@ -21,8 +22,8 @@ main(void)
 
   for (i = 0; i < N; ++i)
     {
-      double xi = cos(2.0 * M_PI * 0.05 * (i + 1.0));
-      double ei = gsl_rng_uniform(r);
+      double xi = cos(2.0 * M_PI * i / (double) N);
+      double ei = gsl_ran_gaussian(r, 0.1);
 
       gsl_vector_set(x, i, xi + ei);
     }

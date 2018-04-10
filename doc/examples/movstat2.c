@@ -40,11 +40,11 @@ main(void)
     }
 
   /* compute moving statistics */
-  gsl_movstat_mad(GSL_MOVSTAT_END_PADZERO, x, xmedian, xmad, w);
-  gsl_movstat_qqr(GSL_MOVSTAT_END_PADZERO, x, 0.25, xiqr, w);
-  gsl_movstat_Sn(GSL_MOVSTAT_END_PADZERO, x, xSn, w);
-  gsl_movstat_Qn(GSL_MOVSTAT_END_PADZERO, x, xQn, w);
-  gsl_movstat_sd(GSL_MOVSTAT_END_PADZERO, x, xsd, w);
+  gsl_movstat_mad(GSL_MOVSTAT_END_TRUNCATE, x, xmedian, xmad, w);
+  gsl_movstat_qqr(GSL_MOVSTAT_END_TRUNCATE, x, 0.25, xiqr, w);
+  gsl_movstat_Sn(GSL_MOVSTAT_END_TRUNCATE, x, xSn, w);
+  gsl_movstat_Qn(GSL_MOVSTAT_END_TRUNCATE, x, xQn, w);
+  gsl_movstat_sd(GSL_MOVSTAT_END_TRUNCATE, x, xsd, w);
 
   /* scale IQR by factor to approximate standard deviation */
   gsl_vector_scale(xiqr, 0.7413);
