@@ -1,5 +1,7 @@
 * What is new in gsl-2.5:
 
+** added new module for moving window statistics (gsl_movstat)
+
 ** added statistics functions:
      gsl_stats_median()
      gsl_stats_select()

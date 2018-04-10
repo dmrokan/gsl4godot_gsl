@@ -42,10 +42,9 @@ gsl_filter_rmedian_alloc(const size_t K)
 
   w->H = K / 2;
   w->K = 2*w->H + 1;
-  w->minacc = gsl_movstat_accum_min;
-  w->maxacc = gsl_movstat_accum_max;
+  w->minmaxacc = gsl_movstat_accum_minmax;
 
-  state_size = (w->maxacc->size)(w->H + 1);
+  state_size = (w->minmaxacc->size)(w->H + 1);
 
   w->state = malloc(state_size);
   if (w->state == NULL)
@@ -87,29 +86,29 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
   else
     {
       double yprev = 0.0;
-      double xmin, xmax, yval;
+      double xminmax[2]; /* { xmin, xmax } */
+      double yval;
       size_t i;
 
-      (w->minacc->init)(w->H + 1, w->state);
+      (w->minmaxacc->init)(w->H + 1, w->state);
 
       for (i = 0; i < n; ++i)
         {
           double xi = gsl_vector_get(x, i);
 
-          (w->minacc->insert)(xi, w->state);
+          (w->minmaxacc->insert)(xi, w->state);
 
           if (i >= w->H)
             {
-              xmin = (w->minacc->get)(NULL, w->state);
-              xmax = (w->maxacc->get)(NULL, w->state);
+              (w->minmaxacc->get)(NULL, xminmax, w->state);
 
               /* y_{i-H} = median [ yprev, xmin, xmax ] */
-              if (yprev <= xmin)
-                yval = xmin;
-              else if (yprev <= xmax)
+              if (yprev <= xminmax[0])
+                yval = xminmax[0];
+              else if (yprev <= xminmax[1])
                 yval = yprev;
               else
-                yval = xmax;
+                yval = xminmax[1];
 
               gsl_vector_set(y, i - w->H, yval);
               yprev = yval;
@@ -122,20 +121,19 @@ gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_work
           int idx = (int) n - (int) w->H + (int) i;
 
           /* zero pad input vector */
-          (w->minacc->insert)(0.0, w->state);
+          (w->minmaxacc->insert)(0.0, w->state);
 
           if (idx >= 0)
             {
-              xmin = (w->minacc->get)(NULL, w->state);
-              xmax = (w->maxacc->get)(NULL, w->state);
+              (w->minmaxacc->get)(NULL, xminmax, w->state);
 
               /* y_{n-H+i} = median [ yprev, xmin, xmax ] */
-              if (yprev <= xmin)
-                yval = xmin;
-              else if (yprev <= xmax)
+              if (yprev <= xminmax[0])
+                yval = xminmax[0];
+              else if (yprev <= xminmax[1])
                 yval = yprev;
               else
-                yval = xmax;
+                yval = xminmax[1];
 
               gsl_vector_set(y, idx, yval);
               yprev = yval;
