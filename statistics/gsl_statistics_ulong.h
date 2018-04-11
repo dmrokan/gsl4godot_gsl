@@ -79,6 +79,8 @@ double gsl_stats_ulong_median_from_sorted_data (const unsigned long sorted_data[
 double gsl_stats_ulong_median (unsigned long sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_ulong_quantile_from_sorted_data (const unsigned long sorted_data[], const size_t stride, const size_t n, const double f) ;
 
+double gsl_stats_ulong_gastwirth_from_sorted_data (const unsigned long sorted_data[], const size_t stride, const size_t n) ;
+
 double gsl_stats_ulong_mad0(const unsigned long data[], const size_t stride, const size_t n, double work[]);
 double gsl_stats_ulong_mad(const unsigned long data[], const size_t stride, const size_t n, double work[]);
 

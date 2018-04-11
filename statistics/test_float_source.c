@@ -299,7 +299,7 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     double median = FUNCTION(gsl_stats,median_from_sorted_data)(sorted, stridea, na - 1) ;
     double expected = 0.0728;
     gsl_test_rel  (median,expected, rel,
-                   NAME(gsl_stats) "_median_from_sorted_data");
+                   NAME(gsl_stats) "_median_from_sorted_data (odd)");
   }
 
   {
@@ -332,6 +332,20 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
                   NAME(gsl_stats) "_median (odd)");
 
     free(work);
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, na) ;
+    double expected = 0.07271;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (even)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, na - 1) ;
+    double expected = 0.06794;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (odd)");
   }
 
   {

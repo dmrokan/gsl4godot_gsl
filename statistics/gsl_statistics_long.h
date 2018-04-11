@@ -79,6 +79,8 @@ double gsl_stats_long_median_from_sorted_data (const long sorted_data[], const s
 double gsl_stats_long_median (long sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_long_quantile_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n, const double f) ;
 
+double gsl_stats_long_gastwirth_from_sorted_data (const long sorted_data[], const size_t stride, const size_t n) ;
+
 double gsl_stats_long_mad0(const long data[], const size_t stride, const size_t n, double work[]);
 double gsl_stats_long_mad(const long data[], const size_t stride, const size_t n, double work[]);
 

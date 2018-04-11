@@ -9,6 +9,7 @@
      gsl_stats_mad0()
      gsl_stats_Sn_from_sorted_data()
      gsl_stats_Qn_from_sorted_data()
+     gsl_stats_gastwirth_from_sorted_data()
 
 ** added Romberg integration (gsl_integration_romberg)
 

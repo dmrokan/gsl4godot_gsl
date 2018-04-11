@@ -263,6 +263,20 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
   }
 
   {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, ina) ;
+    double expected = 17.9;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (even)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, ina - 1) ;
+    double expected = 17.4;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (odd)");
+  }
+
+  {
     double zeroth = FUNCTION(gsl_stats,quantile_from_sorted_data)(sorted, stridea, ina, 0.0) ;
     double expected = 8;
     gsl_test_rel (zeroth,expected, rel,

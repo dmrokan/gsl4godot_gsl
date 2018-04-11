@@ -700,13 +700,55 @@ in average :math:`O(n)` time using the quickselect algorithm.
    algorithm rearranges the elements of :data:`data` and so the input array is not preserved
    on output.
 
-Robust Scale Estimation
-=======================
+.. index::
+   single: robust location estimators
+   single: location estimation
+   single: estimation, location
+
+Robust Location Estimates
+=========================
+
+A location estimate refers to a typical or central value which best describes a given
+dataset. The mean and median are both examples of location estimators. However, the
+mean has a severe sensitivity to data outliers and can give erroneous values when
+even a small number of outliers are present. The median on the other hand, has
+a strong insensitivity to data outliers, but due to its non-smoothness it can
+behave unexpectedly in certain situations. GSL offers the following alternative
+location estimators, which are robust to the presence of outliers.
+
+Gastwirth Estimator
+-------------------
+
+Gastwirth's location estimator is a weighted sum of three order statistics,
+
+.. math:: gastwirth = 0.3 \times Q_{\frac{1}{3}} + 0.4 \times Q_{\frac{1}{2}} + 0.3 \times Q_{\frac{2}{3}}
+
+where :math:`Q_{\frac{1}{3}}` is the one-third quantile, :math:`Q_{\frac{1}{2}}` is the one-half
+quantile (i.e. median), and :math:`Q_{\frac{2}{3}}` is the two-thirds quantile.
+
+.. function:: double gsl_stats_gastwirth_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
+
+   This function returns the Gastwirth location estimator of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first.
+
+.. index::
+   single: robust scale estimators
+   single: scale estimation
+   single: estimation, scale
+
+Robust Scale Estimates
+======================
 
 A *robust scale estimate*, also known as a robust measure of scale, attempts to quantify
 the statistical dispersion (variability, scatter, spread) in a set of data which may contain outliers.
 In such datasets, the usual variance or standard deviation scale estimate can be rendered useless
 by even a single outlier.
+
+.. index::
+   single: median absolute deviation
 
 .. _sec_mad-statistic:
 
@@ -732,6 +774,9 @@ The median absolute deviation has an asymptotic efficiency of 37%.
    :math:`\textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}`
    (i.e. the :math:`MAD` statistic without the bias correction scale factor).
    These functions require additional workspace of size :code:`n` provided in :data:`work`.
+
+.. index::
+   single: Sn statistic
 
 .. _sec_Sn-statistic:
 
@@ -760,6 +805,9 @@ efficiency of 58%.
    (i.e. the :math:`S_n` statistic without the bias correction scale factors).
    These functions require additional workspace of size
    :code:`n` provided in :data:`work`.
+
+.. index::
+   single: Qn statistic
 
 .. _sec_Qn-statistic:
 
