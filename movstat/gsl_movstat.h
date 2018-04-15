@@ -59,6 +59,14 @@ typedef struct
   int (*get) (void * params, double * result, const void * vstate);
 } gsl_movstat_accum;
 
+typedef struct
+{
+  double (* function) (const size_t n, double x[], void * params);
+  void * params;
+} gsl_movstat_function;
+
+#define GSL_MOVSTAT_FN_EVAL(F,n,x) (*((F)->function))((n),(x),(F)->params)
+
 /* workspace for moving window statistics */
 
 typedef struct
@@ -77,6 +85,8 @@ gsl_movstat_workspace *gsl_movstat_alloc(const size_t K);
 gsl_movstat_workspace *gsl_movstat_alloc2(const size_t H, const size_t J);
 void gsl_movstat_free(gsl_movstat_workspace * w);
 
+int gsl_movstat_apply(const gsl_movstat_end_t endtype, const gsl_movstat_function * F,
+                      const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_variance(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_sd(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
@@ -108,6 +118,7 @@ GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Sn;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_sum;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_Qn;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_qqr;
+GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_userfunc;
 GSL_VAR const gsl_movstat_accum * gsl_movstat_accum_variance;
 
 __END_DECLS

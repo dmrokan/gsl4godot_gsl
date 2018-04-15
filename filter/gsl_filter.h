@@ -66,6 +66,16 @@ void gsl_filter_gaussian_free(gsl_filter_gaussian_workspace * w);
 int gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x, gsl_vector * y,
                         gsl_filter_gaussian_workspace * w);
 
+/* workspace for standard median filter */
+typedef struct
+{
+  gsl_movstat_workspace *movstat_workspace_p;
+} gsl_filter_median_workspace;
+
+gsl_filter_median_workspace *gsl_filter_median_alloc(const size_t K);
+void gsl_filter_median_free(gsl_filter_median_workspace * w);
+int gsl_filter_median(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_filter_median_workspace * w);
+
 /* workspace for recursive median filter */
 typedef struct
 {

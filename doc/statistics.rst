@@ -708,13 +708,16 @@ in average :math:`O(n)` time using the quickselect algorithm.
 Robust Location Estimates
 =========================
 
-A location estimate refers to a typical or central value which best describes a given
+A *location estimate* refers to a typical or central value which best describes a given
 dataset. The mean and median are both examples of location estimators. However, the
 mean has a severe sensitivity to data outliers and can give erroneous values when
 even a small number of outliers are present. The median on the other hand, has
 a strong insensitivity to data outliers, but due to its non-smoothness it can
 behave unexpectedly in certain situations. GSL offers the following alternative
 location estimators, which are robust to the presence of outliers.
+
+.. index::
+   single: Gastwirth estimator
 
 Gastwirth Estimator
 -------------------

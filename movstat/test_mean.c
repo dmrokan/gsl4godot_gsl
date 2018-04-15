@@ -46,6 +46,13 @@ slow_movmean(const gsl_movstat_end_t etype, const gsl_vector * x, gsl_vector * y
   return GSL_SUCCESS;
 }
 
+static double
+func_mean(const size_t n, double x[], void * params)
+{
+  (void) params;
+  return gsl_stats_mean(x, 1, n);
+}
+
 static void
 test_mean_proc(const double tol, const size_t n, const size_t H, const size_t J,
                const gsl_movstat_end_t etype, gsl_rng * rng_p)
@@ -54,7 +61,11 @@ test_mean_proc(const double tol, const size_t n, const size_t H, const size_t J,
   gsl_vector * x = gsl_vector_alloc(n);
   gsl_vector * y = gsl_vector_alloc(n);
   gsl_vector * z = gsl_vector_alloc(n);
+  gsl_movstat_function F;
   char buf[2048];
+
+  F.function = func_mean;
+  F.params = NULL;
 
   random_vector(x, rng_p);
 
@@ -73,6 +84,12 @@ test_mean_proc(const double tol, const size_t n, const size_t H, const size_t J,
   gsl_movstat_mean(etype, z, z, w);
 
   sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u mean random in-place", n, H, J, etype);
+  compare_vectors(tol, z, y, buf);
+
+  /* z = mean(x) with user-defined function */
+  gsl_movstat_apply(etype, &F, x, z, w);
+
+  sprintf(buf, "n=%zu H=%zu J=%zu endtype=%u mean user", n, H, J, etype);
   compare_vectors(tol, z, y, buf);
 
   gsl_movstat_free(w);

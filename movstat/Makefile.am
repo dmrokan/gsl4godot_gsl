@@ -6,8 +6,10 @@ AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslmovstat_la_SOURCES = \
   alloc.c                  \
+  funcacc.c                \
 	medacc.c                 \
 	mmacc.c                  \
+	movapply.c               \
 	movmad.c                 \
 	movmean.c                \
 	movmedian.c              \

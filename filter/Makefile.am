@@ -4,7 +4,7 @@ pkginclude_HEADERS = gsl_filter.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-libgslfilter_la_SOURCES = gaussian.c impulse.c rmedian.c
+libgslfilter_la_SOURCES = gaussian.c impulse.c median.c rmedian.c
 
 noinst_HEADERS = test_gaussian.c test_rmedian.c
 

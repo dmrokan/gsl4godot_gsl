@@ -1,6 +1,7 @@
 .. index::
    single: moving window statistics
    single: statistics, moving window
+   single: online statistics
 
 ************************
 Moving Window Statistics
@@ -71,6 +72,9 @@ This is done by passing an input argument of type :type:`gsl_movstat_end_t`:
       With this option, no padding is performed, and the windows are simply truncated
       as the end points are approached.
 
+.. index::
+   single: moving window, allocation
+
 Allocation for Moving Window Statistics
 =======================================
 
@@ -94,6 +98,10 @@ Allocation for Moving Window Statistics
 
    This function frees the memory associated with :data:`w`.
 
+.. index::
+   single: moving mean
+   single: rolling mean
+
 Moving Mean
 ===========
 
@@ -111,6 +119,12 @@ option is selected, in which case it could be less than :math:`K` near the signa
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
    the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
    for an in-place moving mean.
+
+.. index::
+   single: moving variance
+   single: moving standard deviation
+   single: rolling variance
+   single: rolling standard deviation
 
 Moving Variance and Standard Deviation
 ======================================
@@ -136,6 +150,12 @@ is the square root of the variance.
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
    the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
    for an in-place moving standard deviation.
+
+.. index::
+   single: moving minimum
+   single: moving maximum
+   single: rolling minimum
+   single: rolling maximum
 
 Moving Minimum and Maximum
 ==========================
@@ -168,6 +188,10 @@ each window :math:`W_i^{H,J}`.
    the window minimums in :data:`y_min` and the window maximums in :data:`y_max`.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
 
+.. index::
+   single: moving sum
+   single: rolling sum
+
 Moving Sum
 ==========
 
@@ -181,6 +205,10 @@ The moving window sum calculates the sum of the values of each window :math:`W_i
    the output in :data:`y`. The parameter :data:`endtype` specifies how windows near
    the ends of the input should be handled. It is allowed to have :data:`x` = :data:`y`
    for an in-place moving sum.
+
+.. index::
+   single: moving median
+   single: rolling median
 
 Moving Median
 =============
@@ -208,6 +236,10 @@ are present.
 Several useful statistics have emerged to provide robust estimates of scale which are not as susceptible to data outliers.
 A few of these statistical scale estimators are described below.
 
+.. index::
+   single: moving median absolute deviation
+   single: rolling median absolute deviation
+
 Moving MAD
 ----------
 
@@ -228,6 +260,10 @@ for Gaussian data. The MAD has an efficiency of 37%.  See :ref:`here <sec_mad-st
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
    The function :code:`mad0` does not include the scale factor of :math:`1.4826`, while the
    function :code:`mad` does include this factor.
+
+.. index::
+   single: moving quantile range
+   single: rolling quantile range
 
 Moving QQR
 ----------
@@ -278,6 +314,49 @@ estimator. It has a relatively high efficiency of 82%. See :ref:`here <sec_Qn-st
    in :data:`xscale`. The inputs :data:`x` and :data:`xscale` must be the same length.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
    It is allowed for :data:`x` = :data:`xscale` for an in-place moving window :math:`Q_n`.
+
+.. index::
+   single: moving window accumulators
+   single: rolling window accumulators
+
+User-defined Moving Statistics
+==============================
+
+GSL offers an interface for users to define their own moving window statistics
+functions, without needing to implement the edge-handling and accumulator
+machinery. To do this, users must define a variable of type
+:type:`gsl_movstat_function` to pass into the GSL function
+:func:`gsl_movstat_apply`. This structure is defined as follows.
+
+.. type:: gsl_movstat_function
+
+   Structure specifying user-defined moving window statistical function::
+
+     typedef struct
+     {
+       double (* function) (const size_t n, double x[], void * params);
+       void * params;
+     } gsl_movstat_function;
+
+   This structure contains a pointer to the user-defined function as well
+   as possible parameters to pass to the function.
+
+   .. member:: double (* function) (const size_t n, double x[], void * params)
+
+      This function returns the user-defined statistic of the array :data:`x`
+      of length :data:`n`. User-specified parameters are passed in via :data:`params`.
+      It is allowed to modify the array :data:`x`.
+
+   .. member:: void * params
+
+      User-specified parameters to be passed into the function.
+
+.. function:: int gsl_movstat_apply(const gsl_movstat_end_t endtype, const gsl_movstat_function * F, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+
+   This function applies the user-defined moving window statistic specified in :data:`F`
+   to the input vector :data:`x`, storing the output in :data:`y`.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+   It is allowed for :data:`x` = :data:`y` for an in-place moving window calculation.
 
 Accumulators
 ============
@@ -379,7 +458,7 @@ sinusoid signal of length :math:`N = 500` with a symmetric moving window of size
 .. figure:: /images/movstat1.png
    :scale: 60%
 
-   Original signal time series (red) with moving mean (green), moving minimum (blue),
+   Original signal time series (gray) with moving mean (green), moving minimum (blue),
    and moving maximum (orange).
 
 The program is given below.

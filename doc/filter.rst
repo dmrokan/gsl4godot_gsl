@@ -38,21 +38,22 @@ local outliers and local noise in the data sequence :math:`\{x_i\}`.
 
    This function initializes a workspace for standard median filtering using a symmetric centered moving window of
    size :data:`K`. Here, :math:`H = K / 2`. If :math:`K` is even, it is rounded up to the next
-   odd integer to ensure a symmetric window. The size of the workspace is :math:`O(3K)`.
+   odd integer to ensure a symmetric window. The size of the workspace is :math:`O(7K)`.
 
 .. function:: void gsl_filter_median_free(gsl_filter_median_workspace * w)
 
    This function frees the memory associated with :data:`w`.
 
-.. function:: int gsl_filter_median(const gsl_vector * x, gsl_vector * y, gsl_filter_median_workspace * w)
+.. function:: int gsl_filter_median(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_filter_median_workspace * w)
 
-   This function applies a standard median filter to the input :data:`x`, storing the output in :data:`y`. It
+   This function applies a standard median filter to the input :data:`x`, storing the output in :data:`y`.
+   The parameter :data:`endtype` specifies how the signal end points are handled. It
    is allowed to have :data:`x` = :data:`y` for an in-place filter.
 
 Recursive Median Filter
 -----------------------
 
-The recursive median filter (RMF) is a modification of the SMF to include previous filter outputs
+The *recursive median filter* (RMF) is a modification of the SMF to include previous filter outputs
 in the window before computing the median. The filter's response is
 
 .. math:: y_i = \textrm{median} \left( y_{i-H}, \dots, y_{i-1}, x_i, x_{i+1}, \dots, x_{i+H} \right)
@@ -60,7 +61,7 @@ in the window before computing the median. The filter's response is
 Sometimes, the SMF must be applied several times in a row to achieve adequate smoothing (i.e. a cascade filter).
 The RMF, on the other hand, converges to a *root sequence* in one pass,
 and can sometimes provide a smoother result than several passes of the SMF. A root sequence is an input which is
-left unchanged by the filter.  So there is no need to apply an RMF filter twice to an input vector.
+left unchanged by the filter.  So there is no need to apply a recursive median filter twice to an input vector.
 
 .. function:: gsl_filter_rmedian_workspace * gsl_filter_rmedian_alloc(const size_t K)
 
@@ -198,6 +199,33 @@ The function :func:`gsl_filter_impulse` sets :math:`\epsilon = 0`.
 
 Examples
 ========
+
+Square Wave Signal Example
+--------------------------
+
+The following example program illustrates the median filters on a noisy
+square wave signal. Median filters are well known for preserving sharp
+edges in the input signal while reducing noise. The program constructs
+a 5 Hz square wave signal with Gaussian noise added. Then the signal is
+filtered with a standard median filter and recursive median filter using
+a symmetric window of length :math:`K = 7`. The results are shown in
+:numref:`fig_filt-edge`.
+
+.. _fig_filt-edge:
+
+.. figure:: /images/filt_edge.png
+   :scale: 60%
+
+   Original time series is in gray. The standard median filter output is in
+   green and the recursive median filter output is in red.
+
+Both filters preserve the sharp signal edges while reducing the noise. The
+recursive median filter achieves a smoother result than the standard median
+filter. The "blocky" nature of the output is characteristic of all median
+filters. The program is given below.
+
+.. include:: examples/filt_edge.c
+   :code:
 
 Impulse Detection Example
 -------------------------
