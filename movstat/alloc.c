@@ -46,7 +46,7 @@ gsl_movstat_workspace *
 gsl_movstat_alloc(const size_t K)
 {
   const size_t H = K / 2;
-  return gsl_movstat_alloc2(H, H);
+  return gsl_movstat_alloc_with_size(0, H, H);
 }
  
 /*
@@ -69,8 +69,32 @@ Return: pointer to workspace
 gsl_movstat_workspace *
 gsl_movstat_alloc2(const size_t H, const size_t J)
 {
+  return gsl_movstat_alloc_with_size(0, H, J);
+}
+
+/*
+gsl_movstat_alloc_with_size()
+  Allocate a workspace for moving window statistics with predefined workspace
+size for accumulators. The window around sample x_i is defined as:
+
+W_i^{H,J} = {x_{i-H},...,x_i,...x_{i+J}}
+
+The total window size is:
+
+K = H + J + 1
+
+Inputs: accum_state_size - state size for accumulator (set to zero to use default value)
+        H                - number of samples before current sample
+        J                - number of samples after current sample
+
+Return: pointer to workspace
+*/
+
+gsl_movstat_workspace *
+gsl_movstat_alloc_with_size(const size_t accum_state_size, const size_t H, const size_t J)
+{
   gsl_movstat_workspace *w;
-  size_t state_size = 0;
+  size_t state_size = accum_state_size;
 
   w = calloc(1, sizeof(gsl_movstat_workspace));
   if (w == 0)
@@ -82,17 +106,20 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
   w->J = J;
   w->K = H + J + 1;
 
-  /*
-   * determine maximum number of bytes needed for the various accumulators;
-   * the accumulators will all share the same workspace
-   */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_mean->size)(w->K));   /* mean/variance/sd accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_min->size)(w->K));    /* min/max accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_sum->size)(w->K));    /* sum accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_median->size)(w->K)); /* median accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_Qn->size)(w->K));     /* Q_n accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_qqr->size)(w->K));    /* QQR accumulator */
-  state_size = GSL_MAX(state_size, (gsl_movstat_accum_Sn->size)(w->K));     /* S_n accumulator */
+  if (state_size == 0)
+    {
+      /*
+       * determine maximum number of bytes needed for the various accumulators;
+       * the accumulators will all share the same workspace
+       */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_mean->size)(w->K));   /* mean/variance/sd accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_min->size)(w->K));    /* min/max accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_sum->size)(w->K));    /* sum accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_median->size)(w->K)); /* median accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_Qn->size)(w->K));     /* Q_n accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_qqr->size)(w->K));    /* QQR accumulator */
+      state_size = GSL_MAX(state_size, (gsl_movstat_accum_Sn->size)(w->K));     /* S_n accumulator */
+    }
 
   w->state = malloc(state_size);
   if (w->state == 0)
@@ -107,6 +134,8 @@ gsl_movstat_alloc2(const size_t H, const size_t J)
       gsl_movstat_free(w);
       GSL_ERROR_NULL ("failed to allocate space for work", GSL_ENOMEM);
     }
+
+  w->state_size = state_size;
 
   return w;
 }

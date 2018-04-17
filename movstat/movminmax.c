@@ -25,8 +25,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
-#include "movstat_common.c"
-
 /*
 gsl_movstat_minmax()
   Apply minmax filter to input vector
@@ -41,7 +39,7 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_minmax(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y_min, gsl_vector * y_max, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_minmax, endtype, x, y_min, y_max, NULL, w);
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_minmax, NULL, y_min, y_max, w);
   return status;
 }
 
@@ -58,7 +56,7 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_min(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_min, endtype, x, y, NULL, NULL, w);
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_min, NULL, y, NULL, w);
   return status;
 }
 
@@ -75,6 +73,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_max(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_max, endtype, x, y, NULL, NULL, w);
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_max, NULL, y, NULL, w);
   return status;
 }

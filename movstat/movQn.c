@@ -29,8 +29,6 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_statistics.h>
 
-#include "movstat_common.c"
-
 /*
 gsl_movstat_Qn()
   Calculate moving Q_n statistic for input vector
@@ -46,6 +44,6 @@ int
 gsl_movstat_Qn(const gsl_movstat_end_t endtype, const gsl_vector * x,
                gsl_vector * xscale, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_Qn, endtype, x, xscale, NULL, NULL, w);
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_Qn, NULL, xscale, NULL, w);
   return status;
 }

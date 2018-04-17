@@ -71,19 +71,26 @@ typedef struct
 
 typedef struct
 {
-  size_t H;     /* number of previous samples in window */
-  size_t J;     /* number of after samples in window */
-  size_t K;     /* window size K = H + J + 1 */
-
-  double *work; /* workspace, size K */
-  void *state;  /* state workspace for various accumulators */
+  size_t H;          /* number of previous samples in window */
+  size_t J;          /* number of after samples in window */
+  size_t K;          /* window size K = H + J + 1 */
+  double *work;      /* workspace, size K */
+  void *state;       /* state workspace for various accumulators */
+  size_t state_size; /* bytes allocated for 'state' */
 } gsl_movstat_workspace;
 
 /* alloc.c */
 
 gsl_movstat_workspace *gsl_movstat_alloc(const size_t K);
 gsl_movstat_workspace *gsl_movstat_alloc2(const size_t H, const size_t J);
+gsl_movstat_workspace *gsl_movstat_alloc_with_size(const size_t accum_state_size, const size_t H, const size_t J);
 void gsl_movstat_free(gsl_movstat_workspace * w);
+
+/* apply.c */
+int gsl_movstat_apply_accum(const gsl_movstat_end_t endtype, const gsl_vector * x,
+                            const gsl_movstat_accum * accum, void * accum_params,
+                            gsl_vector * y, gsl_vector * z,
+                            gsl_movstat_workspace * w);
 
 int gsl_movstat_apply(const gsl_movstat_end_t endtype, const gsl_movstat_function * F,
                       const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);

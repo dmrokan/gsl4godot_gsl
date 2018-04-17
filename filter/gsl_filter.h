@@ -82,12 +82,14 @@ typedef struct
   size_t H;                            /* window half-length (K / 2) */
   size_t K;                            /* window size */
   void *state;                         /* workspace for min/max accumulator */
+  double *window;                      /* array holding first window */
   const gsl_movstat_accum * minmaxacc; /* minimum/maximum accumulator */
+  gsl_movstat_workspace *movstat_workspace_p;
 } gsl_filter_rmedian_workspace;
 
 gsl_filter_rmedian_workspace *gsl_filter_rmedian_alloc(const size_t K);
 void gsl_filter_rmedian_free(gsl_filter_rmedian_workspace * w);
-int gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
+int gsl_filter_rmedian(const gsl_filter_end_t, const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
 int gsl_filter_rmedian2(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
 
 typedef struct

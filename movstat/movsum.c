@@ -25,8 +25,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_movstat.h>
 
-#include "movstat_common.c"
-
 /*
 gsl_movstat_sum()
   Apply moving sum to input vector
@@ -40,6 +38,6 @@ Inputs: endtype - end point handling criteria
 int
 gsl_movstat_sum(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
 {
-  int status = movstat_apply(gsl_movstat_accum_sum, endtype, x, y, NULL, NULL, w);
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_sum, NULL, y, NULL, w);
   return status;
 }

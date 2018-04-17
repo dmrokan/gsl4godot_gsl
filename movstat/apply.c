@@ -1,4 +1,4 @@
-/* movstat/movstat_common.c
+/* movstat/apply.c
  *
  * Copyright (C) 2018 Patrick Alken
  * 
@@ -17,9 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef __GSL_MOVSTAT_COMMON_C__
-#define __GSL_MOVSTAT_COMMON_C__
- 
 #include <config.h>
 #include <stdlib.h>
 #include <math.h>
@@ -29,32 +26,31 @@
 #include <gsl/gsl_movstat.h>
 
 /*
-movstat_apply()
+gsl_movstat_apply_accum()
   Apply moving window statistic to input vector. This is a generalized
 routine to handle window endpoints and apply a given accumulator to
 the input vector.
 
-Inputs: accum        - accumulator to apply moving window statistic
-        endtype      - end point handling criteria
+Inputs: endtype      - end point handling criteria
         x            - input vector, size n
-        y            - output vector, size n
-        z            - second output vector (i.e. minmax), size n
-                       can be NULL
+        accum        - accumulator to apply moving window statistic
         accum_params - parameters to pass to accumulator
+        y            - output vector, size n
+        z            - second output vector (i.e. minmax), size n; can be NULL
         w            - workspace
 
 Notes:
 1) It is allowed to have x = y for in-place moving statistics
 */
 
-static int
-movstat_apply(const gsl_movstat_accum * accum,
-              const gsl_movstat_end_t endtype,
-              const gsl_vector * x,
-              gsl_vector * y,
-              gsl_vector * z,
-              void * accum_params,
-              gsl_movstat_workspace * w)
+int
+gsl_movstat_apply_accum(const gsl_movstat_end_t endtype,
+                        const gsl_vector * x,
+                        const gsl_movstat_accum * accum,
+                        void * accum_params,
+                        gsl_vector * y,
+                        gsl_vector * z,
+                        gsl_movstat_workspace * w)
 {
   if (x->size != y->size)
     {
@@ -194,4 +190,21 @@ movstat_apply(const gsl_movstat_accum * accum,
     }
 }
 
-#endif /* __GSL_MOVSTAT_COMMON_C__ */
+/*
+gsl_movstat_apply()
+  Apply user-defined moving window function to input vector
+
+Inputs: endtype - end point handling criteria
+        F       - user-defined function
+        x       - input vector, size n
+        y       - output vector, size n
+        w       - workspace
+*/
+
+int
+gsl_movstat_apply(const gsl_movstat_end_t endtype, const gsl_movstat_function * F,
+                  const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w)
+{
+  int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_userfunc, (void *) F, y, NULL, w);
+  return status;
+}

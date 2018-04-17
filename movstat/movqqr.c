@@ -29,8 +29,6 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_statistics.h>
 
-#include "movstat_common.c"
-
 /*
 gsl_movstat_qqr()
   Apply a moving q-quantile range to an input vector
@@ -57,7 +55,7 @@ gsl_movstat_qqr(const gsl_movstat_end_t endtype, const gsl_vector * x, const dou
     }
   else
     {
-      int status = movstat_apply(gsl_movstat_accum_qqr, endtype, x, xqqr, NULL, (void *) &q, w);
+      int status = gsl_movstat_apply_accum(endtype, x, gsl_movstat_accum_qqr, (void *) &q, xqqr, NULL, w);
       return status;
     }
 }

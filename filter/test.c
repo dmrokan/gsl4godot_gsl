@@ -87,8 +87,12 @@ median_find(const size_t n, double * z)
 int
 main()
 {
+  gsl_rng * r = gsl_rng_alloc(gsl_rng_default);
+
   /*XXXtest_gaussian();*/
-  test_rmedian();
+  test_rmedian(r);
+
+  gsl_rng_free(r);
 
   exit (gsl_test_summary());
 }
