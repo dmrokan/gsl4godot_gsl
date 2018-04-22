@@ -29,8 +29,6 @@
 
 static int movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vector * x,
                        gsl_vector * xmedian, gsl_vector * xmad, gsl_movstat_workspace * w);
-static int movstat_fill_window(const gsl_movstat_end_t endtype, const int idx, const int H, const int J,
-                               const gsl_vector * x, double * window);
 
 /*
 gsl_movstat_mad()
@@ -90,11 +88,9 @@ movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vecto
     }
   else
     {
-      const int n = (int) x->size;
-      const int H = (int) w->H; /* number of samples to left of current sample */
-      const int J = (int) w->J; /* number of samples to right of current sample */
+      const size_t n = x->size;
       double *window = w->work;
-      int i;
+      size_t i;
 
       /* first calculate median values of each window in x */
       gsl_movstat_median(endtype, x, xmedian, w);
@@ -102,10 +98,10 @@ movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vecto
       /* loop over windows and compute MAD */
       for (i = 0; i < n; ++i)
         {
-          int window_size = movstat_fill_window(endtype, i, H, J, x, window); /* fill window centered on x_i */
+          size_t window_size = gsl_movstat_fill(endtype, x, i, w->H, w->J, window);
           double xmedi = gsl_vector_get(xmedian, i);
           double *xmadi = gsl_vector_ptr(xmad, i);
-          int j;
+          size_t j;
 
           /* compute absolute deviations from median for this window */
           for (j = 0; j < window_size; ++j)
@@ -117,70 +113,4 @@ movstat_mad(const gsl_movstat_end_t endtype, const double scale, const gsl_vecto
 
       return GSL_SUCCESS;
     }
-}
-
-/*
-movstat_fill_window()
-  Fill window for sample 'idx' from x using given end conditions
-
-Inputs: endtype - how to handle end points
-        idx     - index of center sample in window
-        H       - number of samples left of center to include
-        J       - number of samples right of center to include
-        x       - input vector
-        window  - (output) window of samples centered on x_{idx}
-
-Return: number of samples in window
-*/
-
-static int
-movstat_fill_window(const gsl_movstat_end_t endtype, const int idx, const int H, const int J,
-                    const gsl_vector * x, double * window)
-{
-  const int n = x->size;
-  int idx1, idx2, j;
-  int wsize;
-
-  if (endtype == GSL_MOVSTAT_END_TRUNCATE)
-    {
-      idx1 = GSL_MAX(idx - H, 0);
-      idx2 = GSL_MIN(idx + J, n - 1);
-    }
-  else
-    {
-      idx1 = idx - H;
-      idx2 = idx + J;
-    }
-
-  wsize = idx2 - idx1 + 1;
-
-  /* fill sliding window */
-  for (j = idx1; j <= idx2; ++j)
-    {
-      int widx = j - idx1;
-
-      if (j < 0)
-        {
-          /* initial condition */
-          if (endtype == GSL_MOVSTAT_END_PADZERO)
-            window[widx] = 0.0;
-          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
-            window[widx] = gsl_vector_get(x, 0);
-        }
-      else if (j >= n)
-        {
-          if (endtype == GSL_MOVSTAT_END_PADZERO)
-            window[widx] = 0.0;
-          else if (endtype == GSL_MOVSTAT_END_PADVALUE)
-            window[widx] = gsl_vector_get(x, n - 1);
-        }
-      else
-        {
-          window[widx] = gsl_vector_get(x, j);
-        }
-    }
-
-  wsize = idx2 - idx1 + 1;
-
-  return wsize;
 }

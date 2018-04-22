@@ -91,9 +91,13 @@ int gsl_movstat_apply_accum(const gsl_movstat_end_t endtype, const gsl_vector * 
                             const gsl_movstat_accum * accum, void * accum_params,
                             gsl_vector * y, gsl_vector * z,
                             gsl_movstat_workspace * w);
-
 int gsl_movstat_apply(const gsl_movstat_end_t endtype, const gsl_movstat_function * F,
                       const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
+
+/* fill.c */
+size_t gsl_movstat_fill(const gsl_movstat_end_t endtype, const gsl_vector * x, const size_t idx,
+                        const size_t H, const size_t J, double * window);
+
 int gsl_movstat_mean(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_variance(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);
 int gsl_movstat_sd(const gsl_movstat_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_movstat_workspace * w);

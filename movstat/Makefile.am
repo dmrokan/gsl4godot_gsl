@@ -7,6 +7,7 @@ AM_CPPFLAGS = -I$(top_srcdir)
 libgslmovstat_la_SOURCES = \
   alloc.c                  \
   apply.c                  \
+  fill.c                   \
   funcacc.c                \
 	medacc.c                 \
 	mmacc.c                  \
@@ -25,7 +26,7 @@ libgslmovstat_la_SOURCES = \
 	snacc.c                  \
 	sumacc.c
 
-noinst_HEADERS = deque.c movstat_common.c ringbuf.c test_mad.c test_mean.c test_median.c test_minmax.c test_Qn.c test_qqr.c test_Sn.c test_sum.c test_variance.c
+noinst_HEADERS = deque.c ringbuf.c test_mad.c test_mean.c test_median.c test_minmax.c test_Qn.c test_qqr.c test_Sn.c test_sum.c test_variance.c
 
 check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)

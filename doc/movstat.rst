@@ -324,9 +324,12 @@ User-defined Moving Statistics
 
 GSL offers an interface for users to define their own moving window statistics
 functions, without needing to implement the edge-handling and accumulator
-machinery. To do this, users must define a variable of type
-:type:`gsl_movstat_function` to pass into the GSL function
-:func:`gsl_movstat_apply`. This structure is defined as follows.
+machinery. This can be done by explicitly constructing the windows
+:math:`W_i^{H,J}` for a given input signal (:func:`gsl_movstat_fill`), or by calculating a user-defined
+function for each window automatically. In order to apply a user-defined
+function to each window, users must define a variable of type
+:type:`gsl_movstat_function` to pass into :func:`gsl_movstat_apply`.
+This structure is defined as follows.
 
 .. type:: gsl_movstat_function
 
@@ -357,6 +360,15 @@ machinery. To do this, users must define a variable of type
    to the input vector :data:`x`, storing the output in :data:`y`.
    The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
    It is allowed for :data:`x` = :data:`y` for an in-place moving window calculation.
+
+.. function:: size_t gsl_movstat_fill(const gsl_movstat_end_t endtype, const gsl_vector * x, const size_t idx, const size_t H, const size_t J, double * window)
+
+   This function explicitly constructs the sliding window for the input vector :data:`x` which
+   is centered on the sample :data:`idx`. On output, the array :data:`window` will contain
+   :math:`W_{idx}^{H,J}`. The number of samples to the left and right
+   of the sample :data:`idx` are specified by :data:`H` and :data:`J` respectively.
+   The parameter :data:`endtype` specifies how windows near the ends of the input should be handled.
+   The function returns the size of the window.
 
 Accumulators
 ============
