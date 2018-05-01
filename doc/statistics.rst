@@ -717,6 +717,31 @@ behave unexpectedly in certain situations. GSL offers the following alternative
 location estimators, which are robust to the presence of outliers.
 
 .. index::
+   single: trimmed mean
+   single: truncated mean
+   single: mean, trimmed
+   single: mean, truncated
+
+Trimmed Mean
+------------
+
+The trimmed mean, or *truncated mean*, discards a certain number of smallest and largest
+samples from the input vector before computing the mean of the remaining samples. The
+amount of trimming is specified by a factor :math:`\alpha \in [0,0.5]`. Then the
+number of samples discarded from both ends of the input vector is
+:math:`\left\lfloor \alpha n \right\rfloor`, where :math:`n` is the length of the input.
+So to discard 25% of the samples from each end, one would set :math:`\alpha = 0.25`.
+
+.. function:: double gsl_stats_trmean_from_sorted_data (const double alpha, const double sorted_data[], const size_t stride, const size_t n)
+
+   This function returns the trimmed mean of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. The trimming factor :math:`\alpha` is given in :data:`alpha`.
+   If :math:`\alpha \ge 0.5`, then the median of the input is returned.
+
+.. index::
    single: Gastwirth estimator
 
 Gastwirth Estimator

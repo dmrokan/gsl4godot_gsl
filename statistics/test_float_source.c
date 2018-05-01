@@ -335,6 +335,22 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
   }
 
   {
+    const double trim = 0.2;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, na) ;
+    double expected = 0.0719;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (even)");
+  }
+
+  {
+    const double trim = 0.2;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, na - 1) ;
+    double expected = 0.06806666666666666;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (odd)");
+  }
+
+  {
     double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, na) ;
     double expected = 0.07271;
     gsl_test_rel  (gastwirth, expected, rel,

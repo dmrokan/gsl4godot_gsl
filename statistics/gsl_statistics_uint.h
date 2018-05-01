@@ -79,6 +79,7 @@ double gsl_stats_uint_median_from_sorted_data (const unsigned int sorted_data[],
 double gsl_stats_uint_median (unsigned int sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_uint_quantile_from_sorted_data (const unsigned int sorted_data[], const size_t stride, const size_t n, const double f) ;
 
+double gsl_stats_uint_trmean_from_sorted_data (const double trim, const unsigned int sorted_data[], const size_t stride, const size_t n) ;
 double gsl_stats_uint_gastwirth_from_sorted_data (const unsigned int sorted_data[], const size_t stride, const size_t n) ;
 
 double gsl_stats_uint_mad0(const unsigned int data[], const size_t stride, const size_t n, double work[]);
