@@ -34,8 +34,8 @@ main(void)
       gsl_vector_set(x, i, xi + ei);
     }
 
-  gsl_filter_median(GSL_FILTER_END_TRUNCATE, x, y_median, median_p);
-  gsl_filter_rmedian(x, y_rmedian, rmedian_p);
+  gsl_filter_median(GSL_FILTER_END_PADVALUE, x, y_median, median_p);
+  gsl_filter_rmedian(GSL_FILTER_END_PADVALUE, x, y_rmedian, rmedian_p);
 
   /* print results */
   for (i = 0; i < N; ++i)

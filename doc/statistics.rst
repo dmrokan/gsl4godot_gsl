@@ -788,8 +788,8 @@ The median absolute deviation (MAD) is defined as
 .. math:: MAD = 1.4826 \times \textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}
 
 In words, first the median of all samples is computed. Then the median
-is subtracted from all samples in the window to find the deviation of each sample
-from the window median. The median of all absolute deviations is then the MAD.
+is subtracted from all samples in the input to find the deviation of each sample
+from the median. The median of all absolute deviations is then the MAD.
 The factor :math:`1.4826` makes the MAD an unbiased estimator of the standard deviation for Gaussian data.
 The median absolute deviation has an asymptotic efficiency of 37%.
 

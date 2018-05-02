@@ -44,10 +44,3 @@ FUNCTION (gsl_stats, trmean_from_sorted_data) (const double trim, const BASE sor
       return mean;
     }
 }
-
-double
-FUNCTION (gsl_stats, trmean) (const double trim, BASE data[], const size_t stride, const size_t size)
-{
-  TYPE (gsl_sort) (data, stride, size);
-  return FUNCTION(gsl_stats, trmean_from_sorted_data)(trim, data, stride, size);
-}

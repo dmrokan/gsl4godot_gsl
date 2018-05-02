@@ -90,7 +90,7 @@ main()
   gsl_rng * r = gsl_rng_alloc(gsl_rng_default);
 
   /*XXXtest_gaussian();*/
-  test_rmedian(r);
+  /*XXXtest_rmedian(r);*/
 
   gsl_rng_free(r);
 
