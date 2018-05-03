@@ -17,7 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <sys/time.h>
+#ifdef _MSC_VER
+#  include <gettimeofday.h>
+#else
+#  include <sys/time.h>
+#endif
 #define TIMEDIFF(a, b)    ((double) ((b).tv_sec - (a).tv_sec) + 1.0e-6 * ((b).tv_usec - (a).tv_usec))
 
 #include <gsl/gsl_math.h>
