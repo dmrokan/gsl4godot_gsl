@@ -79,9 +79,9 @@ mmacc_init(const size_t n, void * vstate)
   state->k = 0;
   state->xprev = 0.0;
 
-  state->rbuf = vstate + sizeof(mmacc_state_t);
-  state->minque = (void *) state->rbuf + ringbuf_size(n);
-  state->maxque = (void *) state->minque + deque_size(n + 1);
+  state->rbuf = (ringbuf *) ((unsigned char *) vstate + sizeof(mmacc_state_t));
+  state->minque = (deque *) ((unsigned char *) state->rbuf + ringbuf_size(n));
+  state->maxque = (deque *) ((unsigned char *) state->minque + deque_size(n + 1));
 
   ringbuf_init(n, state->rbuf);
   deque_init(n + 1, state->minque);
@@ -191,7 +191,7 @@ mmacc_delete(void * vstate)
 static int
 mmacc_min(void * params, mmacc_type_t * result, const void * vstate)
 {
-  mmacc_state_t * state = (mmacc_state_t *) vstate;
+  const mmacc_state_t * state = (const mmacc_state_t *) vstate;
 
   (void) params;
 
@@ -209,7 +209,7 @@ mmacc_min(void * params, mmacc_type_t * result, const void * vstate)
 static int
 mmacc_max(void * params, mmacc_type_t * result, const void * vstate)
 {
-  mmacc_state_t * state = (mmacc_state_t *) vstate;
+  const mmacc_state_t * state = (const mmacc_state_t *) vstate;
 
   (void) params;
 
@@ -227,7 +227,7 @@ mmacc_max(void * params, mmacc_type_t * result, const void * vstate)
 static int
 mmacc_minmax(void * params, mmacc_type_t * result, const void * vstate)
 {
-  mmacc_state_t * state = (mmacc_state_t *) vstate;
+  const mmacc_state_t * state = (const mmacc_state_t *) vstate;
 
   (void) params;
 

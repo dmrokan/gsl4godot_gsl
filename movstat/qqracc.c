@@ -55,8 +55,8 @@ qqracc_init(const size_t n, void * vstate)
 {
   qqracc_state_t * state = (qqracc_state_t *) vstate;
 
-  state->window = vstate + sizeof(qqracc_state_t);
-  state->rbuf = (void *) state->window + n * sizeof(qqracc_type_t);
+  state->window = (qqracc_type_t *) ((unsigned char *) vstate + sizeof(qqracc_state_t));
+  state->rbuf = (ringbuf *) ((unsigned char *) state->window + n * sizeof(qqracc_type_t));
 
   ringbuf_init(n, state->rbuf);
 
@@ -89,7 +89,7 @@ qqracc_delete(void * vstate)
 static int
 qqracc_get(void * params, qqracc_type_t * result, const void * vstate)
 {
-  qqracc_state_t * state = (qqracc_state_t *) vstate;
+  const qqracc_state_t * state = (const qqracc_state_t *) vstate;
   double q = *(double *) params;
   size_t n = ringbuf_copy(state->window, state->rbuf);
   double quant1, quant2;

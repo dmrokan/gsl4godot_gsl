@@ -59,10 +59,10 @@ qnacc_init(const size_t n, void * vstate)
 {
   qnacc_state_t * state = (qnacc_state_t *) vstate;
 
-  state->window = vstate + sizeof(qnacc_state_t);
-  state->work = (void *) state->window + n * sizeof(qnacc_type_t);
-  state->work_int = (void *) state->work + 3 * n * sizeof(qnacc_type_t);
-  state->rbuf = (void *) state->work_int + 5 * n * sizeof(int);
+  state->window = (qnacc_type_t *) ((unsigned char *) vstate + sizeof(qnacc_state_t));
+  state->work = (qnacc_type_t *) ((unsigned char *) state->window + n * sizeof(qnacc_type_t));
+  state->work_int = (int *) ((unsigned char *) state->work + 3 * n * sizeof(qnacc_type_t));
+  state->rbuf = (ringbuf *) ((unsigned char *) state->work_int + 5 * n * sizeof(int));
 
   ringbuf_init(n, state->rbuf);
 
@@ -95,7 +95,7 @@ qnacc_delete(void * vstate)
 static int
 qnacc_get(void * params, qnacc_type_t * result, const void * vstate)
 {
-  qnacc_state_t * state = (qnacc_state_t *) vstate;
+  const qnacc_state_t * state = (const qnacc_state_t *) vstate;
   size_t n = ringbuf_copy(state->window, state->rbuf);
 
   (void) params;

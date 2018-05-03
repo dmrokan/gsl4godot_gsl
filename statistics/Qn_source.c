@@ -52,6 +52,10 @@ Note by MM: We have explicit permission from P.Rousseeuw to
 licence it under the GNU Public Licence.
 */
 
+#ifndef int64_t
+#define int64_t long int
+#endif
+
 static BASE FUNCTION(Qn,whimed)(BASE * a, int * w, int n, BASE * a_cand, BASE * a_srt, int * w_cand);
 
 /*

@@ -30,6 +30,8 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_ieee_utils.h>
 
+int test_robust (void);
+
 /* random vector in [-1,1] */
 static int
 random_array(const size_t n, double * x, gsl_rng * r)

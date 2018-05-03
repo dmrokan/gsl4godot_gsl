@@ -55,8 +55,8 @@ funcacc_init(const size_t n, void * vstate)
 {
   funcacc_state_t * state = (funcacc_state_t *) vstate;
 
-  state->window = vstate + sizeof(funcacc_state_t);
-  state->rbuf = (void *) state->window + n * sizeof(funcacc_type_t);
+  state->window = (funcacc_type_t *) ((unsigned char *) vstate + sizeof(funcacc_state_t));
+  state->rbuf = (ringbuf *) ((unsigned char *) state->window + n * sizeof(funcacc_type_t));
 
   ringbuf_init(n, state->rbuf);
 
@@ -88,7 +88,7 @@ funcacc_delete(void * vstate)
 static int
 funcacc_get(void * params, funcacc_type_t * result, const void * vstate)
 {
-  funcacc_state_t * state = (funcacc_state_t *) vstate;
+  const funcacc_state_t * state = (const funcacc_state_t *) vstate;
   gsl_movstat_function *f = (gsl_movstat_function *) params;
   size_t n = ringbuf_copy(state->window, state->rbuf);
 

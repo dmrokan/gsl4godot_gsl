@@ -62,7 +62,7 @@ mvacc_init(const size_t n, void * vstate)
   state->mean = 0.0;
   state->M2 = 0.0;
 
-  state->rbuf = vstate + sizeof(mvacc_state_t);
+  state->rbuf = (ringbuf *) ((unsigned char *) vstate + sizeof(mvacc_state_t));
   ringbuf_init(n, state->rbuf);
 
   return GSL_SUCCESS;
@@ -141,7 +141,7 @@ mvacc_delete(void * vstate)
 static int
 mvacc_mean(void * params, double * result, const void * vstate)
 {
-  mvacc_state_t * state = (mvacc_state_t *) vstate;
+  const mvacc_state_t * state = (const mvacc_state_t *) vstate;
   (void) params;
   *result = state->mean;
   return GSL_SUCCESS;
@@ -150,7 +150,7 @@ mvacc_mean(void * params, double * result, const void * vstate)
 static int
 mvacc_variance(void * params, double * result, const void * vstate)
 {
-  mvacc_state_t * state = (mvacc_state_t *) vstate;
+  const mvacc_state_t * state = (const mvacc_state_t *) vstate;
 
   (void) params;
 

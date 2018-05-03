@@ -56,9 +56,9 @@ snacc_init(const size_t n, void * vstate)
 {
   snacc_state_t * state = (snacc_state_t *) vstate;
 
-  state->window = vstate + sizeof(snacc_state_t);
-  state->work = (void *) state->window + n * sizeof(snacc_type_t);
-  state->rbuf = (void *) state->work + n * sizeof(snacc_type_t);
+  state->window = (snacc_type_t *) ((unsigned char *) vstate + sizeof(snacc_state_t));
+  state->work = (snacc_type_t *) ((unsigned char *) state->window + n * sizeof(snacc_type_t));
+  state->rbuf = (ringbuf *) ((unsigned char *) state->work + n * sizeof(snacc_type_t));
 
   ringbuf_init(n, state->rbuf);
 
@@ -91,7 +91,7 @@ snacc_delete(void * vstate)
 static int
 snacc_get(void * params, snacc_type_t * result, const void * vstate)
 {
-  snacc_state_t * state = (snacc_state_t *) vstate;
+  const snacc_state_t * state = (const snacc_state_t *) vstate;
   size_t n = ringbuf_copy(state->window, state->rbuf);
 
   (void) params;

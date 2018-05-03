@@ -81,8 +81,8 @@ medacc_init(const size_t n, void * vstate)
   state->ct = 0;
   state->idx = 0;
 
-  state->data = vstate + sizeof(medacc_state_t);
-  state->pos = (void *) state->data + n * sizeof(medacc_type_t);
+  state->data = (medacc_type_t *) ((unsigned char *) vstate + sizeof(medacc_state_t));
+  state->pos = (int *) ((unsigned char *) state->data + n * sizeof(medacc_type_t));
   state->heap = state->pos + n + (n/2); /* points to middle of storage */
 
   /* set up initial heap fill pattern: median,max,min,max,... */
@@ -166,7 +166,7 @@ medacc_delete(void * vstate)
 static int
 medacc_get(void * params, medacc_type_t * result, const void * vstate)
 {
-  medacc_state_t * state = (medacc_state_t *) vstate;
+  const medacc_state_t * state = (const medacc_state_t *) vstate;
   medacc_type_t median = state->data[state->heap[0]];
 
   (void) params;

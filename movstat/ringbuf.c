@@ -57,7 +57,7 @@ ringbuf_size(const size_t n)
 static int
 ringbuf_init(const size_t n, ringbuf * b)
 {
-  b->array = (void *) b + sizeof(ringbuf);
+  b->array = (ringbuf_type_t *) ((char *) b + sizeof(ringbuf));
   b->head = -1;
   b->tail = 0;
   b->size = (int) n;

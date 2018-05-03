@@ -360,7 +360,7 @@ rmedian_init(const size_t n, void * vstate)
   rmedian_state_t * state = (rmedian_state_t *) vstate;
 
   state->minmax_acc = gsl_movstat_accum_minmax;
-  state->minmax_state = vstate + sizeof(rmedian_state_t);
+  state->minmax_state = (void *) ((unsigned char *) vstate + sizeof(rmedian_state_t));
 
   (state->minmax_acc->init)(n, state->minmax_state);
 
@@ -384,7 +384,7 @@ rmedian_delete(void * vstate)
 static int
 rmedian_get(void * params, double * result, const void * vstate)
 {
-  rmedian_state_t * state = (rmedian_state_t *) vstate;
+  const rmedian_state_t * state = (const rmedian_state_t *) vstate;
   double *yprev = (double *) params; /* previous filter output */
   double y;                          /* new filter output */
   double xminmax[2];

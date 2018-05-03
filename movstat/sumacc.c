@@ -53,7 +53,7 @@ sumacc_init(const size_t n, void * vstate)
 
   state->sum = 0.0;
 
-  state->rbuf = vstate + sizeof(sumacc_state_t);
+  state->rbuf = (ringbuf *) ((unsigned char *) vstate + sizeof(sumacc_state_t));
   ringbuf_init(n, state->rbuf);
 
   return GSL_SUCCESS;
@@ -94,7 +94,7 @@ sumacc_delete(void * vstate)
 static int
 sumacc_get(void * params, double * result, const void * vstate)
 {
-  sumacc_state_t * state = (sumacc_state_t *) vstate;
+  const sumacc_state_t * state = (const sumacc_state_t *) vstate;
   (void) params;
   *result = state->sum;
   return GSL_SUCCESS;

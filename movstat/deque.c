@@ -58,7 +58,7 @@ deque_init(const size_t n, deque * d)
   d->head = -1;
   d->tail = 0;
   d->size = (int) n;
-  d->array = (void *) d + sizeof(deque);
+  d->array = (deque_type_t *) ((unsigned char *) d + sizeof(deque));
 
   return GSL_SUCCESS;
 }
