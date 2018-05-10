@@ -26,8 +26,10 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_filter.h>
+#include <gsl/gsl_poly.h>
 
-static int gausswin(const double sigma, const size_t order, const size_t n, double * window);
+/* maximum derivative order allowed for Gaussian filter */
+#define GSL_FILTER_GAUSSIAN_MAX_ORDER     10
 
 /*
 gsl_filter_gaussian_alloc()
@@ -79,23 +81,26 @@ gsl_filter_gaussian()
 
 G_{sigma}(x) = exp [ -x^2 / (2 sigma^2) ]
 
-Inputs: sigma - standard deviation of Gaussian
+Inputs: alpha - number of standard deviations to include in Gaussian kernel
         order - derivative order of Gaussian
         x     - input vector, size n
         y     - (output) filtered vector, size n
         w     - workspace
+
+Notes:
+1) If alpha = 3, then the Gaussian kernel will be a Gaussian of +/- 3 standard deviations
 */
 
 int
-gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x, gsl_vector * y, gsl_filter_gaussian_workspace * w)
+gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x, gsl_vector * y, gsl_filter_gaussian_workspace * w)
 {
   if (x->size != y->size)
     {
       GSL_ERROR("input and output vectors must have same length", GSL_EBADLEN);
     }
-  else if (sigma <= 0.0)
+  else if (alpha <= 0.0)
     {
-      GSL_ERROR("sigma must be positive", GSL_EDOM);
+      GSL_ERROR("alpha must be positive", GSL_EDOM);
     }
   else if (order > 2)
     {
@@ -105,10 +110,11 @@ gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x
     {
       const int n = (int) x->size; /* input vector length */
       const int H = (int) w->H;    /* kernel radius */
+      gsl_vector_view kernel = gsl_vector_view_array(w->kernel, w->K);
       int i;
 
       /* construct Gaussian kernel of length K */
-      gausswin(sigma, order, w->K, w->kernel);
+      gsl_filter_gaussian_kernel(alpha, order, &kernel.vector);
 
       for (i = 0; i < n; ++i)
         {
@@ -130,54 +136,118 @@ gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x
     }
 }
 
-static int
-gausswin(const double sigma, const size_t order, const size_t n, double * window)
+/*
+gsl_filter_gaussian_kernel()
+  Construct Gaussian kernel with given sigma and order
+
+Inputs: alpha  - number of standard deviations to include in window
+        order  - kernel order (0 = gaussian, 1 = first derivative, ...)
+        kernel - (output) Gaussian kernel
+
+Return: success/error
+
+Notes:
+1) If alpha = 3, then the output kernel will contain a Gaussian with +/- 3 standard deviations
+*/
+
+int
+gsl_filter_gaussian_kernel(const double alpha, const size_t order, gsl_vector * kernel)
 {
-  const double m = n - 1.0;
-  const double mhalf = m / 2.0;
-  const double variance = sigma * sigma;
-  const double alpha = 0.5 / variance;
-  double sum = 0.0;
-  double norm = 0.0; /* normalization */
-  size_t i;
+  const size_t N = kernel->size;
 
-  if (order == 0)
+  if (alpha <= 0.0)
     {
-      for (i = 0; i < n; ++i)
-        {
-          double xi =( (double)i - mhalf) / mhalf;
-          double gi = exp(-alpha * xi * xi);
-
-          window[i] = gi;
-          sum += window[i];
-        }
-
-      norm = 1.0 / sum;
+      GSL_ERROR("alpha must be positive", GSL_EDOM);
     }
-  else if (order == 1)
+  else if (order > GSL_FILTER_GAUSSIAN_MAX_ORDER)
     {
-      for (i = 0; i < n; ++i)
-        {
-          double xi =( (double)i - mhalf) / mhalf;
-          double gi = exp(-alpha * xi * xi);
-
-          window[i] = -xi * gi / variance;
-          sum += gi;
-        }
-
-      norm = 1.0 / (sum * mhalf);
-    }
-  else if (order == 2)
-    {
+      GSL_ERROR("derivative order is too large", GSL_EDOM);
     }
   else
     {
-      GSL_ERROR("order must be <= 2", GSL_EDOM);
+      const double half = 0.5 * (N - 1.0); /* (N - 1) / 2 */
+      double sum = 0.0;
+      size_t i;
+
+      /* check for quick return */
+      if (N == 1)
+        {
+          if (order == 0)
+            gsl_vector_set(kernel, 0, 1.0);
+          else
+            gsl_vector_set(kernel, 0, 0.0);
+
+          return GSL_SUCCESS;
+        }
+
+      for (i = 0; i < N; ++i)
+        {
+          double xi = ((double)i - half) / half;
+          double yi = alpha * xi;
+          double gi = exp(-0.5 * yi * yi);
+
+          gsl_vector_set(kernel, i, gi);
+          sum += gi;
+        }
+
+      /* normalize so sum(kernel) = 1 */
+      gsl_vector_scale(kernel, 1.0 / sum);
+
+      if (order > 0)
+        {
+          const double beta = -0.5 * alpha * alpha;
+          double q[GSL_FILTER_GAUSSIAN_MAX_ORDER + 1];
+          size_t k;
+
+          /*
+           * Need to calculate derivatives of the Gaussian window; define
+           *
+           * w(n) = C * exp [ p(n) ]
+           *
+           * p(n) = beta * n^2
+           * beta = -1/2 * ( alpha / ((N-1)/2) )^2
+           *
+           * Then:
+           *
+           * d^k/dn^k w(n) = q_k(n) * w(n)
+           *
+           * where q_k(n) is a degree-k polynomial in n, which satisfies:
+           *
+           * q_k(n) = d/dn q_{k-1}(n) + q_{k-1}(n) * dp(n)/dn
+           * q_0(n) = 1 / half^{order}
+           */
+
+          /* initialize q_0(n) = 1 / half^{order} */
+          q[0] = 1.0 / gsl_pow_uint(half, order);
+          for (i = 1; i <= GSL_FILTER_GAUSSIAN_MAX_ORDER; ++i)
+            q[i] = 0.0;
+
+          /* loop through derivative orders and calculate q_k(n) for k = 1,...,order */
+          for (k = 1; k <= order; ++k)
+            {
+              double qm1 = q[0];
+
+              q[0] = q[1];
+              for (i = 1; i <= k; ++i)
+                {
+                  double tmp = q[i];
+                  q[i] = (i + 1.0) * q[i + 1] + /* d/dn q_{k-1} */
+                         2.0 * beta * qm1;      /* q_{k-1}(n) p'(n) */
+                  qm1 = tmp;
+                }
+            }
+
+          /* now set w(n) := q(n) * w(n) */
+          for (i = 0; i < N; ++i)
+            {
+              double xi = ((double)i - half) / half;
+              double qn = gsl_poly_eval(q, order + 1, xi);
+              double *wn = gsl_vector_ptr(kernel, i);
+
+              *wn *= qn;
+            }
+        }
+
+      return GSL_SUCCESS;
     }
-
-  /* normalize */
-  for (i = 0; i < n; ++i)
-    window[i] *= norm;
-
-  return GSL_SUCCESS;
 }

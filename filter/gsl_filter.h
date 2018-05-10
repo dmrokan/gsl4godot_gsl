@@ -63,8 +63,9 @@ typedef struct
 
 gsl_filter_gaussian_workspace *gsl_filter_gaussian_alloc(const size_t K);
 void gsl_filter_gaussian_free(gsl_filter_gaussian_workspace * w);
-int gsl_filter_gaussian(const double sigma, const size_t order, const gsl_vector * x, gsl_vector * y,
+int gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x, gsl_vector * y,
                         gsl_filter_gaussian_workspace * w);
+int gsl_filter_gaussian_kernel(const double alpha, const size_t order, gsl_vector * kernel);
 
 /* workspace for standard median filter */
 typedef struct

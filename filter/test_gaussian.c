@@ -28,7 +28,7 @@ test_gaussian_fixed(void)
 {
   const size_t K = 7;
   const size_t n = 20;
-  const double sigma = 1.0;
+  const double alpha = 1.0;
   const double expected_y[] = { 1.352898375626185,  2.106288519406315,  3.000000000000000,  4.000000000000000,
                                 5.000000000000000,  6.000000000000000,  7.000000000000000,  8.000000000000000,
                                 9.000000000000000,  10.000000000000000, 11.000000000000000, 12.000000000000000,
@@ -43,7 +43,7 @@ test_gaussian_fixed(void)
   for (i = 0; i < n; ++i)
     gsl_vector_set(x, i, i + 1.0);
 
-  gsl_filter_gaussian(sigma, 0, x, y, w);
+  gsl_filter_gaussian(alpha, 0, x, y, w);
 
   compare_vectors(1.0e-12, y, &ev.vector, "test_gaussian_fixed");
 
@@ -53,11 +53,12 @@ test_gaussian_fixed(void)
 }
 
 static void
-test_gaussian_deriv(const double sigma, const size_t n, const size_t K)
+test_gaussian_deriv(const double alpha, const size_t n, const size_t K)
 {
   const double f_low = 1.0;
   const double f_high = 50.0;
-  const double alpha = 2.0 * M_PI / (n - 1.0);
+  const double gamma = 2.0 * M_PI / (n - 1.0);
+  const double dt = 1.0 / (n - 1.0);
   gsl_vector *x = gsl_vector_alloc(n);
   gsl_vector *dx = gsl_vector_alloc(n);
   gsl_vector *y1 = gsl_vector_alloc(n);
@@ -68,26 +69,24 @@ test_gaussian_deriv(const double sigma, const size_t n, const size_t K)
   /* make input signal composed of two sine waves at different frequencies */
   for (i = 0; i < n; ++i)
     {
-      double xi = sin(alpha * f_low * i) + sin(alpha * f_high * i);
-      double dxi = alpha * f_low * cos(alpha * f_low * i) +
-                   alpha * f_high * cos(alpha * f_high * i);
+      double xi = sin(gamma * f_low * i) + sin(gamma * f_high * i);
+      double dxi = gamma * f_low * cos(gamma * f_low * i) +
+                   gamma * f_high * cos(gamma * f_high * i);
 
       gsl_vector_set(x, i, xi);
       gsl_vector_set(dx, i, dxi);
     }
 
   /* compute y1 = G * dx(t)/dt */
-  gsl_filter_gaussian(sigma, 0, dx, y1, w);
+  gsl_filter_gaussian(alpha, 0, dx, y1, w);
 
   /* compute y2 = dG/dt * x(t) */
-  gsl_filter_gaussian(sigma, 1, x, y2, w);
+  gsl_filter_gaussian(alpha, 1, x, y2, w);
 
   for (i = 0; i < n; ++i)
     {
-      double ti = (double) i / (n - 1.0);
-
-      printf("%f %.12e %.12e %.12e %.12e\n",
-             ti,
+      printf("%zu %.12e %.12e %.12e %.12e\n",
+             i,
              gsl_vector_get(x, i),
              gsl_vector_get(dx, i),
              gsl_vector_get(y1, i),
@@ -106,5 +105,5 @@ test_gaussian(void)
 {
   test_gaussian_fixed();
 
-  test_gaussian_deriv(0.25, 1000, 211);
+  test_gaussian_deriv(2.5, 1000, 15);
 }
