@@ -14,6 +14,64 @@ Here, :math:`H` is a non-negative integer called the *window half-length*, which
 represents the number of samples before and after sample :math:`i`.
 The total window length is :math:`K = 2 H + 1`.
 
+Linear Digital Filters
+======================
+
+Gaussian Filter
+---------------
+
+The Gaussian filter convolves the input signal with a Gaussian kernel or window. This filter
+is often used as a smoothing or noise reduction filter. The Gaussian kernel is
+defined by
+
+.. math:: G(k) = e^{-\frac{1}{2} \left( \alpha \frac{k}{(K-1)/2} \right)^2} = e^{-k^2/2\sigma^2}
+
+for :math:`-(K-1)/2 \le k \le (K-1)/2`, and :math:`K` is the size of the kernel. The
+parameter :math:`\alpha` specifies the number of standard deviations :math:`\sigma` desired
+in the kernel. So for example setting :math:`\alpha = 3` would define a Gaussian window
+of length :math:`K` which spans :math:`\pm 3 \sigma`. It is often more convenient to specify
+the parameter :math:`\alpha` rather than the standard deviation :math:`\sigma` when constructing
+the kernel, since a fixed value of :math:`\alpha` would correspond to the same shape of
+Gaussian regardless of the size :math:`K`. The appropriate value of the standard deviation
+depends on :math:`K` and is related to :math:`\alpha` as
+
+.. math:: \sigma = \frac{K - 1}{2\alpha}
+
+The routines below accept :math:`\alpha` as an input argument instead of :math:`\sigma`.
+
+The Gaussian filter offers a convenient way of differentiating and smoothing an input signal
+in a single pass. Using the derivative property of a convolution,
+
+.. math:: \frac{d}{dt} \left( G * x \right) = \frac{dG}{dt} * x
+
+the input signal :math:`x(t)` can be smoothed and differentiated at the same time by
+convolution with a derivative Gaussian kernel, which can be readily computed from the
+analytic expression above. The same principle applies to higher order derivatives.
+
+.. function:: gsl_filter_gaussian_workspace * gsl_filter_gaussian_alloc(const size_t K)
+
+   This function initializes a workspace for Gaussian filtering using a kernel of
+   size :data:`K`. Here, :math:`H = K / 2`. If :math:`K` is even, it is rounded up to the next
+   odd integer to ensure a symmetric window. The size of the workspace is :math:`O(K)`.
+
+.. function:: void gsl_filter_gaussian_free(gsl_filter_gaussian_workspace * w)
+
+   This function frees the memory associated with :data:`w`.
+
+.. function:: int gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x, gsl_vector * y, gsl_filter_gaussian_workspace * w)
+
+   This function applies a Gaussian filter parameterized by :data:`alpha` to the input vector :data:`x`,
+   storing the output in :data:`y`. The derivative order is specified by :data:`order`, with
+   :code:`0` corresponding to a Gaussian, :code:`1` corresponding to a first derivative
+   Gaussian, and so on.
+
+.. function:: int gsl_filter_gaussian_kernel(const double alpha, const size_t order, gsl_vector * kernel)
+
+   This function constructs a Gaussian kernel parameterized by :data:`alpha` and
+   stores the output in :data:`kernel`. The parameter :data:`order` specifies the
+   derivative order, with :code:`0` corresponding to a Gaussian, :code:`1` corresponding
+   to a first derivative Gaussian, and so on.
+
 Nonlinear Digital Filters
 =========================
 

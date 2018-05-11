@@ -24,3 +24,24 @@ set xlabel "time (s)"
 plot file us 1:2 w li lw mylw lc rgb "gray" ti "Data", \
      file us 1:3 w li lw mylw ti "Standard Median Filter", \
      file us 1:4 w li lw mylw ti "Recursive Median Filter"
+
+set term pngcairo enh col size 1000,1200
+
+set out "../images/gaussfilt.png"
+file = "../examples/gaussfilt.txt"
+
+set key inside top left
+unset xlabel
+
+set multiplot layout 4,1
+
+plot file us 0:1 w li lc rgb "black" ti "Signal", \
+     file us 0:2 w li lt 3 lw mylw ti "Smoothed signal"
+
+plot file us 0:3 w li lc rgb "black" ti "First differenced signal"
+
+plot file us 0:4 w li lc rgb "black" ti "Smoothed and first differenced signal"
+
+plot file us 0:5 w li lc rgb "black" ti "Smoothed and second differenced signal"
+
+unset multiplot
