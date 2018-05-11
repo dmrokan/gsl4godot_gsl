@@ -10,73 +10,69 @@
 int
 main(void)
 {
-  const size_t N = 1000;                       /* length of time series */
-  const size_t K = 61;                         /* window size */
-  const double alpha = 3.0;                    /* Gaussian kernel has +/- 3 standard deviations */
+  const size_t N = 500;                        /* length of time series */
+  const size_t K = 51;                         /* window size */
+  const double alpha[3] = { 0.5, 3.0, 10.0 };  /* alpha values */
   gsl_vector *x = gsl_vector_alloc(N);         /* input vector */
-  gsl_vector *y = gsl_vector_alloc(N);         /* filtered output vector */
-  gsl_vector *dy = gsl_vector_alloc(N);        /* first derivative filtered vector */
-  gsl_vector *d2y = gsl_vector_alloc(N);       /* second derivative filtered vector */
+  gsl_vector *y1 = gsl_vector_alloc(N);        /* filtered output vector for alpha1 */
+  gsl_vector *y2 = gsl_vector_alloc(N);        /* filtered output vector for alpha2 */
+  gsl_vector *y3 = gsl_vector_alloc(N);        /* filtered output vector for alpha3 */
+  gsl_vector *k1 = gsl_vector_alloc(K);        /* Gaussian kernel for alpha1 */
+  gsl_vector *k2 = gsl_vector_alloc(K);        /* Gaussian kernel for alpha2 */
+  gsl_vector *k3 = gsl_vector_alloc(K);        /* Gaussian kernel for alpha3 */
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
   gsl_filter_gaussian_workspace *gauss_p = gsl_filter_gaussian_alloc(K);
   size_t i;
-
-#if 0
-  {
-    gsl_vector *kernel = gsl_vector_alloc(K);
-
-    gsl_filter_gaussian_kernel(alpha, 1, kernel);
-
-    for (i = 0; i < K; ++i)
-      printf("%.12e\n", gsl_vector_get(kernel, i));
-
-    gsl_vector_free(kernel);
-    exit(1);
-  }
-#endif
+  double sum = 0.0;
 
   /* generate input signal */
   for (i = 0; i < N; ++i)
     {
-      double xi = (i > N / 2) ? 0.5 : 0.0;
-      double ei = gsl_ran_gaussian(r, 0.1);
-
-      gsl_vector_set(x, i, xi + ei);
+      double ui = gsl_ran_gaussian(r, 1.0);
+      sum += ui;
+      gsl_vector_set(x, i, sum);
     }
 
-  gsl_filter_gaussian(alpha, 0, x, y, gauss_p);
-  gsl_filter_gaussian(alpha, 1, x, dy, gauss_p);
-  gsl_filter_gaussian(alpha, 2, x, d2y, gauss_p);
+  /* compute kernels without normalization */
+  gsl_filter_gaussian_kernel(alpha[0], 0, 0, k1);
+  gsl_filter_gaussian_kernel(alpha[1], 0, 0, k2);
+  gsl_filter_gaussian_kernel(alpha[2], 0, 0, k3);
 
-  /* print results */
+  /* apply filters */
+  gsl_filter_gaussian(GSL_FILTER_END_PADVALUE, alpha[0], 0, x, y1, gauss_p);
+  gsl_filter_gaussian(GSL_FILTER_END_PADVALUE, alpha[1], 0, x, y2, gauss_p);
+  gsl_filter_gaussian(GSL_FILTER_END_PADVALUE, alpha[2], 0, x, y3, gauss_p);
+
+  /* print kernels */
+  for (i = 0; i < K; ++i)
+    {
+      double k1i = gsl_vector_get(k1, i);
+      double k2i = gsl_vector_get(k2, i);
+      double k3i = gsl_vector_get(k3, i);
+
+      printf("%e %e %e\n", k1i, k2i, k3i);
+    }
+
+  printf("\n\n");
+
+  /* print filter results */
   for (i = 0; i < N; ++i)
     {
       double xi = gsl_vector_get(x, i);
-      double yi = gsl_vector_get(y, i);
-      double dyi = gsl_vector_get(dy, i);
-      double d2yi = gsl_vector_get(d2y, i);
-      double dxi;
+      double y1i = gsl_vector_get(y1, i);
+      double y2i = gsl_vector_get(y2, i);
+      double y3i = gsl_vector_get(y3, i);
 
-      /* compute finite difference of x vector */
-      if (i == 0)
-        dxi = gsl_vector_get(x, i + 1) - xi;
-      else if (i == N - 1)
-        dxi = gsl_vector_get(x, i) - gsl_vector_get(x, i - 1);
-      else
-        dxi = 0.5 * (gsl_vector_get(x, i + 1) - gsl_vector_get(x, i - 1));
-
-      printf("%.12e %.12e %.12e %.12e %.12e\n",
-             xi,
-             yi,
-             dxi,
-             dyi,
-             d2yi);
+      printf("%.12e %.12e %.12e %.12e\n", xi, y1i, y2i, y3i);
     }
 
   gsl_vector_free(x);
-  gsl_vector_free(y);
-  gsl_vector_free(dy);
-  gsl_vector_free(d2y);
+  gsl_vector_free(y1);
+  gsl_vector_free(y2);
+  gsl_vector_free(y3);
+  gsl_vector_free(k1);
+  gsl_vector_free(k2);
+  gsl_vector_free(k3);
   gsl_rng_free(r);
   gsl_filter_gaussian_free(gauss_p);
 

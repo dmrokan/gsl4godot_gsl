@@ -92,7 +92,8 @@ Notes:
 */
 
 int
-gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x, gsl_vector * y, gsl_filter_gaussian_workspace * w)
+gsl_filter_gaussian(const gsl_filter_end_t endtype, const double alpha, const size_t order, const gsl_vector * x,
+                    gsl_vector * y, gsl_filter_gaussian_workspace * w)
 {
   if (x->size != y->size)
     {
@@ -102,35 +103,29 @@ gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x
     {
       GSL_ERROR("alpha must be positive", GSL_EDOM);
     }
-  else if (order > 2)
-    {
-      GSL_ERROR("order must be <= 2", GSL_EDOM);
-    }
   else
     {
-      const int n = (int) x->size; /* input vector length */
-      const int H = (int) w->H;    /* kernel radius */
+      const size_t n = x->size;
       gsl_vector_view kernel = gsl_vector_view_array(w->kernel, w->K);
-      int i;
+      double *window = malloc(w->K * sizeof(double));
+      size_t i;
 
       /* construct Gaussian kernel of length K */
-      gsl_filter_gaussian_kernel(alpha, order, &kernel.vector);
+      gsl_filter_gaussian_kernel(alpha, order, 1, &kernel.vector);
 
       for (i = 0; i < n; ++i)
         {
-          int idx1 = GSL_MAX(i - H, 0);
-          int idx2 = GSL_MIN(i + H, n - 1);
+          size_t wsize = gsl_movstat_fill(endtype, x, i, w->H, w->H, window);
           double sum = 0.0;
-          int j;
+          size_t j;
 
-          for (j = idx1; j <= idx2; ++j)
-            {
-              double xj = gsl_vector_get(x, j);
-              sum += xj * w->kernel[H + i - j];
-            }
+          for (j = 0; j < wsize; ++j)
+            sum += window[j] * w->kernel[wsize - j - 1];
 
           gsl_vector_set(y, i, sum);
         }
+
+      free(window);
 
       return GSL_SUCCESS;
     }
@@ -140,9 +135,10 @@ gsl_filter_gaussian(const double alpha, const size_t order, const gsl_vector * x
 gsl_filter_gaussian_kernel()
   Construct Gaussian kernel with given sigma and order
 
-Inputs: alpha  - number of standard deviations to include in window
-        order  - kernel order (0 = gaussian, 1 = first derivative, ...)
-        kernel - (output) Gaussian kernel
+Inputs: alpha     - number of standard deviations to include in window
+        order     - kernel order (0 = gaussian, 1 = first derivative, ...)
+        normalize - normalize so sum(G) = 1
+        kernel    - (output) Gaussian kernel
 
 Return: success/error
 
@@ -151,7 +147,7 @@ Notes:
 */
 
 int
-gsl_filter_gaussian_kernel(const double alpha, const size_t order, gsl_vector * kernel)
+gsl_filter_gaussian_kernel(const double alpha, const size_t order, const int normalize, gsl_vector * kernel)
 {
   const size_t N = kernel->size;
 
@@ -191,7 +187,8 @@ gsl_filter_gaussian_kernel(const double alpha, const size_t order, gsl_vector * 
         }
 
       /* normalize so sum(kernel) = 1 */
-      gsl_vector_scale(kernel, 1.0 / sum);
+      if (normalize)
+        gsl_vector_scale(kernel, 1.0 / sum);
 
       if (order > 0)
         {

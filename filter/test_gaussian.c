@@ -24,37 +24,9 @@
 #include <gsl/gsl_randist.h>
 
 static void
-test_gaussian_fixed(void)
-{
-  const size_t K = 7;
-  const size_t n = 20;
-  const double alpha = 1.0;
-  const double expected_y[] = { 1.352898375626185,  2.106288519406315,  3.000000000000000,  4.000000000000000,
-                                5.000000000000000,  6.000000000000000,  7.000000000000000,  8.000000000000000,
-                                9.000000000000000,  10.000000000000000, 11.000000000000000, 12.000000000000000,
-                                13.000000000000000, 14.000000000000000, 15.000000000000000, 16.000000000000000,
-                                17.000000000000000, 15.767941092467399, 13.714904499976400, 10.987123123526164 };
-  gsl_vector_const_view ev = gsl_vector_const_view_array(expected_y, n);
-  gsl_vector *x = gsl_vector_alloc(n);
-  gsl_vector *y = gsl_vector_alloc(n);
-  gsl_filter_gaussian_workspace *w = gsl_filter_gaussian_alloc(K);
-  size_t i;
-
-  for (i = 0; i < n; ++i)
-    gsl_vector_set(x, i, i + 1.0);
-
-  gsl_filter_gaussian(alpha, 0, x, y, w);
-
-  compare_vectors(1.0e-12, y, &ev.vector, "test_gaussian_fixed");
-
-  gsl_vector_free(x);
-  gsl_vector_free(y);
-  gsl_filter_gaussian_free(w);
-}
-
-static void
 test_gaussian_deriv(const double alpha, const size_t n, const size_t K)
 {
+#if 0
   const double f_low = 1.0;
   const double f_high = 50.0;
   const double gamma = 2.0 * M_PI / (n - 1.0);
@@ -98,12 +70,11 @@ test_gaussian_deriv(const double alpha, const size_t n, const size_t K)
   gsl_vector_free(y1);
   gsl_vector_free(y2);
   gsl_filter_gaussian_free(w);
+#endif
 }
 
 static void
 test_gaussian(void)
 {
-  test_gaussian_fixed();
-
   test_gaussian_deriv(2.5, 1000, 15);
 }
