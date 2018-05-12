@@ -60,19 +60,6 @@ random_vector(gsl_vector * v, gsl_rng * r)
     }
 }
 
-/* generate random vector of integers with elements in [a,b] */
-static void
-random_vector_int(const int a, const int b, gsl_vector * v, gsl_rng * r)
-{
-  size_t i;
-
-  for (i = 0; i < v->size; ++i)
-    {
-      int vi = (int) ((b - a) * gsl_rng_uniform(r) + (double) a); /* in [a,b] */
-      gsl_vector_set(v, i, (double) vi);
-    }
-}
-
 /* find median of array z of length n by sorting */
 static double
 median_find(const size_t n, double * z)
@@ -89,7 +76,7 @@ main()
 {
   gsl_rng * r = gsl_rng_alloc(gsl_rng_default);
 
-  test_gaussian();
+  test_gaussian(r);
   /*XXXtest_rmedian(r);*/
 
   gsl_rng_free(r);

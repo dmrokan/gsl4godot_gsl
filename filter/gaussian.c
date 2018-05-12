@@ -31,6 +31,25 @@
 /* maximum derivative order allowed for Gaussian filter */
 #define GSL_FILTER_GAUSSIAN_MAX_ORDER     10
 
+typedef double gaussian_type_t;
+typedef double ringbuf_type_t;
+#include "ringbuf.c"
+
+typedef struct
+{
+  size_t n;        /* window size */
+  double * window; /* linear array with current window */
+  ringbuf * rbuf;  /* ring buffer storing current window */
+} gaussian_state_t;
+
+static size_t gaussian_size(const size_t n);
+static int gaussian_init(const size_t n, void * vstate);
+static int gaussian_insert(const gaussian_type_t x, void * vstate);
+static int gaussian_delete(void * vstate);
+static int gaussian_get(void * params, gaussian_type_t * result, const void * vstate);
+
+static const gsl_movstat_accum gaussian_accum_type;
+
 /*
 gsl_filter_gaussian_alloc()
   Allocate a workspace for Gaussian filtering.
@@ -44,7 +63,9 @@ Return: pointer to workspace
 gsl_filter_gaussian_workspace *
 gsl_filter_gaussian_alloc(const size_t K)
 {
+  const size_t H = K / 2;
   gsl_filter_gaussian_workspace *w;
+  size_t state_size;
 
   w = calloc(1, sizeof(gsl_filter_gaussian_workspace));
   if (w == 0)
@@ -52,8 +73,7 @@ gsl_filter_gaussian_alloc(const size_t K)
       GSL_ERROR_NULL ("failed to allocate space for workspace", GSL_ENOMEM);
     }
 
-  w->H = K / 2;
-  w->K = 2 * w->H + 1;
+  w->K = 2 * H + 1;
 
   w->kernel = malloc(w->K * sizeof(double));
   if (w->kernel == 0)
@@ -61,6 +81,15 @@ gsl_filter_gaussian_alloc(const size_t K)
       gsl_filter_gaussian_free(w);
       GSL_ERROR_NULL ("failed to allocate space for kernel", GSL_ENOMEM);
       return NULL;
+    }
+
+  state_size = gaussian_size(w->K);
+
+  w->movstat_workspace_p = gsl_movstat_alloc_with_size(state_size, H, H);
+  if (!w->movstat_workspace_p)
+    {
+      gsl_filter_gaussian_free(w);
+      GSL_ERROR_NULL ("failed to allocate space for movstat workspace", GSL_ENOMEM);
     }
 
   return w;
@@ -71,6 +100,9 @@ gsl_filter_gaussian_free(gsl_filter_gaussian_workspace * w)
 {
   if (w->kernel)
     free(w->kernel);
+
+  if (w->movstat_workspace_p)
+    gsl_movstat_free(w->movstat_workspace_p);
 
   free(w);
 }
@@ -105,29 +137,16 @@ gsl_filter_gaussian(const gsl_filter_end_t endtype, const double alpha, const si
     }
   else
     {
-      const size_t n = x->size;
+      int status;
       gsl_vector_view kernel = gsl_vector_view_array(w->kernel, w->K);
-      double *window = malloc(w->K * sizeof(double));
-      size_t i;
 
       /* construct Gaussian kernel of length K */
       gsl_filter_gaussian_kernel(alpha, order, 1, &kernel.vector);
 
-      for (i = 0; i < n; ++i)
-        {
-          size_t wsize = gsl_movstat_fill(endtype, x, i, w->H, w->H, window);
-          double sum = 0.0;
-          size_t j;
+      status = gsl_movstat_apply_accum(endtype, x, &gaussian_accum_type, (void *) w->kernel, y,
+                                       NULL, w->movstat_workspace_p);
 
-          for (j = 0; j < wsize; ++j)
-            sum += window[j] * w->kernel[wsize - j - 1];
-
-          gsl_vector_set(y, i, sum);
-        }
-
-      free(window);
-
-      return GSL_SUCCESS;
+      return status;
     }
 }
 
@@ -248,3 +267,78 @@ gsl_filter_gaussian_kernel(const double alpha, const size_t order, const int nor
       return GSL_SUCCESS;
     }
 }
+
+static size_t
+gaussian_size(const size_t n)
+{
+  size_t size = 0;
+
+  size += sizeof(gaussian_state_t);
+  size += n * sizeof(gaussian_type_t);
+  size += ringbuf_size(n);
+
+  return size;
+}
+
+static int
+gaussian_init(const size_t n, void * vstate)
+{
+  gaussian_state_t * state = (gaussian_state_t *) vstate;
+
+  state->n = n;
+
+  state->window = (gaussian_type_t *) ((unsigned char *) vstate + sizeof(gaussian_state_t));
+  state->rbuf = (ringbuf *) ((unsigned char *) state->window + n * sizeof(gaussian_type_t));
+
+  ringbuf_init(n, state->rbuf);
+
+  return GSL_SUCCESS;
+}
+
+static int
+gaussian_insert(const gaussian_type_t x, void * vstate)
+{
+  gaussian_state_t * state = (gaussian_state_t *) vstate;
+
+  /* add new element to ring buffer */
+  ringbuf_insert(x, state->rbuf);
+
+  return GSL_SUCCESS;
+}
+
+static int
+gaussian_delete(void * vstate)
+{
+  gaussian_state_t * state = (gaussian_state_t *) vstate;
+
+  if (!ringbuf_is_empty(state->rbuf))
+    ringbuf_pop_back(state->rbuf);
+
+  return GSL_SUCCESS;
+}
+
+static int
+gaussian_get(void * params, gaussian_type_t * result, const void * vstate)
+{
+  const gaussian_state_t * state = (const gaussian_state_t *) vstate;
+  const double * kernel = (const double *) params;
+  size_t n = ringbuf_copy(state->window, state->rbuf);
+  double sum = 0.0;
+  size_t i;
+
+  for (i = 0; i < n; ++i)
+    sum += state->window[i] * kernel[n - i - 1];
+
+  *result = sum;
+
+  return GSL_SUCCESS;
+}
+
+static const gsl_movstat_accum gaussian_accum_type =
+{
+  gaussian_size,
+  gaussian_init,
+  gaussian_insert,
+  gaussian_delete,
+  gaussian_get
+};

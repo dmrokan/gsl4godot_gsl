@@ -56,9 +56,9 @@ typedef enum
 /* workspace for Gaussian filter */
 typedef struct
 {
-  size_t H;        /* window half-length (K / 2) */
   size_t K;        /* window size */
   double *kernel;  /* Gaussian kernel, size K */
+  gsl_movstat_workspace *movstat_workspace_p;
 } gsl_filter_gaussian_workspace;
 
 gsl_filter_gaussian_workspace *gsl_filter_gaussian_alloc(const size_t K);
