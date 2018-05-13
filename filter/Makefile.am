@@ -6,7 +6,7 @@ AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslfilter_la_SOURCES = gaussian.c impulse.c median.c rmedian.c
 
-noinst_HEADERS = test_gaussian.c test_rmedian.c
+noinst_HEADERS = ringbuf.c test_gaussian.c test_rmedian.c
 
 check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)
