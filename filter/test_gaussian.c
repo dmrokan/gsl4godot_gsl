@@ -124,14 +124,12 @@ test_gaussian_proc(const double tol, const double alpha, const size_t order, con
   sprintf(buf, "n=%zu K=%zu endtype=%u alpha=%g order=%zu gaussian random", n, K, etype, alpha, order);
   compare_vectors(tol, z, y, buf);
 
-#if 0
   /* z = filter(x) in-place */
   gsl_vector_memcpy(z, x);
-  gsl_filter_gaussian(etype, alpha, 0, z, z, w);
+  gsl_filter_gaussian(etype, alpha, order, z, z, w);
 
-  sprintf(buf, "n=%zu K=%zu endtype=%u alpha=%g gaussian random in-place", n, K, etype, alpha);
+  sprintf(buf, "n=%zu K=%zu endtype=%u alpha=%g order=%zu gaussian random in-place", n, K, etype, alpha, order);
   compare_vectors(tol, z, y, buf);
-#endif
 
   gsl_filter_gaussian_free(w);
   gsl_vector_free(x);

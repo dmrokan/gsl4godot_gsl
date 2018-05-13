@@ -64,6 +64,7 @@ analytic expression above. The same principle applies to higher order derivative
    storing the output in :data:`y`. The derivative order is specified by :data:`order`, with
    :code:`0` corresponding to a Gaussian, :code:`1` corresponding to a first derivative
    Gaussian, and so on. The parameter :data:`endtype` specifies how the signal end points are handled.
+   It is allowed for :data:`x` = :data:`y` for an in-place filter.
 
 .. function:: int gsl_filter_gaussian_kernel(const double alpha, const size_t order, const int normalize, gsl_vector * kernel)
 
