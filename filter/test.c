@@ -60,15 +60,8 @@ random_vector(gsl_vector * v, gsl_rng * r)
     }
 }
 
-/* find median of array z of length n by sorting */
-static double
-median_find(const size_t n, double * z)
-{
-  gsl_sort(z, 1, n);
-  return gsl_stats_median_from_sorted_data(z, 1, n);
-}
-
 #include "test_gaussian.c"
+#include "test_median.c"
 #include "test_rmedian.c"
 
 int
@@ -77,6 +70,7 @@ main()
   gsl_rng * r = gsl_rng_alloc(gsl_rng_default);
 
   test_gaussian(r);
+  test_median(r);
   /*XXXtest_rmedian(r);*/
 
   gsl_rng_free(r);

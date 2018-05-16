@@ -2,8 +2,8 @@
 
 ** added new module for digital filtering (gsl_filter); current filters include:
      Gaussian filter
-     Median filter
-     Impulse detection filter
+     median filter
+     impulse detection filter
 
 ** added new module for moving window statistics (gsl_movstat)
 
