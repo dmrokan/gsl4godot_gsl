@@ -1,5 +1,7 @@
 * What is new in gsl-2.5:
 
+** added Wishart distribution (Timothée Flutre)
+
 ** added new module for digital filtering (gsl_filter); current filters include:
      Gaussian filter
      median filter
