@@ -9,6 +9,7 @@ libgslmovstat_la_SOURCES = \
   apply.c                  \
   fill.c                   \
   funcacc.c                \
+	madacc.c                 \
 	medacc.c                 \
 	mmacc.c                  \
 	movmad.c                 \

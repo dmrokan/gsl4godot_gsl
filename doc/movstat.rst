@@ -517,6 +517,28 @@ the presence of the outliers. The program is given below.
 .. include:: examples/movstat2.c
    :code:
 
+Example 3: User-defined Moving Window
+-------------------------------------
+
+This example program illustrates how a user can define their own moving window function to apply
+to an input vector. It constructs a random noisy time series of length :math:`N = 1000` with
+some outliers added. Then it applies a moving window trimmed mean to the time series with
+trim parameter :math:`\alpha = 0.1`. The length of the moving window is :math:`K = 11`, so
+the smallest and largest sample of each window is discarded prior to computing the mean.
+The results are shown in :numref:`fig_movstat3`.
+
+.. _fig_movstat3:
+
+.. figure:: /images/movstat3.png
+   :scale: 60%
+
+   Noisy time series data (black) with moving window trimmed mean (red)
+
+The program is given below.
+
+.. include:: examples/movstat3.c
+   :code:
+
 References and Further Reading
 ==============================
 
