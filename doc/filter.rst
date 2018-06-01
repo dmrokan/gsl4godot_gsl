@@ -134,9 +134,10 @@ left unchanged by the filter.  So there is no need to apply a recursive median f
 
    This function frees the memory associated with :data:`w`.
 
-.. function:: int gsl_filter_rmedian(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w)
+.. function:: int gsl_filter_rmedian(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w)
 
-   This function applies a recursive median filter to the input :data:`x`, storing the output in :data:`y`. It
+   This function applies a recursive median filter to the input :data:`x`, storing the output in :data:`y`.
+   The parameter :data:`endtype` specifies how the signal end points are handled. It
    is allowed to have :data:`x` = :data:`y` for an in-place filter.
 
 Impulse Detection Filter
