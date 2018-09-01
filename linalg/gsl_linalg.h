@@ -394,6 +394,11 @@ int gsl_linalg_COD_matZ(const gsl_matrix * QRZT, const gsl_vector * tau_Z, const
 
 int gsl_linalg_LQ_decomp (gsl_matrix * A, gsl_vector * tau);
 
+int gsl_linalg_LQ_lssolve(const gsl_matrix * LQ, const gsl_vector * tau,
+                          const gsl_vector * b, gsl_vector * x, gsl_vector * residual);
+
+int gsl_linalg_LQ_QTvec(const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * v);
+
 int gsl_linalg_LQ_solve_T (const gsl_matrix * LQ, const gsl_vector * tau, 
 			 const gsl_vector * b, gsl_vector * x);
 
