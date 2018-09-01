@@ -474,6 +474,16 @@ where :math:`Q_1` consists of the first :math:`M` rows of :math:`Q`, and :math:`
 contains the remaining :math:`N - M` rows. The :math:`LQ` factorization of :math:`A`
 is essentially the same as the :ref:`QR factorization <linalg-qr>` of :math:`A^T`.
 
+The :math:`LQ` factorization may be used to find the minimum norm solution of
+an underdetermined system of equations :math:`A x = b`, where :math:`A` is
+:math:`M`-by-:math:`N` and :math:`M \le N`. The solution is
+
+.. math:: x = Q^T
+              \begin{pmatrix}
+                L_1^{-1} b \\
+                0
+              \end{pmatrix}
+
 .. function:: int gsl_linalg_LQ_decomp (gsl_matrix * A, gsl_vector * tau)
 
    This function factorizes the :math:`M`-by-:math:`N` matrix :data:`A` into
@@ -488,11 +498,24 @@ is essentially the same as the :ref:`QR factorization <linalg-qr>` of :math:`A^T
    Householder vector :math:`v_i = (0,...,1,A(i,i+1),A(i,i+2),...,A(i,N))`.
    This is the same storage scheme as used by |lapack|.
 
+.. function:: int gsl_linalg_LQ_lssolve (const gsl_matrix * LQ, const gsl_vector * tau, const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
+
+   This function finds the minimum norm least squares solution to the underdetermined system :math:`A x = b`,
+   where the :math:`M`-by-:math:`N` matrix :data:`A` has :math:`M \le N`.
+   The routine requires as input the :math:`LQ` decomposition of :math:`A` into (:data:`LQ`, :data:`tau`)
+   given by :func:`gsl_linalg_LQ_decomp`.  The solution is returned in :data:`x`.  The
+   residual, :math:`b - Ax`, is computed as a by-product and stored in :data:`residual`.
+
 .. function:: int gsl_linalg_LQ_unpack (const gsl_matrix * LQ, const gsl_vector * tau, gsl_matrix * Q, gsl_matrix * L)
 
    This function unpacks the encoded :math:`LQ` decomposition
    (:data:`LQ`, :data:`tau`) into the matrices :data:`Q` and :data:`L`, where
    :data:`Q` is :math:`N`-by-:math:`N` and :data:`L` is :math:`M`-by-:math:`N`. 
+
+.. function:: int gsl_linalg_LQ_QTvec (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * v)
+
+   This function applies :math:`Q^T` to the vector :data:`v`, storing the result :math:`Q^T v` in
+   :data:`v` on output.
 
 .. index:: complete orthogonal decomposition
 

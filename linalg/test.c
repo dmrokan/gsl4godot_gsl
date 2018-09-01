@@ -3664,6 +3664,7 @@ main(void)
 
   gsl_test(test_LQ_decomp(),             "LQ Decomposition");
   gsl_test(test_LQ_LQsolve(),            "LQ LQ Solve");
+  gsl_test(test_LQ_lssolve_T(),          "LQ LS Solve_T");
   gsl_test(test_LQ_lssolve(),            "LQ LS Solve");
   gsl_test(test_LQ_update(),             "LQ Rank-1 Update");
   gsl_test(test_QRPT_decomp(),           "PTLQ Decomposition");

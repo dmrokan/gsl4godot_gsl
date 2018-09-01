@@ -1,4 +1,8 @@
-* What is new in gsl-2.5:
+* What is new in gsl-2.6:
+
+** documented gsl_linalg_LQ routines and added gsl_linalg_LQ_lssolve()
+
+* What was new in gsl-2.5:
 
 ** doc bug fix in binomial distribution figure (Damien Desfontaines)
 

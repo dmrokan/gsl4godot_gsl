@@ -592,13 +592,24 @@ gsl_linalg_LQ_lssolve(const gsl_matrix * LQ, const gsl_vector * tau, const gsl_v
     {
       gsl_matrix_const_view L1 = gsl_matrix_const_submatrix (LQ, 0, 0, M, M); /* L_1 */
       gsl_vector_view x1 = gsl_vector_subvector(x, 0, M);
+      size_t i;
 
       gsl_vector_memcpy(&x1.vector, b);
+
+      /* zero x(M+1:N) */
+      for (i = M; i < N; ++i)
+        gsl_vector_set(x, i, 0.0);
 
       /* compute z = L_1^{-1} b */
       gsl_blas_dtrsv(CblasLower, CblasNoTrans, CblasNonUnit, &L1.matrix, &x1.vector);
 
-      /* compute x = Q_1^T L_1^{-1} b */
+      /* residual = b - L_1 z */
+      gsl_vector_memcpy(residual, &x1.vector);
+      gsl_blas_dtrmv(CblasLower, CblasNoTrans, CblasNonUnit, &L1.matrix, residual);
+      gsl_vector_sub(residual, b);
+      gsl_vector_scale(residual, -1.0);
+
+      /* compute x = Q_1^T L_1^{-1} b = Q^T [ L_1^{-1} b ; 0 ] */
       gsl_linalg_LQ_QTvec(LQ, tau, x);
 
       return GSL_SUCCESS;
