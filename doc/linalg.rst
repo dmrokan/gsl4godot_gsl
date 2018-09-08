@@ -1612,6 +1612,97 @@ Triangular Systems
    is stored in :data:`rcond` on output, and is defined by :math:`1 / (||T||_1 \cdot ||T^{-1}||_1)`.
    Additional workspace of size :math:`3 N` is required in :data:`work`.
 
+.. index:: banded matrices
+
+Banded Systems
+==============
+
+.. index::
+   single: banded symmetric matrices
+   single: symmetric matrices, banded
+
+.. _sec_symmetric-banded:
+
+Symmetric Banded Format
+-----------------------
+
+Routines which operate on symmetric banded matrices require an input matrix
+with the following format.
+
+As an example, consider the following :math:`6 \times 6` symmetric banded matrix
+with lower bandwidth :math:`p = 2`:
+
+.. math::
+
+   A = \begin{pmatrix}
+         \alpha_1 & \beta_1 & \gamma_1 & 0 & 0 & 0 \\
+         \beta_1 & \alpha_2 & \beta_2 & \gamma_2 & 0 & 0 \\
+         \gamma_1 & \beta_2 & \alpha_3 & \beta_3 & \gamma_3 & 0 \\
+         0 & \gamma_2 & \beta_3 & \alpha_4 & \beta_4 & \gamma_4 \\
+         0 & 0 & \gamma_3 & \beta_4 & \alpha_5 & \beta_5 \\
+         0 & 0 & 0 & \gamma_4 & \beta_5 & \alpha_6
+       \end{pmatrix}
+
+The packed symmetric banded :math:`6 \times 3` matrix will look like:
+
+.. math::
+
+   AB = \begin{pmatrix}
+          \alpha_1 & \beta_1 & \gamma_1 \\
+          \alpha_2 & \beta_2 & \gamma_2 \\
+          \alpha_3 & \beta_3 & \gamma_3 \\
+          \alpha_4 & \beta_4 & \gamma_4 \\
+          \alpha_5 & \beta_5 & * \\
+          \alpha_6 & * & *
+        \end{pmatrix}
+
+The entries marked by :math:`*` are not referenced by the symmetric banded
+routines.
+
+.. index::
+   single: Cholesky decomposition, banded
+   single: banded Cholesky Decomposition
+
+Banded Cholesky Decomposition
+-----------------------------
+
+The routines in this section are designed to factor and solve linear
+systems of the form :math:`A x = b` where :math:`A` is a banded, symmetric,
+and positive definite matrix with lower bandwidth :math:`p`.
+
+.. function:: int gsl_linalg_cholesky_band_decomp(gsl_matrix * A)
+
+   This function factorizes the symmetric, positive-definite square matrix
+   :data:`A` into the Cholesky decomposition :math:`A = L L^T`. The input matrix
+   :data:`A` is given in :ref:`symmetric banded format <sec_symmetric-banded>`, and has dimensions
+   :math:`N`-by-:math:`(p + 1)`, where :math:`p` is the lower bandwidth of the matrix.
+   On output, the entries of :data:`A` are replaced by the entries of the matrix
+   :math:`L` in the same format.
+
+   If the matrix is not positive-definite then the decomposition will fail, returning the
+   error code :macro:`GSL_EDOM`. When testing whether a matrix is positive-definite, disable the error
+   handler first to avoid triggering an error.
+
+.. function:: int gsl_linalg_cholesky_band_solve (const gsl_matrix * LLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` using the Cholesky
+   decomposition of :math:`A` held in the matrix :data:`LLT` which must
+   have been previously computed by :func:`gsl_linalg_cholesky_band_decomp`.
+
+.. function:: int gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` in-place using the
+   Cholesky decomposition of :math:`A` held in the matrix :data:`LLT`
+   which must have been previously computed by :func:`gsl_linalg_cholesky_band_decomp`.
+   On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
+
+.. function:: int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
+
+   This function unpacks the lower triangular Cholesky factor from :data:`LLT` and stores
+   it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
+   upper triangular portion of :data:`L` is not referenced.
+
 .. index:: balancing matrices
 
 .. _balancing:

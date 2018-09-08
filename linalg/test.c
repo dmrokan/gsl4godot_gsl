@@ -3691,12 +3691,13 @@ main(void)
 
   gsl_test(test_cholesky_decomp_unit(),  "Cholesky Decomposition [unit triangular]");
   gsl_test(test_cholesky_solve(),        "Cholesky Solve");
-
   gsl_test(test_cholesky_decomp(r),      "Cholesky Decomposition");
   gsl_test(test_cholesky_invert(r),      "Cholesky Inverse");
+
   gsl_test(test_pcholesky_decomp(r),     "Pivoted Cholesky Decomposition");
   gsl_test(test_pcholesky_solve(r),      "Pivoted Cholesky Solve");
   gsl_test(test_pcholesky_invert(r),     "Pivoted Cholesky Inverse");
+
   gsl_test(test_mcholesky_decomp(r),     "Modified Cholesky Decomposition");
   gsl_test(test_mcholesky_solve(r),      "Modified Cholesky Solve");
   gsl_test(test_mcholesky_invert(r),     "Modified Cholesky Inverse");
@@ -3704,6 +3705,9 @@ main(void)
   gsl_test(test_choleskyc_decomp(),      "Complex Cholesky Decomposition");
   gsl_test(test_choleskyc_solve(),       "Complex Cholesky Solve");
   gsl_test(test_choleskyc_invert(),      "Complex Cholesky Inverse");
+
+  gsl_test(test_cholesky_band_decomp(r), "Banded Cholesky Decomposition");
+  gsl_test(test_cholesky_band_solve(r),  "Banded Cholesky Solve");
 
   gsl_test(test_HH_solve(),              "Householder solve");
   gsl_test(test_TDS_solve(),             "Tridiagonal symmetric solve");

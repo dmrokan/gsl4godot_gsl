@@ -431,7 +431,6 @@ test_mcholesky_solve_eps(const gsl_matrix * m, const gsl_vector * rhs,
   size_t i, N = m->size1;
   gsl_matrix * u  = gsl_matrix_alloc(N, N);
   gsl_vector * x = gsl_vector_calloc(N);
-  gsl_vector * S = gsl_vector_alloc(N);
   gsl_permutation * perm = gsl_permutation_alloc(N);
 
   gsl_matrix_memcpy(u, m);
@@ -450,7 +449,6 @@ test_mcholesky_solve_eps(const gsl_matrix * m, const gsl_vector * rhs,
     }
 
   gsl_vector_free(x);
-  gsl_vector_free(S);
   gsl_matrix_free(u);
   gsl_permutation_free(perm);
 
@@ -872,6 +870,134 @@ test_pcholesky_invert(gsl_rng * r)
         }
 
       gsl_matrix_free(m);
+    }
+
+  return s;
+}
+
+static int
+test_cholesky_band_decomp_eps(const size_t p, const gsl_matrix * m, const double eps, const char * desc)
+{
+  int s = 0;
+  size_t i, j, N = m->size2;
+
+  gsl_matrix * V  = gsl_matrix_alloc(N, p + 1);
+  gsl_matrix * A  = gsl_matrix_alloc(N, N);
+  gsl_matrix * L  = gsl_matrix_calloc(N, N);
+  gsl_matrix * LT = gsl_matrix_calloc(N, N);
+
+  /* convert m to packed banded format */
+  symm2band_matrix(p, m, V);
+
+  s += gsl_linalg_cholesky_band_decomp(V);
+
+  /* compute L and LT */
+  gsl_linalg_cholesky_band_unpack(V, L);
+  gsl_matrix_transpose_tricpy('L', 1, LT, L);
+  
+  /* compute A = L LT */
+  gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, L, LT, 0.0, A);
+
+  for (i = 0; i < N; i++)
+    {
+      for (j = 0; j < N; j++)
+        {
+          double Aij = gsl_matrix_get(A, i, j);
+          double mij = gsl_matrix_get(m, i, j);
+
+          gsl_test_rel(Aij, mij, eps,
+                       "%s: (p=%zu,N=%zu)[%lu,%lu]: %22.18g   %22.18g\n",
+                       desc, p, N, i, j, Aij, mij);
+        }
+    }
+
+  gsl_matrix_free(V);
+  gsl_matrix_free(A);
+  gsl_matrix_free(L);
+  gsl_matrix_free(LT);
+
+  return s;
+}
+
+static int
+test_cholesky_band_decomp(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 50;
+  size_t N, p;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      gsl_matrix * m = gsl_matrix_alloc(N, N);
+
+      for (p = 0; p < GSL_MIN(N, 10); ++p)
+        {
+          create_posdef_band_matrix(p, m, r);
+          s += test_cholesky_band_decomp_eps(p, m, 1.0e2 * N * GSL_DBL_EPSILON, "cholesky_band_decomp random");
+        }
+
+      gsl_matrix_free(m);
+    }
+
+  return s;
+}
+
+int
+test_cholesky_band_solve_eps(const size_t p, const gsl_matrix * m, const gsl_vector * rhs,
+                             const gsl_vector * sol, const double eps, const char * desc)
+{
+  int s = 0;
+  size_t i, N = m->size1;
+  gsl_matrix * u  = gsl_matrix_alloc(N, p + 1);
+  gsl_vector * x = gsl_vector_calloc(N);
+
+  /* convert m to packed banded format */
+  symm2band_matrix(p, m, u);
+
+  s += gsl_linalg_cholesky_band_decomp(u);
+  s += gsl_linalg_cholesky_band_solve(u, rhs, x);
+
+  for (i = 0; i < N; i++)
+    {
+      double xi = gsl_vector_get(x, i);
+      double yi = gsl_vector_get(sol, i);
+
+      gsl_test_rel(xi, yi, eps,
+                   "%s: p=%zu N=%zu [%lu]: %22.18g   %22.18g\n",
+                   desc, p, N, i, xi, yi);
+    }
+
+  gsl_vector_free(x);
+  gsl_matrix_free(u);
+
+  return s;
+}
+
+static int
+test_cholesky_band_solve(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 50;
+  size_t N, p;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      gsl_matrix * m = gsl_matrix_alloc(N, N);
+      gsl_vector * rhs = gsl_vector_alloc(N);
+      gsl_vector * sol = gsl_vector_alloc(N);
+
+      for (p = 0; p < GSL_MIN(N, 10); ++p)
+        {
+          create_posdef_band_matrix(p, m, r);
+          create_random_vector(sol, r);
+          gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
+
+          test_cholesky_band_solve_eps(p, m, rhs, sol, 64.0 * N * GSL_DBL_EPSILON, "cholesky_band_solve random");
+        }
+
+      gsl_matrix_free(m);
+      gsl_vector_free(rhs);
+      gsl_vector_free(sol);
     }
 
   return s;

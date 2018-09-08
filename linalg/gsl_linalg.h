@@ -582,6 +582,17 @@ int gsl_linalg_mcholesky_rcond (const gsl_matrix * LDLT, const gsl_permutation *
 int gsl_linalg_mcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
                                 gsl_matrix * Ainv);
 
+/* Banded Cholesky decomposition */
+
+int gsl_linalg_cholesky_band_decomp(gsl_matrix * A);
+
+int gsl_linalg_cholesky_band_solve (const gsl_matrix * LLT, const gsl_vector * b,
+                                    gsl_vector * x);
+
+int gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x);
+
+int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L);
+
 /* Symmetric to symmetric tridiagonal decomposition */
 
 int gsl_linalg_symmtd_decomp (gsl_matrix * A, 
