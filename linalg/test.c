@@ -3708,6 +3708,7 @@ main(void)
 
   gsl_test(test_cholesky_band_decomp(r), "Banded Cholesky Decomposition");
   gsl_test(test_cholesky_band_solve(r),  "Banded Cholesky Solve");
+  gsl_test(test_cholesky_band_invert(r), "Banded Cholesky Inverse");
 
   gsl_test(test_HH_solve(),              "Householder solve");
   gsl_test(test_TDS_solve(),             "Tridiagonal symmetric solve");

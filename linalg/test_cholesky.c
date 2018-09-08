@@ -1002,3 +1002,66 @@ test_cholesky_band_solve(gsl_rng * r)
 
   return s;
 }
+
+int
+test_cholesky_band_invert_eps(const size_t p, const gsl_matrix * m, const double eps, const char *desc)
+{
+  int s = 0;
+  size_t i, j, N = m->size1;
+
+  gsl_matrix * v  = gsl_matrix_alloc(N, p + 1);
+  gsl_matrix * minv  = gsl_matrix_alloc(N, N);
+  gsl_matrix * c  = gsl_matrix_alloc(N, N);
+
+  /* convert m to packed banded format */
+  symm2band_matrix(p, m, v);
+
+  s += gsl_linalg_cholesky_band_decomp(v);
+  s += gsl_linalg_cholesky_band_invert(v, minv);
+
+  /* c = m m^{-1} */
+  gsl_blas_dsymm(CblasLeft, CblasUpper, 1.0, m, minv, 0.0, c);
+
+  /* c should be the identity matrix */
+
+  for (i = 0; i < N; ++i)
+    {
+      for (j = 0; j < N; ++j)
+        {
+          double cij = gsl_matrix_get(c, i, j);
+          double expected = (i == j) ? 1.0 : 0.0;
+
+          gsl_test_rel(cij, expected, eps, "%s (p=%zu,N=%zu)[%lu,%lu]: %22.18g   %22.18g\n",
+                       desc, p, N, i, j, cij, expected);
+        }
+    }
+
+  gsl_matrix_free(v);
+  gsl_matrix_free(minv);
+  gsl_matrix_free(c);
+
+  return s;
+}
+
+int
+test_cholesky_band_invert(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 50;
+  size_t N, p;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      gsl_matrix * m = gsl_matrix_alloc(N, N);
+
+      for (p = 0; p < GSL_MIN(N, 10); ++p)
+        {
+          create_posdef_band_matrix(p, m, r);
+          test_cholesky_band_invert_eps(p, m, N * GSL_DBL_EPSILON, "cholesky_band_invert random");
+        }
+
+      gsl_matrix_free(m);
+    }
+
+  return s;
+}

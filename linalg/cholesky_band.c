@@ -127,6 +127,35 @@ gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x)
 }
 
 int
+gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv)
+{
+  if (Ainv->size1 != Ainv->size2)
+    {
+      GSL_ERROR("Ainv must be square", GSL_ENOTSQR);
+    }
+  else if (LLT->size1 != Ainv->size1)
+    {
+      GSL_ERROR("cholesky matrix has different dimensions from Ainv", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+
+      /* unpack Cholesky factor into lower triangle of Ainv */
+      status = gsl_linalg_cholesky_band_unpack(LLT, Ainv);
+      if (status)
+        return status;
+
+      /* call the standard Cholesky inversion routine */
+      status = gsl_linalg_cholesky_invert(Ainv);
+      if (status)
+        return status;
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
 gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
 {
   const size_t N = LLT->size1;
@@ -150,6 +179,13 @@ gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
           gsl_vector_view w = gsl_matrix_subdiagonal(L, i);
 
           gsl_vector_memcpy(&w.vector, &v.vector);
+        }
+
+      /* zero out remaining subdiagonals */
+      for (i = p + 1; i < N; ++i)
+        {
+          gsl_vector_view w = gsl_matrix_subdiagonal(L, i);
+          gsl_vector_set_zero(&w.vector);
         }
 
       return GSL_SUCCESS;

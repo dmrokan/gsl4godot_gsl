@@ -1659,6 +1659,14 @@ The packed symmetric banded :math:`6 \times 3` matrix will look like:
 The entries marked by :math:`*` are not referenced by the symmetric banded
 routines.
 
+.. warning::
+
+   Note that this format is the transpose of the symmetric banded format used by
+   |LAPACK|. In order to develop efficient routines for symmetric banded matrices,
+   it helps to have the nonzero elements in each column in contiguous memory locations.
+   Since C uses row-major order, GSL stores the columns in the rows of the packed
+   banded format, while |LAPACK|, written in Fortran, uses the transposed format.
+
 .. index::
    single: Cholesky decomposition, banded
    single: banded Cholesky Decomposition
@@ -1696,6 +1704,13 @@ and positive definite matrix with lower bandwidth :math:`p`.
    which must have been previously computed by :func:`gsl_linalg_cholesky_band_decomp`.
    On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the
    solution on output.
+
+.. function:: int gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv)
+
+   This function computes the inverse of a symmetric banded matrix from its Cholesky
+   decomposition :data:`LLT`, which must have been previously computed
+   by :func:`gsl_linalg_cholesky_band_decomp`. On output, the inverse is
+   stored in :data:`Ainv`, using both the lower and upper portions.
 
 .. function:: int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
 

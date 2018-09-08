@@ -591,6 +591,8 @@ int gsl_linalg_cholesky_band_solve (const gsl_matrix * LLT, const gsl_vector * b
 
 int gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x);
 
+int gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv);
+
 int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L);
 
 /* Symmetric to symmetric tridiagonal decomposition */
