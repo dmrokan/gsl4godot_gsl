@@ -27,6 +27,9 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_cblas.h>
 
+static double cholesky_band_norm1(const gsl_matrix * A);
+static int cholesky_band_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
+
 /*
 gsl_linalg_cholesky_band_decomp()
   Cholesky decomposition of a square symmetric positive definite banded
@@ -38,15 +41,29 @@ Inputs: A - matrix in banded format, N-by-ndiag where N is the size of
 Notes:
 1) The main diagonal is stored in the first column of A; the first subdiagonal
 in the second column and so on.
+
+2) If ndiag > 1, the 1-norm of A is stored in A(N,ndiag) on output
 */
 
 int
 gsl_linalg_cholesky_band_decomp(gsl_matrix * A)
 {
   const size_t N = A->size1;
-  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
+  const size_t ndiag = A->size2;               /* number of diagonals in band, including main diagonal */
   const int kld = GSL_MAX(1, (int) ndiag - 1);
   size_t j;
+
+  if (ndiag > 1)
+    {
+      /*
+       * calculate 1-norm of A and store in lower right of matrix, which is not accessed
+       * by rest of routine. gsl_linalg_cholesky_band_rcond() will use this later. If
+       * A is diagonal, there is no empty slot to store the 1-norm, so the rcond routine
+       * will have to reconstruct it from the Cholesky factor.
+       */
+      double Anorm = cholesky_band_norm1(A);
+      gsl_matrix_set(A, N - 1, ndiag - 1, Anorm);
+    }
 
   for (j = 0; j < N; ++j)
     {
@@ -190,4 +207,115 @@ gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
 
       return GSL_SUCCESS;
     }
+}
+
+int
+gsl_linalg_cholesky_band_rcond (const gsl_matrix * LLT, double * rcond, gsl_vector * work)
+{
+  const size_t N = LLT->size1;
+
+  if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      const size_t ndiag = LLT->size2;
+      double Anorm;    /* ||A||_1 */
+      double Ainvnorm; /* ||A^{-1}||_1 */
+
+      if (ndiag == 1)
+        {
+          /* diagonal matrix, compute 1-norm since it has not been stored */
+          gsl_vector_const_view v = gsl_matrix_const_column(LLT, 0);
+          Anorm = gsl_vector_max(&v.vector);
+          Anorm = Anorm * Anorm;
+        }
+      else
+        {
+          /* 1-norm is stored in A(N, ndiag) by gsl_linalg_cholesky_band_decomp() */
+          Anorm = gsl_matrix_get(LLT, N - 1, ndiag - 1);
+        }
+
+      *rcond = 0.0;
+
+      /* return if matrix is singular */
+      if (Anorm == 0.0)
+        return GSL_SUCCESS;
+
+      status = gsl_linalg_invnorm1(N, cholesky_band_Ainv, (void *) LLT, &Ainvnorm, work);
+      if (status)
+        return status;
+
+      if (Ainvnorm != 0.0)
+        *rcond = (1.0 / Anorm) / Ainvnorm;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* compute 1-norm of symmetric banded matrix */
+static double
+cholesky_band_norm1(const gsl_matrix * A)
+{
+  const size_t N = A->size1;
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
+  double value;
+
+  if (ndiag == 1)
+    {
+      /* diagonal matrix */
+      gsl_vector_const_view v = gsl_matrix_const_column(A, 0);
+      CBLAS_INDEX_t idx = gsl_blas_idamax(&v.vector);
+      value = gsl_vector_get(&v.vector, idx);
+    }
+  else
+    {
+      size_t j;
+
+      value = 0.0;
+      for (j = 0; j < N; ++j)
+        {
+          size_t ncol = GSL_MIN(ndiag, N - j); /* number of elements in column j below and including main diagonal */
+          gsl_vector_const_view v = gsl_matrix_const_subrow(A, j, 0, ncol);
+          double sum = gsl_blas_dasum(&v.vector);
+          size_t k, l;
+
+          /* sum now contains the absolute sum of elements below and including main diagonal for column j; we
+           * have to add the symmetric elements above the diagonal */
+          k = j;
+          l = 1;
+          while (k > 0 && l < ndiag)
+            {
+              double Akl = gsl_matrix_get(A, --k, l++);
+              sum += fabs(Akl);
+            }
+
+          value = GSL_MAX(value, sum);
+        }
+    }
+
+  return value;
+}
+
+/* x := A^{-1} x = A^{-t} x, A = L L^T */
+static int
+cholesky_band_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
+{
+  gsl_matrix * LLT = (gsl_matrix * ) params;
+
+  (void) TransA; /* unused parameter warning */
+
+  /* compute x := L^{-1} x */
+  cblas_dtbsv(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+              (int) LLT->size1, (int) (LLT->size2 - 1), LLT->data, LLT->tda,
+              x->data, x->stride);
+
+  /* compute x := L^{-T} x */
+  cblas_dtbsv(CblasColMajor, CblasLower, CblasTrans, CblasNonUnit,
+              (int) LLT->size1, (int) (LLT->size2 - 1), LLT->data, LLT->tda,
+              x->data, x->stride);
+
+  return GSL_SUCCESS;
 }

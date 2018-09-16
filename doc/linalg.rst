@@ -1685,7 +1685,9 @@ and positive definite matrix with lower bandwidth :math:`p`.
    :data:`A` is given in :ref:`symmetric banded format <sec_symmetric-banded>`, and has dimensions
    :math:`N`-by-:math:`(p + 1)`, where :math:`p` is the lower bandwidth of the matrix.
    On output, the entries of :data:`A` are replaced by the entries of the matrix
-   :math:`L` in the same format.
+   :math:`L` in the same format. In addition, the lower right element of :data:`A` is
+   used to store the matrix 1-norm, used later by :func:`gsl_linalg_cholesky_band_rcond` to
+   calculate the reciprocal condition number.
 
    If the matrix is not positive-definite then the decomposition will fail, returning the
    error code :macro:`GSL_EDOM`. When testing whether a matrix is positive-definite, disable the error
@@ -1717,6 +1719,13 @@ and positive definite matrix with lower bandwidth :math:`p`.
    This function unpacks the lower triangular Cholesky factor from :data:`LLT` and stores
    it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
    upper triangular portion of :data:`L` is not referenced.
+
+.. function:: int gsl_linalg_cholesky_band_rcond (const gsl_matrix * LLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric banded positive
+   definite matrix :math:`A`, using its Cholesky decomposition provided in :data:`LLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
+   in :data:`rcond`. Additional workspace of size :math:`3 N` is required in :data:`work`.
 
 .. index:: balancing matrices
 

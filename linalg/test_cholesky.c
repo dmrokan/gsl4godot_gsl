@@ -56,6 +56,23 @@ double hilb_rcond[] = { 1.000000000000e+00, 3.703703703704e-02, 1.336898395722e-
                         1.015027593823e-09, 2.952221630602e-11, 9.093751565191e-13,
                         2.828277420229e-14, 8.110242564869e-16, 2.409320075800e-17 };
 
+static double
+test_cholesky_norm1(const gsl_matrix * m)
+{
+  const size_t N = m->size2;
+  double value = 0.0;
+  size_t j;
+
+  for (j = 0; j < N; ++j)
+    {
+      gsl_vector_const_view v = gsl_matrix_const_column(m, j);
+      double sum = gsl_blas_dasum(&v.vector);
+      value = GSL_MAX(value, sum);
+    }
+
+  return value;
+}
+
 static int
 test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
                          const double expected_rcond, const double eps,
@@ -880,11 +897,13 @@ test_cholesky_band_decomp_eps(const size_t p, const gsl_matrix * m, const double
 {
   int s = 0;
   size_t i, j, N = m->size2;
+  double rcond_expected, rcond;
 
   gsl_matrix * V  = gsl_matrix_alloc(N, p + 1);
   gsl_matrix * A  = gsl_matrix_alloc(N, N);
   gsl_matrix * L  = gsl_matrix_calloc(N, N);
   gsl_matrix * LT = gsl_matrix_calloc(N, N);
+  gsl_vector * work = gsl_vector_alloc(3 * N);
 
   /* convert m to packed banded format */
   symm2band_matrix(p, m, V);
@@ -911,10 +930,31 @@ test_cholesky_band_decomp_eps(const size_t p, const gsl_matrix * m, const double
         }
     }
 
+  /* test 1-norm calculation */
+  if (p > 0)
+    {
+      double norm1_expected = test_cholesky_norm1(m);
+      double norm1 = gsl_matrix_get(V, N - 1, p);
+
+      gsl_test_rel(norm1, norm1_expected, eps,
+                   "%s: (p=%zu,N=%zu) 1-norm: %22.18g   %22.18g\n",
+                   desc, p, N, norm1, norm1_expected);
+    }
+
+  /* test rcond */
+  gsl_matrix_memcpy(A, m);
+  s += gsl_linalg_cholesky_decomp1(A);
+  s += gsl_linalg_cholesky_rcond(A, &rcond_expected, work);
+  s += gsl_linalg_cholesky_band_rcond(V, &rcond, work);
+  gsl_test_rel(rcond, rcond_expected, eps,
+               "%s: (p=%zu,N=%zu) rcond: %22.18g   %22.18g\n",
+               desc, p, N, rcond, rcond_expected);
+
   gsl_matrix_free(V);
   gsl_matrix_free(A);
   gsl_matrix_free(L);
   gsl_matrix_free(LT);
+  gsl_vector_free(work);
 
   return s;
 }
