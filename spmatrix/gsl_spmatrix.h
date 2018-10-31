@@ -113,7 +113,8 @@ typedef struct
       double *work_dbl;
     };
 
-  size_t sptype; /* sparse storage type */
+  size_t sptype;  /* sparse storage type */
+  size_t spflags; /* GSL_SPMATRIX_FLG_xxx */
 } gsl_spmatrix;
 
 #define GSL_SPMATRIX_TRIPLET      (0)
@@ -123,6 +124,9 @@ typedef struct
 #define GSL_SPMATRIX_ISTRIPLET(m) ((m)->sptype == GSL_SPMATRIX_TRIPLET)
 #define GSL_SPMATRIX_ISCCS(m)     ((m)->sptype == GSL_SPMATRIX_CCS)
 #define GSL_SPMATRIX_ISCRS(m)     ((m)->sptype == GSL_SPMATRIX_CRS)
+
+#define GSL_SPMATRIX_FLG_PATTERN      (1 << 0) /* assembling the matrix to determine sparsity pattern */
+#define GSL_SPMATRIX_FLG_FIXED        (1 << 1) /* matrix sparsity pattern has been fixed */
 
 /*
  * Prototypes

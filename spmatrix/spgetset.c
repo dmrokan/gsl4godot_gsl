@@ -109,8 +109,30 @@ gsl_spmatrix_set(gsl_spmatrix *m, const size_t i, const size_t j,
     {
       GSL_ERROR("matrix not in triplet representation", GSL_EINVAL);
     }
-  else if (x == 0.0)
+  else if (m->spflags & GSL_SPMATRIX_FLG_FIXED)
     {
+      /* traverse binary tree to search for (i,j) element */
+      void *ptr = tree_find(m, i, j);
+
+      if (ptr == NULL)
+        {
+          GSL_ERROR("attempt to add new matrix element to fixed sparsity pattern", GSL_EINVAL);
+        }
+      else
+        {
+          *(double *) ptr = x;
+        }
+
+      return GSL_SUCCESS;
+    }
+  else if (x == 0.0 && !(m->spflags & GSL_SPMATRIX_FLG_PATTERN))
+    {
+      /*
+       * don't add a 0 element to the matrix, unless we are assembling the matrix
+       * with GSL_SPMATRIX_FLG_PATTERN, in which case we are interested in the
+       * sparsity pattern which may be filled with a non-zero elemenet later
+       */
+
       /* traverse binary tree to search for (i,j) element */
       void *ptr = tree_find(m, i, j);
 
@@ -151,7 +173,7 @@ gsl_spmatrix_set(gsl_spmatrix *m, const size_t i, const size_t j,
         }
       else
         {
-          /* no duplicate (i,j) found, update indices as needed */
+          /* no duplicate (i,j) found */
 
           /* increase matrix dimensions if needed */
           m->size1 = GSL_MAX(m->size1, i + 1);
