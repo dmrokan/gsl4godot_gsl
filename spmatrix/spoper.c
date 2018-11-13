@@ -1,6 +1,6 @@
 /* spoper.c
  * 
- * Copyright (C) 2012 Patrick Alken
+ * Copyright (C) 2012, 2018 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,119 @@ gsl_spmatrix_scale(gsl_spmatrix *m, const double x)
     m->data[i] *= x;
 
   return GSL_SUCCESS;
-} /* gsl_spmatrix_scale() */
+}
+
+/* m := m * diag(x) */
+int
+gsl_spmatrix_scale_columns(gsl_spmatrix *m, const gsl_vector *x)
+{
+  if (m->size2 != x->size)
+    {
+      GSL_ERROR("x vector length does not match matrix", GSL_EBADLEN);
+    }
+  else
+    {
+      double *Ad = m->data;
+
+      if (GSL_SPMATRIX_ISCCS(m))
+        {
+          const size_t *Ap = m->p;
+          size_t j, p;
+
+          for (j = 0; j < m->size2; ++j)
+            {
+              double xj = gsl_vector_get(x, j);
+
+              for (p = Ap[j]; p < Ap[j + 1]; ++p)
+                Ad[p] *= xj;
+            }
+        }
+      else if (GSL_SPMATRIX_ISCRS(m))
+        {
+          const size_t *Aj = m->i;
+          size_t i;
+
+          for (i = 0; i < m->nz; ++i)
+            {
+              double y = gsl_vector_get(x, Aj[i]);
+              Ad[i] *= y;
+            }
+        }
+      else if (GSL_SPMATRIX_ISTRIPLET(m))
+        {
+          const size_t *Aj = m->p;
+          size_t i;
+
+          for (i = 0; i < m->nz; ++i)
+            {
+              double y = gsl_vector_get(x, Aj[i]);
+              Ad[i] *= y;
+            }
+        }
+      else
+        {
+          GSL_ERROR("unknown sparse matrix type", GSL_EINVAL);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* m := diag(x) * m */
+int
+gsl_spmatrix_scale_rows(gsl_spmatrix *m, const gsl_vector *x)
+{
+  if (m->size1 != x->size)
+    {
+      GSL_ERROR("x vector length does not match matrix", GSL_EBADLEN);
+    }
+  else
+    {
+      double *Ad = m->data;
+
+      if (GSL_SPMATRIX_ISCCS(m))
+        {
+          const size_t *Ai = m->i;
+          size_t i;
+
+          for (i = 0; i < m->nz; ++i)
+            {
+              double y = gsl_vector_get(x, Ai[i]);
+              Ad[i] *= y;
+            }
+        }
+      else if (GSL_SPMATRIX_ISCRS(m))
+        {
+          const size_t *Ap = m->p;
+          size_t i, p;
+
+          for (i = 0; i < m->size1; ++i)
+            {
+              double xi = gsl_vector_get(x, i);
+
+              for (p = Ap[i]; p < Ap[i + 1]; ++p)
+                Ad[p] *= xi;
+            }
+        }
+      else if (GSL_SPMATRIX_ISTRIPLET(m))
+        {
+          const size_t *Ai = m->i;
+          size_t i;
+
+          for (i = 0; i < m->nz; ++i)
+            {
+              double y = gsl_vector_get(x, Ai[i]);
+              Ad[i] *= y;
+            }
+        }
+      else
+        {
+          GSL_ERROR("unknown sparse matrix type", GSL_EINVAL);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
 
 int
 gsl_spmatrix_minmax(const gsl_spmatrix *m, double *min_out, double *max_out)

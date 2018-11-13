@@ -1,6 +1,6 @@
 /* test.c
  * 
- * Copyright (C) 2012-2014, 2016 Patrick Alken
+ * Copyright (C) 2012-2014, 2016, 2018 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,6 +97,18 @@ create_random_sparse_int(const size_t M, const size_t N, const double density,
     }
 
   return m;
+}
+
+static void
+create_random_vector(gsl_vector *v, const gsl_rng *r)
+{
+  size_t i;
+
+  for (i = 0; i < v->size; ++i)
+    {
+      double x = gsl_rng_uniform(r);
+      gsl_vector_set(v, i, x);
+    }
 }
 
 static void
@@ -518,7 +530,123 @@ test_transpose(const size_t M, const size_t N,
 }
 
 static void
-test_ops(const size_t M, const size_t N,
+test_scale(const double tol, const size_t M, const size_t N,
+           const double density, const gsl_rng *r)
+{
+  const double scale = 5.5;
+  gsl_spmatrix *A = create_random_sparse(M, N, density, r);
+  const size_t nz = A->nz;
+  size_t i;
+
+  /* test global scaling */
+  {
+    gsl_spmatrix *B = gsl_spmatrix_alloc_nzmax(A->size1, A->size2, nz, GSL_SPMATRIX_TRIPLET);
+    gsl_spmatrix *C = gsl_spmatrix_ccs(A);
+    gsl_spmatrix *D = gsl_spmatrix_crs(A);
+
+    gsl_spmatrix_memcpy(B, A);
+
+    gsl_spmatrix_scale(B, scale);
+    gsl_spmatrix_scale(C, scale);
+    gsl_spmatrix_scale(D, scale);
+
+    for (i = 0; i < nz; ++i)
+      {
+        double Aij = A->data[i];
+        double Bij = gsl_spmatrix_get(B, A->i[i], A->p[i]);
+        double Cij = gsl_spmatrix_get(C, A->i[i], A->p[i]);
+        double Dij = gsl_spmatrix_get(D, A->i[i], A->p[i]);
+
+        gsl_test_rel(Bij, scale * Aij, tol, "scale[%zu,%zu] COO scale=%g i=%zu",
+                     M, N, scale, i);
+        gsl_test_rel(Cij, scale * Aij, tol, "scale[%zu,%zu] CCS scale=%g i=%zu",
+                     M, N, scale, i);
+        gsl_test_rel(Dij, scale * Aij, tol, "scale[%zu,%zu] CRS scale=%g i=%zu",
+                     M, N, scale, i);
+      }
+
+    gsl_spmatrix_free(B);
+    gsl_spmatrix_free(C);
+    gsl_spmatrix_free(D);
+  }
+
+  /* test column scaling */
+  {
+    gsl_spmatrix *B = gsl_spmatrix_alloc_nzmax(A->size1, A->size2, nz, GSL_SPMATRIX_TRIPLET);
+    gsl_spmatrix *C = gsl_spmatrix_ccs(A);
+    gsl_spmatrix *D = gsl_spmatrix_crs(A);
+    gsl_vector *x = gsl_vector_alloc(A->size2);
+
+    create_random_vector(x, r);
+    gsl_spmatrix_memcpy(B, A);
+
+    gsl_spmatrix_scale_columns(B, x);
+    gsl_spmatrix_scale_columns(C, x);
+    gsl_spmatrix_scale_columns(D, x);
+
+    for (i = 0; i < nz; ++i)
+      {
+        double Aij = A->data[i];
+        double Bij = gsl_spmatrix_get(B, A->i[i], A->p[i]);
+        double Cij = gsl_spmatrix_get(C, A->i[i], A->p[i]);
+        double Dij = gsl_spmatrix_get(D, A->i[i], A->p[i]);
+        double xj = gsl_vector_get(x, A->p[i]);
+
+        gsl_test_rel(Bij, xj * Aij, tol, "scale_columns[%zu,%zu] COO xj=%g i=%zu",
+                     M, N, xj, i);
+        gsl_test_rel(Cij, xj * Aij, tol, "scale_columns[%zu,%zu] CCS xj=%g i=%zu",
+                     M, N, xj, i);
+        gsl_test_rel(Dij, xj * Aij, tol, "scale_columns[%zu,%zu] CRS xj=%g i=%zu",
+                     M, N, xj, i);
+      }
+
+    gsl_spmatrix_free(B);
+    gsl_spmatrix_free(C);
+    gsl_spmatrix_free(D);
+    gsl_vector_free(x);
+  }
+
+  /* test row scaling */
+  {
+    gsl_spmatrix *B = gsl_spmatrix_alloc_nzmax(A->size1, A->size2, nz, GSL_SPMATRIX_TRIPLET);
+    gsl_spmatrix *C = gsl_spmatrix_ccs(A);
+    gsl_spmatrix *D = gsl_spmatrix_crs(A);
+    gsl_vector *x = gsl_vector_alloc(A->size1);
+
+    create_random_vector(x, r);
+    gsl_spmatrix_memcpy(B, A);
+
+    gsl_spmatrix_scale_rows(B, x);
+    gsl_spmatrix_scale_rows(C, x);
+    gsl_spmatrix_scale_rows(D, x);
+
+    for (i = 0; i < nz; ++i)
+      {
+        double Aij = A->data[i];
+        double Bij = gsl_spmatrix_get(B, A->i[i], A->p[i]);
+        double Cij = gsl_spmatrix_get(C, A->i[i], A->p[i]);
+        double Dij = gsl_spmatrix_get(D, A->i[i], A->p[i]);
+        double xj = gsl_vector_get(x, A->i[i]);
+
+        gsl_test_rel(Bij, xj * Aij, tol, "scale_rows[%zu,%zu] COO xj=%g i=%zu",
+                     M, N, xj, i);
+        gsl_test_rel(Cij, xj * Aij, tol, "scale_rows[%zu,%zu] CCS xj=%g i=%zu",
+                     M, N, xj, i);
+        gsl_test_rel(Dij, xj * Aij, tol, "scale_rows[%zu,%zu] CRS xj=%g i=%zu",
+                     M, N, xj, i);
+      }
+
+    gsl_spmatrix_free(B);
+    gsl_spmatrix_free(C);
+    gsl_spmatrix_free(D);
+    gsl_vector_free(x);
+  }
+
+  gsl_spmatrix_free(A);
+}
+
+static void
+test_add(const size_t M, const size_t N,
          const double density, const gsl_rng *r)
 {
   size_t i, j;
@@ -561,8 +689,8 @@ test_ops(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 1, "test_ops: add M=%zu N=%zu CCS", M, N);
-    gsl_test(status == 2, "test_ops: add M=%zu N=%zu CRS", M, N);
+    gsl_test(status == 1, "test_add: add M=%zu N=%zu CCS", M, N);
+    gsl_test(status == 2, "test_add: add M=%zu N=%zu CRS", M, N);
 
     /* test again with C = 2*A */
     gsl_spmatrix_add(C_ccs, A_ccs, A_ccs);
@@ -573,7 +701,7 @@ test_ops(const size_t M, const size_t N,
       {
         for (j = 0; j < N; ++j)
           {
-            double aij, bij, cij;
+            double aij, cij;
 
             aij = gsl_spmatrix_get(A_ccs, i, j);
             cij = gsl_spmatrix_get(C_ccs, i, j);
@@ -587,8 +715,8 @@ test_ops(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 1, "test_ops: add duplicate M=%zu N=%zu CCS", M, N);
-    gsl_test(status == 2, "test_ops: add duplicate M=%zu N=%zu CRS", M, N);
+    gsl_test(status == 1, "test_add: add duplicate M=%zu N=%zu CCS", M, N);
+    gsl_test(status == 2, "test_add: add duplicate M=%zu N=%zu CRS", M, N);
 
     gsl_spmatrix_free(A);
     gsl_spmatrix_free(B);
@@ -599,7 +727,7 @@ test_ops(const size_t M, const size_t N,
     gsl_spmatrix_free(B_crs);
     gsl_spmatrix_free(C_crs);
   }
-} /* test_ops() */
+}
 
 static void
 test_io_ascii(const size_t M, const size_t N,
@@ -769,6 +897,7 @@ test_io_binary(const size_t M, const size_t N,
 int
 main()
 {
+  const double eps = 1.0e-10;
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
 
   test_memcpy(10, 10, 0.2, r);
@@ -786,10 +915,15 @@ main()
   test_transpose(40, 10, 0.3, r);
   test_transpose(57, 13, 0.2, r);
 
-  test_ops(20, 20, 0.2, r);
-  test_ops(50, 20, 0.3, r);
-  test_ops(20, 50, 0.3, r);
-  test_ops(76, 43, 0.4, r);
+  test_scale(eps, 100, 10, 0.3, r);
+  test_scale(eps, 60, 50, 0.2, r);
+  test_scale(eps, 50, 60, 0.2, r);
+  test_scale(eps, 50, 50, 0.3, r);
+
+  test_add(20, 20, 0.2, r);
+  test_add(50, 20, 0.3, r);
+  test_add(20, 50, 0.3, r);
+  test_add(76, 43, 0.4, r);
 
   test_io_ascii(30, 30, 0.3, r);
   test_io_ascii(20, 10, 0.2, r);

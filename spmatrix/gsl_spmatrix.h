@@ -168,6 +168,8 @@ int gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m);
 
 /* spoper.c */
 int gsl_spmatrix_scale(gsl_spmatrix *m, const double x);
+int gsl_spmatrix_scale_columns(gsl_spmatrix *m, const gsl_vector *x);
+int gsl_spmatrix_scale_rows(gsl_spmatrix *m, const gsl_vector *x);
 int gsl_spmatrix_minmax(const gsl_spmatrix *m, double *min_out,
                         double *max_out);
 int gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
