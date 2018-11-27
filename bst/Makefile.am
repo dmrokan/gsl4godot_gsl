@@ -11,4 +11,4 @@ AM_CPPFLAGS = -I$(top_srcdir)
 TESTS = $(check_PROGRAMS)
 
 test_SOURCES = test.c
-test_LDADD = libgslbst.la ../test/libgsltest.la ../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la ../sort/libgslsort.la ../rng/libgslrng.la
+test_LDADD = libgslbst.la ../test/libgsltest.la ../sys/libgslsys.la ../err/libgslerr.la ../sort/libgslsort.la ../rng/libgslrng.la

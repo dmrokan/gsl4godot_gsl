@@ -274,7 +274,7 @@ FUNCTION (test, getset) (const size_t M, const size_t N, const int sptype)
   /* test set_zero */
   FUNCTION (gsl_spmatrix, set_zero) (B);
   status = FUNCTION (gsl_spmatrix, nnz) (B) != 0;
-  gsl_test (status, NAME (gsl_spmatrix2) "_set_zero[%zu,%zu](%s) nnz=%zu",
+  gsl_test (status, NAME (gsl_spmatrix) "_set_zero[%zu,%zu](%s) nnz=%zu",
             M, N, FUNCTION (gsl_spmatrix, type) (B), FUNCTION (gsl_spmatrix, nnz) (B));
 
   if (B->sptype == GSL_SPMATRIX_COO)
