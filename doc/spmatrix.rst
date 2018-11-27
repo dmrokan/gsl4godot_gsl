@@ -488,6 +488,19 @@ Matrix Operations
 Matrix Properties
 =================
 
+.. function:: const char * gsl_spmatrix_type (const gsl_spmatrix * m)
+
+   This function returns a string describing the sparse storage format of
+   the matrix :data:`m`. For example::
+
+      printf ("matrix is '%s' format.\n", gsl_spmatrix_type (m));
+
+   would print something like::
+
+      matrix is 'CSR' format.
+
+   Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`, :ref:`CSC <sec_spmatrix-csc>`, :ref:`CSR <sec_spmatrix-csr>`
+
 .. function:: size_t gsl_spmatrix_nnz (const gsl_spmatrix * m)
 
    This function returns the number of non-zero elements in :data:`m`.

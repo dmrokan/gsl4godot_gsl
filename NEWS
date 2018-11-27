@@ -6,6 +6,7 @@
    - added routines and data structures for all types (float,uint,char,...)
    - added gsl_spmatrix_scale_columns() and gsl_spmatrix_scale_rows()
    - more efficient reallocation of COO/triplet matrices (no longer rebuilds binary tree)
+   - enhanced test suite
 
 ** add routines for banded Cholesky decomposition (gsl_linalg_cholesky_band_*)
 

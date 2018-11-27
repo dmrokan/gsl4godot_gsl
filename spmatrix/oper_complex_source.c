@@ -18,9 +18,8 @@
  */
 
 static size_t
-FUNCTION (spmatrix, scatter) (const TYPE (gsl_spmatrix) * A, const size_t j, const ATOMIC alpha,
-                              int * w, ATOMIC * x, const int mark, TYPE (gsl_spmatrix) * C,
-                              size_t nz);
+FUNCTION (spmatrix, scatter) (const TYPE (gsl_spmatrix) * A, const size_t j, int * w,
+                              ATOMIC * x, const int mark, TYPE (gsl_spmatrix) * C, size_t nz);
 
 int
 FUNCTION (gsl_spmatrix, scale) (TYPE (gsl_spmatrix) * m, const BASE x)
@@ -272,10 +271,10 @@ FUNCTION (gsl_spmatrix, add) (TYPE (gsl_spmatrix) * c, const TYPE (gsl_spmatrix)
           Cp[j] = nz;
 
           /* CSC: x += A(:,j); CSR: x += A(j,:) */
-          nz = FUNCTION (spmatrix, scatter) (a, j, (ATOMIC) 1, w, x, (int) (j + 1), c, nz);
+          nz = FUNCTION (spmatrix, scatter) (a, j, w, x, (int) (j + 1), c, nz);
 
           /* CSC: x += B(:,j); CSR: x += B(j,:) */
-          nz = FUNCTION (spmatrix, scatter) (b, j, (ATOMIC) 1, w, x, (int) (j + 1), c, nz);
+          nz = FUNCTION (spmatrix, scatter) (b, j, w, x, (int) (j + 1), c, nz);
 
           for (p = Cp[j]; p < (int) nz; ++p)
             {
@@ -418,7 +417,6 @@ matrices have been added via this function.
 
 Inputs: A     - sparse matrix m-by-n
         j     - column index
-        alpha - real scalar factor
         w     - keeps track which rows of column j have been added to C;
                 initialize to 0 prior to first call
         x     - column vector of length m
@@ -435,9 +433,8 @@ necessarily in order - ie: the row indices C->i may not be in ascending order.
 */
 
 static size_t
-FUNCTION (spmatrix, scatter) (const TYPE (gsl_spmatrix) * A, const size_t j, const ATOMIC alpha,
-                              int * w, ATOMIC * x, const int mark, TYPE (gsl_spmatrix) * C,
-                              size_t nz)
+FUNCTION (spmatrix, scatter) (const TYPE (gsl_spmatrix) * A, const size_t j, int * w,
+                              ATOMIC * x, const int mark, TYPE (gsl_spmatrix) * C, size_t nz)
 {
   int p;
   int * Ai = A->i;
@@ -447,19 +444,19 @@ FUNCTION (spmatrix, scatter) (const TYPE (gsl_spmatrix) * A, const size_t j, con
 
   for (p = Ap[j]; p < Ap[j + 1]; ++p)
     {
-      int i = Ai[p];                     /* A(i,j) is nonzero */
+      int i = Ai[p];             /* A(i,j) is nonzero */
 
-      if (w[i] < mark)                   /* check if row i has been stored in column j yet */
+      if (w[i] < mark)           /* check if row i has been stored in column j yet */
         {
-          w[i] = mark;                   /* i is new entry in column j */
-          Ci[nz++] = i;                  /* add i to pattern of C(:,j) */
-          x[2*i] = alpha * Ad[2*p];      /* x(i) = alpha * A(i,j) */
-          x[2*i+1] = alpha * Ad[2*p+1];
+          w[i] = mark;           /* i is new entry in column j */
+          Ci[nz++] = i;          /* add i to pattern of C(:,j) */
+          x[2*i] = Ad[2*p];      /* x(i) = A(i,j) */
+          x[2*i+1] = Ad[2*p+1];
         }
-      else                               /* this (i,j) exists in C from a previous call */
+      else                       /* this (i,j) exists in C from a previous call */
         {
-          x[2*i] += alpha * Ad[2*p];     /* add alpha*A(i,j) to C(i,j) */
-          x[2*i+1] += alpha * Ad[2*p+1];
+          x[2*i] += Ad[2*p];     /* add A(i,j) to C(i,j) */
+          x[2*i+1] += Ad[2*p+1];
         }
     }
 
