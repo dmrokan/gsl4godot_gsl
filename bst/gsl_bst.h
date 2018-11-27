@@ -43,8 +43,8 @@ typedef struct
   void (*free) (void * block, void * params);
 } gsl_bst_allocator;
 
-#include "gsl_bst_avl.h"
-#include "gsl_bst_rb.h"
+#include <gsl/gsl_bst_avl.h>
+#include <gsl/gsl_bst_rb.h>
 
 /* type of binary search tree */
 typedef struct

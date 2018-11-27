@@ -20,15 +20,14 @@
 
 /* This code is originally from GNU libavl, with some modifications */
 
-#include <stdio.h>
+#include <config.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_bst.h>
 #include <gsl/gsl_errno.h>
-
-#include "gsl_bst.h"
 
 typedef struct gsl_bst_avl_node avl_node;
 typedef gsl_bst_avl_table avl_table;

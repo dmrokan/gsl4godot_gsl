@@ -17,17 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <stdio.h>
+#include <config.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_bst.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_test.h>
-
-#include "gsl_bst.h"
 
 enum array_order
 {

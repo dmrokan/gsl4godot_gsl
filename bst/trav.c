@@ -17,15 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <stdio.h>
+#include <config.h>
 #include <stdlib.h>
 #include <math.h>
-#include <assert.h>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_bst.h>
 #include <gsl/gsl_errno.h>
-
-#include "gsl_bst.h"
 
 int
 gsl_bst_trav_init(gsl_bst_trav * trav, const gsl_bst_workspace * w)

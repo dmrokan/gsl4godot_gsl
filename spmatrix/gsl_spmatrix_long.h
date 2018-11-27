@@ -22,9 +22,9 @@
 
 #include <stdlib.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-#include <bst/gsl_bst.h>
+#include <gsl/gsl_bst.h>
+#include <gsl/gsl_vector_long.h>
+#include <gsl/gsl_matrix_long.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -39,13 +39,13 @@
 __BEGIN_DECLS
 
 /*
- * Triplet format:
+ * COO format:
  *
  * If data[n] = A_{ij}, then:
  *   i = A->i[n]
  *   j = A->p[n]
  *
- * Compressed column format (CCS):
+ * Compressed column format (CSC):
  *
  * If data[n] = A_{ij}, then:
  *   i = A->i[n]
@@ -53,7 +53,7 @@ __BEGIN_DECLS
  * so that column j is stored in
  * [ data[p[j]], data[p[j] + 1], ..., data[p[j+1] - 1] ]
  *
- * Compressed row format (CRS):
+ * Compressed row format (CSR):
  *
  * If data[n] = A_{ij}, then:
  *   j = A->i[n]
@@ -69,19 +69,17 @@ typedef struct
 
   /* i (size nzmax) contains:
    *
-   * Triplet/CCS: row indices
-   * CRS: column indices
+   * COO/CSC: row indices
+   * CSR: column indices
    */
   int *i;
 
   long *data;               /* matrix elements of size nzmax */
 
   /*
-   * p contains the column indices (triplet) or column pointers (compcol)
-   *
-   * triplet: p[n] = column number of element data[n]
-   * CCS:     p[j] = index in data of first non-zero element in column j
-   * CRS:     p[i] = index in data of first non-zero element in row i
+   * COO: p[n] = column number of element data[n]
+   * CSC: p[j] = index in data of first non-zero element in column j
+   * CSR: p[i] = index in data of first non-zero element in row i
    */
   int *p;
 

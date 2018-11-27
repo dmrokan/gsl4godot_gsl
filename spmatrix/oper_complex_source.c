@@ -409,7 +409,7 @@ FUNCTION (gsl_spmatrix, sp2d) (TYPE (gsl_matrix) * A, const TYPE (gsl_spmatrix) 
 /*
 spmatrix_scatter()
 
-  Keep a running total x -> x + alpha*A(:,j) for adding matrices together in CCS,
+  Keep a running total x -> x + alpha*A(:,j) for adding matrices together in CSC,
 which will eventually be stored in C(:,j)
 
   When a new non-zero element with row index i is found, update C->i with
@@ -428,7 +428,7 @@ Inputs: A     - sparse matrix m-by-n
 
 Notes:
 1) This function is designed to be called successively when adding multiple
-matrices together. Column j of C is stored contiguously as per CCS but not
+matrices together. Column j of C is stored contiguously as per CSC but not
 necessarily in order - ie: the row indices C->i may not be in ascending order.
 
 2) based on CSparse routine cs_scatter

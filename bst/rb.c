@@ -20,16 +20,14 @@
 
 /* This code is originally from GNU libavl, with some modifications */
 
-#include <assert.h>
-#include <stdio.h>
+#include <config.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_bst.h>
 #include <gsl/gsl_errno.h>
-
-#include "gsl_bst.h"
 
 typedef struct gsl_bst_rb_node rb_node;
 typedef gsl_bst_rb_table rb_table;
