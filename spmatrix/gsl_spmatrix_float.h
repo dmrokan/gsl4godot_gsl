@@ -123,12 +123,12 @@ int gsl_spmatrix_float_tree_rebuild (gsl_spmatrix_float * m);
 
 /* compress */
 
-gsl_spmatrix_float * gsl_spmatrix_float_csc (const gsl_spmatrix_float * T);
-gsl_spmatrix_float * gsl_spmatrix_float_compcol (const gsl_spmatrix_float * T);
-gsl_spmatrix_float * gsl_spmatrix_float_ccs (const gsl_spmatrix_float * T);
-gsl_spmatrix_float * gsl_spmatrix_float_csr (const gsl_spmatrix_float * T);
-gsl_spmatrix_float * gsl_spmatrix_float_crs (const gsl_spmatrix_float * T);
-gsl_spmatrix_float * gsl_spmatrix_float_compress (const gsl_spmatrix_float * T, const int sptype);
+int gsl_spmatrix_float_csc (gsl_spmatrix_float * dest, const gsl_spmatrix_float * src);
+int gsl_spmatrix_float_csr (gsl_spmatrix_float * dest, const gsl_spmatrix_float * src);
+gsl_spmatrix_float * gsl_spmatrix_float_compress (const gsl_spmatrix_float * src, const int sptype);
+gsl_spmatrix_float * gsl_spmatrix_float_compcol (const gsl_spmatrix_float * src);
+gsl_spmatrix_float * gsl_spmatrix_float_ccs (const gsl_spmatrix_float * src);
+gsl_spmatrix_float * gsl_spmatrix_float_crs (const gsl_spmatrix_float * src);
 
 /* copy */
 

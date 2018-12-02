@@ -223,7 +223,7 @@ The basic structure is called :type:`gsl_spmatrix`.
    searches and duplicate detection during the matrix assembly process.
    The parameter :data:`work` is additional workspace needed for various operations like
    converting from triplet to compressed storage. :data:`sptype` indicates
-   the type of storage format being used (triplet, CCS or CRS).
+   the type of storage format being used (COO, CSC or CSR).
 
    The compressed storage format defined above makes it very simple
    to interface with sophisticated external linear solver libraries
@@ -269,17 +269,17 @@ to returning a null pointer.
    reallocation calls required. The parameter :data:`sptype` specifies the
    storage format of the sparse matrix. Possible values are
 
-   .. macro:: GSL_SPMATRIX_TRIPLET
+   .. macro:: GSL_SPMATRIX_COO
 
-      This flag specifies triplet storage.
+      This flag specifies coordinate (triplet) storage.
 
-   .. macro:: GSL_SPMATRIX_CCS
+   .. macro:: GSL_SPMATRIX_CSC
 
-      This flag specifies compressed column storage.
+      This flag specifies compressed sparse column storage.
 
-   .. macro:: GSL_SPMATRIX_CRS
+   .. macro:: GSL_SPMATRIX_CSR
 
-      This flag specifies compressed row storage.
+      This flag specifies compressed sparse row storage.
 
    The allocated :type:`gsl_spmatrix` structure is of size :math:`O(nzmax)`.
 
@@ -537,23 +537,29 @@ Compressed Format
 
 These routines calculate a compressed matrix from a coordinate representation.
 
-.. function:: gsl_spmatrix * gsl_spmatrix_csc (const gsl_spmatrix * T)
+.. function:: int gsl_spmatrix_csc (gsl_spmatrix * dest, const gsl_spmatrix * src)
 
    This function creates a sparse matrix in :ref:`compressed sparse column <sec_spmatrix-csc>`
-   format from the input sparse matrix :data:`T` which must be in COO format.
-   A pointer to a newly allocated matrix is returned. The calling function
-   should free the newly allocated matrix when it is no longer needed.
+   format from the input sparse matrix :data:`src` which must be in COO format. The
+   compressed matrix is stored in :data:`dest`.
 
    Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`
 
-.. function:: gsl_spmatrix * gsl_spmatrix_csr (const gsl_spmatrix * T)
+.. function:: int gsl_spmatrix_csr (gsl_spmatrix * dest, const gsl_spmatrix * src)
 
    This function creates a sparse matrix in :ref:`compressed sparse row <sec_spmatrix-csr>`
-   format from the input sparse matrix :data:`T` which must be in COO format.
-   A pointer to a newly allocated matrix is returned. The calling function
-   should free the newly allocated matrix when it is no longer needed.
+   format from the input sparse matrix :data:`src` which must be in COO format. The
+   compressed matrix is stored in :data:`dest`.
 
    Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`
+
+.. function:: gsl_spmatrix * gsl_spmatrix_compress (const gsl_spmatrix * src, const int sptype)
+
+   This function allocates a new sparse matrix, and stores :data:`src` into it using the
+   format specified by :data:`sptype`. The input :data:`sptype` can be one of
+   :macro:`GSL_SPMATRIX_COO`, :macro:`GSL_SPMATRIX_CSC`, or :macro:`GSL_SPMATRIX_CSR`.
+   A pointer to the newly allocated matrix is returned, and must be freed by the caller
+   when no longer needed.
 
 .. index::
    single: sparse matrices, conversion

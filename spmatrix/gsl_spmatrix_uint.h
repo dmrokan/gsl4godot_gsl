@@ -123,12 +123,12 @@ int gsl_spmatrix_uint_tree_rebuild (gsl_spmatrix_uint * m);
 
 /* compress */
 
-gsl_spmatrix_uint * gsl_spmatrix_uint_csc (const gsl_spmatrix_uint * T);
-gsl_spmatrix_uint * gsl_spmatrix_uint_compcol (const gsl_spmatrix_uint * T);
-gsl_spmatrix_uint * gsl_spmatrix_uint_ccs (const gsl_spmatrix_uint * T);
-gsl_spmatrix_uint * gsl_spmatrix_uint_csr (const gsl_spmatrix_uint * T);
-gsl_spmatrix_uint * gsl_spmatrix_uint_crs (const gsl_spmatrix_uint * T);
-gsl_spmatrix_uint * gsl_spmatrix_uint_compress (const gsl_spmatrix_uint * T, const int sptype);
+int gsl_spmatrix_uint_csc (gsl_spmatrix_uint * dest, const gsl_spmatrix_uint * src);
+int gsl_spmatrix_uint_csr (gsl_spmatrix_uint * dest, const gsl_spmatrix_uint * src);
+gsl_spmatrix_uint * gsl_spmatrix_uint_compress (const gsl_spmatrix_uint * src, const int sptype);
+gsl_spmatrix_uint * gsl_spmatrix_uint_compcol (const gsl_spmatrix_uint * src);
+gsl_spmatrix_uint * gsl_spmatrix_uint_ccs (const gsl_spmatrix_uint * src);
+gsl_spmatrix_uint * gsl_spmatrix_uint_crs (const gsl_spmatrix_uint * src);
 
 /* copy */
 

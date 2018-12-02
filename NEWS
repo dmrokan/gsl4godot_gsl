@@ -1,5 +1,7 @@
 * What is new in gsl-2.6:
 
+** add gsl_vector_memcpy_scale()
+
 ** remove -u flag to gsl-histogram
 
 ** updated spmatrix module

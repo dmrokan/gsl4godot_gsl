@@ -123,12 +123,12 @@ int gsl_spmatrix_ulong_tree_rebuild (gsl_spmatrix_ulong * m);
 
 /* compress */
 
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_csc (const gsl_spmatrix_ulong * T);
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_compcol (const gsl_spmatrix_ulong * T);
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_ccs (const gsl_spmatrix_ulong * T);
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_csr (const gsl_spmatrix_ulong * T);
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_crs (const gsl_spmatrix_ulong * T);
-gsl_spmatrix_ulong * gsl_spmatrix_ulong_compress (const gsl_spmatrix_ulong * T, const int sptype);
+int gsl_spmatrix_ulong_csc (gsl_spmatrix_ulong * dest, const gsl_spmatrix_ulong * src);
+int gsl_spmatrix_ulong_csr (gsl_spmatrix_ulong * dest, const gsl_spmatrix_ulong * src);
+gsl_spmatrix_ulong * gsl_spmatrix_ulong_compress (const gsl_spmatrix_ulong * src, const int sptype);
+gsl_spmatrix_ulong * gsl_spmatrix_ulong_compcol (const gsl_spmatrix_ulong * src);
+gsl_spmatrix_ulong * gsl_spmatrix_ulong_ccs (const gsl_spmatrix_ulong * src);
+gsl_spmatrix_ulong * gsl_spmatrix_ulong_crs (const gsl_spmatrix_ulong * src);
 
 /* copy */
 

@@ -26,168 +26,208 @@ Inputs: T - sparse matrix in triplet format
 Return: pointer to new matrix (should be freed when finished with it)
 */
 
-TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, csc) (const TYPE (gsl_spmatrix) * T)
+int
+FUNCTION (gsl_spmatrix, csc) (TYPE (gsl_spmatrix) * dest, const TYPE (gsl_spmatrix) * src)
 {
-  if (!GSL_SPMATRIX_ISCOO(T))
+  if (!GSL_SPMATRIX_ISCOO(src))
     {
-      GSL_ERROR_NULL("matrix must be in triplet/COO format", GSL_EINVAL);
+      GSL_ERROR_NULL("input matrix must be in COO format", GSL_EINVAL);
+    }
+  else if (!GSL_SPMATRIX_ISCSC(dest))
+    {
+      GSL_ERROR_NULL("output matrix must be in CSC format", GSL_EINVAL);
+    }
+  else if (src->size1 != dest->size1 || src->size2 != dest->size2)
+    {
+      GSL_ERROR("matrices must have same dimensions", GSL_EBADLEN);
     }
   else
     {
-      const int *Tj = T->p; /* column indices of triplet matrix */
-      int *Cp;              /* column pointers of compressed column matrix */
-      int *w;               /* copy of column pointers */
-      TYPE (gsl_spmatrix) * m;
+      int status;
+      const int *Tj = src->p; /* column indices of triplet matrix */
+      int *Cp;                /* column pointers of compressed column matrix */
+      int *w;                 /* copy of column pointers */
       size_t n, r;
 
-      m = FUNCTION (gsl_spmatrix, alloc_nzmax) (T->size1, T->size2, T->nz, GSL_SPMATRIX_CSC);
-      if (!m)
-        return NULL;
+      if (dest->nzmax < src->nz)
+        {
+          status = FUNCTION (gsl_spmatrix, realloc) (src->nz, dest);
+          if (status)
+            return status;
+        }
 
-      Cp = m->p;
+      Cp = dest->p;
 
       /* initialize column pointers to 0 */
-      for (n = 0; n < m->size2 + 1; ++n)
+      for (n = 0; n < dest->size2 + 1; ++n)
         Cp[n] = 0;
 
       /*
        * compute the number of elements in each column:
        * Cp[j] = # non-zero elements in column j
        */
-      for (n = 0; n < T->nz; ++n)
+      for (n = 0; n < src->nz; ++n)
         Cp[Tj[n]]++;
 
       /* compute column pointers: p[j] = p[j-1] + nnz[j-1] */
-      gsl_spmatrix_cumsum(m->size2, Cp);
+      gsl_spmatrix_cumsum(dest->size2, Cp);
 
       /* make a copy of the column pointers */
-      w = m->work.work_int;
-      for (n = 0; n < m->size2; ++n)
+      w = dest->work.work_int;
+      for (n = 0; n < dest->size2; ++n)
         w[n] = Cp[n];
 
       /* transfer data from triplet format to CSC */
-      for (n = 0; n < T->nz; ++n)
+      for (n = 0; n < src->nz; ++n)
         {
           int k = w[Tj[n]]++;
-          m->i[k] = T->i[n];
+          dest->i[k] = src->i[n];
 
           for (r = 0; r < MULTIPLICITY; ++r)
-            m->data[MULTIPLICITY * k + r] = T->data[MULTIPLICITY * n + r];
+            dest->data[MULTIPLICITY * k + r] = src->data[MULTIPLICITY * n + r];
         }
 
-      m->nz = T->nz;
+      dest->nz = src->nz;
 
-      return m;
+      return GSL_SUCCESS;
     }
 }
 
 /* XXX deprecated function */
 TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, compcol) (const TYPE (gsl_spmatrix) * T)
+FUNCTION (gsl_spmatrix, compcol) (const TYPE (gsl_spmatrix) * src)
 {
-  return FUNCTION (gsl_spmatrix, csc) (T);
+  return FUNCTION (gsl_spmatrix, ccs) (src);
 }
 
 /* XXX deprecated function */
 TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, ccs) (const TYPE (gsl_spmatrix) * T)
+FUNCTION (gsl_spmatrix, ccs) (const TYPE (gsl_spmatrix) * src)
 {
-  return FUNCTION (gsl_spmatrix, csc) (T);
+  TYPE (gsl_spmatrix) * dest = FUNCTION (gsl_spmatrix, alloc_nzmax) (src->size1, src->size2, src->nz, GSL_SPMATRIX_CSC);
+  FUNCTION (gsl_spmatrix, csc) (dest, src);
+  return dest;
 }
 
 /*
-gsl_spmatrix_crs()
+gsl_spmatrix_csr()
   Create a sparse matrix in compressed row format
 
-Inputs: T - sparse matrix in triplet format
+Inputs: dest - (output) sparse matrix in CSR format
+        src  - sparse matrix in triplet format
 
-Return: pointer to new matrix (should be freed when finished with it)
+Return: success/error
 */
 
-TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, csr) (const TYPE (gsl_spmatrix) * T)
+int
+FUNCTION (gsl_spmatrix, csr) (TYPE (gsl_spmatrix) * dest, const TYPE (gsl_spmatrix) * src)
 {
-  if (!GSL_SPMATRIX_ISCOO(T))
+  if (!GSL_SPMATRIX_ISCOO(src))
     {
-      GSL_ERROR_NULL("matrix must be in triplet/COO format", GSL_EINVAL);
+      GSL_ERROR("input matrix must be in COO format", GSL_EINVAL);
+    }
+  else if (!GSL_SPMATRIX_ISCSR(dest))
+    {
+      GSL_ERROR("output matrix must be in CSR format", GSL_EINVAL);
+    }
+  else if (src->size1 != dest->size1 || src->size2 != dest->size2)
+    {
+      GSL_ERROR("matrices must have same dimensions", GSL_EBADLEN);
     }
   else
     {
-      const int *Ti = T->i; /* row indices of triplet matrix */
-      int *Cp;              /* row pointers of compressed row matrix */
-      int *w;               /* copy of column pointers */
-      TYPE (gsl_spmatrix) * m;
+      int status;
+      const int *Ti = src->i; /* row indices of triplet matrix */
+      int *Cp;                /* row pointers of compressed row matrix */
+      int *w;                 /* copy of column pointers */
       size_t n, r;
 
-      m = FUNCTION (gsl_spmatrix, alloc_nzmax) (T->size1, T->size2, T->nz, GSL_SPMATRIX_CSR);
-      if (!m)
-        return NULL;
+      if (dest->nzmax < src->nz)
+        {
+          status = FUNCTION (gsl_spmatrix, realloc) (src->nz, dest);
+          if (status)
+            return status;
+        }
 
-      Cp = m->p;
+      Cp = dest->p;
 
       /* initialize row pointers to 0 */
-      for (n = 0; n < m->size1 + 1; ++n)
+      for (n = 0; n < dest->size1 + 1; ++n)
         Cp[n] = 0;
 
       /*
        * compute the number of elements in each row:
        * Cp[i] = # non-zero elements in row i
        */
-      for (n = 0; n < T->nz; ++n)
+      for (n = 0; n < src->nz; ++n)
         Cp[Ti[n]]++;
 
       /* compute row pointers: p[i] = p[i-1] + nnz[i-1] */
-      gsl_spmatrix_cumsum(m->size1, Cp);
+      gsl_spmatrix_cumsum(dest->size1, Cp);
 
       /* make a copy of the row pointers */
-      w = m->work.work_int;
-      for (n = 0; n < m->size1; ++n)
+      w = dest->work.work_int;
+      for (n = 0; n < dest->size1; ++n)
         w[n] = Cp[n];
 
       /* transfer data from triplet format to CSR */
-      for (n = 0; n < T->nz; ++n)
+      for (n = 0; n < src->nz; ++n)
         {
           int k = w[Ti[n]]++;
-          m->i[k] = T->p[n];
+          dest->i[k] = src->p[n];
 
           for (r = 0; r < MULTIPLICITY; ++r)
-            m->data[MULTIPLICITY * k + r] = T->data[MULTIPLICITY * n + r];
+            dest->data[MULTIPLICITY * k + r] = src->data[MULTIPLICITY * n + r];
         }
 
-      m->nz = T->nz;
+      dest->nz = src->nz;
 
-      return m;
+      return GSL_SUCCESS;
     }
 }
 
 /* XXX deprecated function */
 TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, crs) (const TYPE (gsl_spmatrix) * T)
+FUNCTION (gsl_spmatrix, crs) (const TYPE (gsl_spmatrix) * src)
 {
-  return FUNCTION (gsl_spmatrix, csr) (T);
+  TYPE (gsl_spmatrix) * dest = FUNCTION (gsl_spmatrix, alloc_nzmax) (src->size1, src->size2, src->nz, GSL_SPMATRIX_CSR);
+  FUNCTION (gsl_spmatrix, csr) (dest, src);
+  return dest;
 }
 
 TYPE (gsl_spmatrix) *
-FUNCTION (gsl_spmatrix, compress) (const TYPE (gsl_spmatrix) * T, const int sptype)
+FUNCTION (gsl_spmatrix, compress) (const TYPE (gsl_spmatrix) * src, const int sptype)
 {
+  int status = GSL_SUCCESS;
+  TYPE (gsl_spmatrix) * dest = FUNCTION (gsl_spmatrix, alloc_nzmax) (src->size1, src->size2, src->nz, sptype);
+
+  if (dest == NULL)
+    return NULL;
+
   if (sptype == GSL_SPMATRIX_CSC)
     {
-      return FUNCTION (gsl_spmatrix, csc) (T);
+      status = FUNCTION (gsl_spmatrix, csc) (dest, src);
     }
   else if (sptype == GSL_SPMATRIX_CSR)
     {
-      return FUNCTION (gsl_spmatrix, csr) (T);
+      status = FUNCTION (gsl_spmatrix, csr) (dest, src);
     }
   else if (sptype == GSL_SPMATRIX_COO)
     {
-      /* make a copy of T */
-      TYPE (gsl_spmatrix) * A = FUNCTION (gsl_spmatrix, alloc_nzmax) (T->size1, T->size2, T->nz, sptype);
-      FUNCTION (gsl_spmatrix, memcpy) (A, T);
-      return A;
+      /* make a copy of src */
+      status = FUNCTION (gsl_spmatrix, memcpy) (dest, src);
     }
   else
     {
-      GSL_ERROR_NULL ("unknown sparse matrix format", GSL_EINVAL);
+      status = GSL_EINVAL;
+      GSL_ERROR_NULL ("unknown sparse matrix format", status);
     }
+
+  if (status != GSL_SUCCESS)
+    {
+      FUNCTION (gsl_spmatrix, free) (dest);
+      return NULL;
+    }
+
+  return dest;
 }
