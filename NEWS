@@ -7,6 +7,7 @@
 ** updated spmatrix module
    - added routines and data structures for all types (float,uint,char,...)
    - added gsl_spmatrix_scale_columns() and gsl_spmatrix_scale_rows()
+   - added gsl_spmatrix_add_to_dense()
    - more efficient reallocation of COO/triplet matrices (no longer rebuilds binary tree)
    - enhanced test suite
 
