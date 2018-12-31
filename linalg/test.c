@@ -3654,7 +3654,6 @@ main(void)
   gsl_test(test_matmult_mod(),           "Matrix Multiply with Modification"); 
 #endif
 
-#if 0 /*XXX*/
   gsl_test(test_tri_invert(r),           "Triangular Inverse");
 
   gsl_test(test_bidiag_decomp(),         "Bidiagonal Decomposition");
@@ -3712,7 +3711,6 @@ main(void)
   gsl_test(test_cholesky_band_decomp(r), "Banded Cholesky Decomposition");
   gsl_test(test_cholesky_band_solve(r),  "Banded Cholesky Solve");
   gsl_test(test_cholesky_band_invert(r), "Banded Cholesky Inverse");
-#endif
 
   gsl_test(test_ldlt_decomp(r),          "LDLT Decomposition");
   gsl_test(test_ldlt_solve(r),           "LDLT Solve");
