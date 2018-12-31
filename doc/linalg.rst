@@ -1080,6 +1080,11 @@ well conditioned.
    The reciprocal condition number estimate, defined as :math:`1 / (||A + E||_1 \cdot ||(A + E)^{-1}||_1)`, is stored
    in :data:`rcond`.  Additional workspace of size :math:`3 N` is required in :data:`work`.
 
+.. index::
+   single: LDL decomposition
+   single: LDLT decomposition
+   single: Cholesky decomposition, square root free
+
 LDLT Decomposition
 ==================
 
