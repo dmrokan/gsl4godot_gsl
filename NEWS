@@ -2,6 +2,8 @@
 
 ** add gsl_vector_memcpy_scale()
 
+** add un-pivoted LDLT decomposition (gsl_linalg_ldlt_*)
+
 ** remove -u flag to gsl-histogram
 
 ** updated spmatrix module

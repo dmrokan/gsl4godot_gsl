@@ -388,8 +388,10 @@ double vander12_solution[] = {0.0, 0.0, 0.0, 0.0,
 
 gsl_matrix * moler10;
 
+#include "test_common.c"
 #include "test_cholesky.c"
 #include "test_cod.c"
+#include "test_ldlt.c"
 #include "test_lq.c"
 
 int
@@ -3652,6 +3654,7 @@ main(void)
   gsl_test(test_matmult_mod(),           "Matrix Multiply with Modification"); 
 #endif
 
+#if 0 /*XXX*/
   gsl_test(test_tri_invert(r),           "Triangular Inverse");
 
   gsl_test(test_bidiag_decomp(),         "Bidiagonal Decomposition");
@@ -3709,6 +3712,10 @@ main(void)
   gsl_test(test_cholesky_band_decomp(r), "Banded Cholesky Decomposition");
   gsl_test(test_cholesky_band_solve(r),  "Banded Cholesky Solve");
   gsl_test(test_cholesky_band_invert(r), "Banded Cholesky Inverse");
+#endif
+
+  gsl_test(test_ldlt_decomp(r),          "LDLT Decomposition");
+  gsl_test(test_ldlt_solve(r),           "LDLT Solve");
 
   gsl_test(test_HH_solve(),              "Householder solve");
   gsl_test(test_TDS_solve(),             "Tridiagonal symmetric solve");

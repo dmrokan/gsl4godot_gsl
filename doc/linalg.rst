@@ -933,11 +933,11 @@ both the scaled and unscaled systems.
 Pivoted Cholesky Decomposition
 ==============================
 
-A symmetric, positive definite square matrix :math:`A` has an alternate
+A symmetric positive semi-definite square matrix :math:`A` has an alternate
 Cholesky decomposition into a product of a lower unit triangular matrix :math:`L`,
-a diagonal matrix :math:`D` and :math:`L^T`, given by :math:`L D L^T`. This is
-equivalent to the Cholesky formulation discussed above, with
-the standard Cholesky lower triangular factor given by :math:`L D^{1 \over 2}`.
+a diagonal matrix :math:`D` and :math:`L^T`, given by :math:`L D L^T`. For
+postive definite matrices, this is equivalent to the Cholesky formulation discussed
+above, with the standard Cholesky lower triangular factor given by :math:`L D^{1 \over 2}`.
 For ill-conditioned matrices, it can help to use a pivoting strategy to
 prevent the entries of :math:`D` and :math:`L` from growing too large, and also
 ensure :math:`D_1 \ge D_2 \ge \cdots \ge D_n > 0`, where :math:`D_i` are
@@ -1079,6 +1079,53 @@ well conditioned.
    :math:`A + E`, using its pivoted Cholesky decomposition provided in :data:`LDLT`.
    The reciprocal condition number estimate, defined as :math:`1 / (||A + E||_1 \cdot ||(A + E)^{-1}||_1)`, is stored
    in :data:`rcond`.  Additional workspace of size :math:`3 N` is required in :data:`work`.
+
+LDLT Decomposition
+==================
+
+If :math:`A` is a symmetric, nonsingular square matrix, then it has a unique
+factorization of the form
+
+.. math:: A = L D L^T
+
+where :math:`L` is a unit lower triangular matrix and :math:`D` is diagonal.
+If :math:`A` is positive definite, then this factorization is equivalent
+to the Cholesky factorization, where the lower triangular Cholesky factor
+is :math:`L D^{\frac{1}{2}}`. Some indefinite matrices for which no
+Cholesky decomposition exists have an :math:`L D L^T` decomposition
+with negative entries in :math:`D`. The :math:`L D L^T` algorithm
+is sometimes referred to as the *square root free* Cholesky
+decomposition, as the algorithm does not require the computation of
+square roots. The algorithm is stable for positive definite matrices,
+but is not guaranteed to be stable for indefinite matrices.
+
+.. function:: int gsl_linalg_ldlt_decomp (gsl_matrix * A)
+
+   This function factorizes the symmetric, non-singular square matrix
+   :data:`A` into the decomposition :math:`A = L D L^T`.
+   On input, the values from the diagonal and lower-triangular
+   part of the matrix :data:`A` are used. The upper triangle of :data:`A`
+   is used as temporary workspace.  On output
+   the diagonal of :data:`A` contains the matrix :math:`D` and the lower
+   triangle of :data:`A` contains the unit lower triangular matrix :math:`L`.
+
+   If the matrix is detected to be singular, the function returns
+   the error code :macro:`GSL_EDOM`.
+
+.. function:: int gsl_linalg_ldlt_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the system :math:`A x = b` using the :math:`L D L^T`
+   decomposition of :math:`A` held in the matrix :data:`LDLT` which must
+   have been previously computed by :func:`gsl_linalg_ldlt_decomp`.
+
+.. function:: int gsl_linalg_ldlt_svx (const gsl_matrix * LDLT, gsl_vector * x)
+
+   This function solves the system :math:`A x = b` in-place using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT`
+   which must have been previously computed by
+   :func:`gsl_linalg_ldlt_decomp`.  On input :data:`x` should
+   contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
 
 .. index:: tridiagonal decomposition
 
