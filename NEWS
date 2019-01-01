@@ -2,7 +2,10 @@
 
 ** add gsl_vector_memcpy_scale()
 
-** add un-pivoted LDLT decomposition (gsl_linalg_ldlt_*)
+** add un-pivoted LDLT decomposition and its banded
+   variant (gsl_linalg_ldlt_* and gsl_linalg_ldlt_band_*)
+
+** add binary search tree module (gsl_bst); based on GNU libavl
 
 ** remove -u flag to gsl-histogram
 

@@ -605,6 +605,16 @@ int gsl_linalg_ldlt_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_ve
 
 int gsl_linalg_ldlt_svx (const gsl_matrix * LDLT, gsl_vector * x);
 
+/* Banded L D L^T decomposition */
+
+int gsl_linalg_ldlt_band_decomp (gsl_matrix * A, gsl_vector * work);
+
+int gsl_linalg_ldlt_band_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_vector * x);
+
+int gsl_linalg_ldlt_band_svx (const gsl_matrix * LDLT, gsl_vector * x);
+
+int gsl_linalg_ldlt_band_unpack (const gsl_matrix * LDLT, gsl_matrix * L, gsl_vector * D);
+
 /* Symmetric to symmetric tridiagonal decomposition */
 
 int gsl_linalg_symmtd_decomp (gsl_matrix * A, 

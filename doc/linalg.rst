@@ -1085,6 +1085,8 @@ well conditioned.
    single: LDLT decomposition
    single: Cholesky decomposition, square root free
 
+.. _sec_ldlt-decomposition:
+
 LDLT Decomposition
 ==================
 
@@ -1726,9 +1728,16 @@ routines.
 Banded Cholesky Decomposition
 -----------------------------
 
-The routines in this section are designed to factor and solve linear
-systems of the form :math:`A x = b` where :math:`A` is a banded, symmetric,
-and positive definite matrix with lower bandwidth :math:`p`.
+The routines in this section are designed to factor and solve
+:math:`N`-by-:math:`N` linear systems of the form :math:`A x = b`
+where :math:`A` is a banded, symmetric, and positive definite matrix
+with lower bandwidth :math:`p`. See
+:ref:`Cholesky Decomposition <sec_cholesky-decomposition>` for more
+information on the factorization.  The lower triangular
+factor of the Cholesky decomposition preserves the same
+banded structure as the matrix :math:`A`, enabling an efficient
+algorithm which overwrites the original matrix with the
+:math:`L` factor.
 
 .. function:: int gsl_linalg_cholesky_band_decomp(gsl_matrix * A)
 
@@ -1778,6 +1787,56 @@ and positive definite matrix with lower bandwidth :math:`p`.
    definite matrix :math:`A`, using its Cholesky decomposition provided in :data:`LLT`.
    The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
    in :data:`rcond`. Additional workspace of size :math:`3 N` is required in :data:`work`.
+
+.. index::
+   single: banded LDLT decomposition
+   single: LDLT decomposition, banded
+
+Banded LDLT Decomposition
+-------------------------
+
+The routines in this section are designed to factor and solve
+:math:`N`-by-:math:`N` linear systems of the form :math:`A x = b`
+where :math:`A` is a banded, symmetric, and non-singular matrix
+with lower bandwidth :math:`p`. See :ref:`sec_ldlt-decomposition`
+for more information on the factorization. The lower triangular
+factor of the :math:`L D L^T` decomposition preserves the same
+banded structure as the matrix :math:`A`, enabling an efficient
+algorithm which overwrites the original matrix with the
+:math:`L` and :math:`D` factors.
+
+.. function:: int gsl_linalg_ldlt_band_decomp (gsl_matrix * A, gsl_vector * work)
+
+   This function factorizes the symmetric, non-singular square matrix
+   :data:`A` into the decomposition :math:`A = L D L^T`. The input matrix
+   :data:`A` is given in :ref:`symmetric banded format <sec_symmetric-banded>`, and has dimensions
+   :math:`N`-by-:math:`(p + 1)`, where :math:`p` is the lower bandwidth of the matrix.
+   On output, the entries of :data:`A` are replaced by the entries of the matrices
+   :math:`D` and :math:`L` in the same format.
+
+   If the matrix is singular then the decomposition will fail, returning the
+   error code :macro:`GSL_EDOM`.
+
+.. function:: int gsl_linalg_ldlt_band_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT` which must
+   have been previously computed by :func:`gsl_linalg_ldlt_band_decomp`.
+
+.. function:: int gsl_linalg_ldlt_band_svx (const gsl_matrix * LDLT, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` in-place using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT`
+   which must have been previously computed by :func:`gsl_linalg_ldlt_band_decomp`.
+   On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
+
+.. function:: gsl_linalg_ldlt_band_unpack (const gsl_matrix * LDLT, gsl_matrix * L, gsl_vector * D)
+
+   This function unpacks the unit lower triangular factor :math:`L` from :data:`LDLT` and stores
+   it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
+   upper triangular portion of :data:`L` is not referenced. The diagonal matrix
+   :math:`D` is stored in the vector :data:`D`.
 
 .. index:: balancing matrices
 
