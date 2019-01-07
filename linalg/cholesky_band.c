@@ -39,59 +39,92 @@ Inputs: A - matrix in banded format, N-by-ndiag where N is the size of
             the matrix and ndiag is the number of nonzero diagonals.
 
 Notes:
-1) The main diagonal is stored in the first column of A; the first subdiagonal
-in the second column and so on.
+1) The main diagonal of the Cholesky factor is stored in the first column
+of A; the first subdiagonal in the second column and so on.
 
 2) If ndiag > 1, the 1-norm of A is stored in A(N,ndiag) on output
+
+3) At each diagonal element, the matrix is factored as
+
+A(j:end,j:end) = [ A11 A21^T ] = [ alpha  0 ] [ alpha v^T ]
+                 [ A21 A22   ]   [   v    L ] [   0   L^T ]
+
+where:
+
+alpha = sqrt(A(j,j))
+v = A(j+1:end, j) / alpha
+A22 = L L^T + v v^T
+
+So we start at A(1,1) and work right. Pseudo-code is:
+
+loop j = 1, ..., N
+  alpha = sqrt(A(j,j))
+  A(j+1:end, j) := A(j+1:end, j) / alpha     (DSCAL)
+  A(j+1:end, j+1:end) -= v v^T               (DSYR)
+
+Due to the banded structure, v has at most p non-zero elements, where
+p is the lower bandwidth
 */
 
 int
 gsl_linalg_cholesky_band_decomp(gsl_matrix * A)
 {
-  const size_t N = A->size1;
-  const size_t ndiag = A->size2;               /* number of diagonals in band, including main diagonal */
-  const int kld = GSL_MAX(1, (int) ndiag - 1);
-  size_t j;
+  const size_t N = A->size1;     /* size of matrix */
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
 
-  if (ndiag > 1)
+  if (ndiag > N)
     {
-      /*
-       * calculate 1-norm of A and store in lower right of matrix, which is not accessed
-       * by rest of routine. gsl_linalg_cholesky_band_rcond() will use this later. If
-       * A is diagonal, there is no empty slot to store the 1-norm, so the rcond routine
-       * will have to reconstruct it from the Cholesky factor.
-       */
-      double Anorm = cholesky_band_norm1(A);
-      gsl_matrix_set(A, N - 1, ndiag - 1, Anorm);
+      GSL_ERROR ("invalid matrix dimensions", GSL_EBADLEN);
     }
-
-  for (j = 0; j < N; ++j)
+  else
     {
-      double ajj = gsl_matrix_get(A, j, 0);
-      size_t kn;
+      const size_t p = ndiag - 1; /* lower bandwidth */
+      const int kld = (int) GSL_MAX(1, p);
+      size_t j;
 
-      if (ajj <= 0.0)
+      if (ndiag > 1)
         {
-          GSL_ERROR("matrix is not positive definite", GSL_EDOM);
+          /*
+           * calculate 1-norm of A and store in lower right of matrix, which is not accessed
+           * by rest of routine. gsl_linalg_cholesky_band_rcond() will use this later. If
+           * A is diagonal, there is no empty slot to store the 1-norm, so the rcond routine
+           * will have to reconstruct it from the Cholesky factor.
+           */
+          double Anorm = cholesky_band_norm1(A);
+          gsl_matrix_set(A, N - 1, p, Anorm);
         }
 
-      ajj = sqrt(ajj);
-      gsl_matrix_set(A, j, 0, ajj);
-
-      kn = GSL_MIN(ndiag - 1, N - j - 1);
-      if (kn > 0)
+      for (j = 0; j < N; ++j)
         {
-          gsl_vector_view v = gsl_matrix_subrow(A, j, 1, kn);
-          gsl_matrix_view m = gsl_matrix_submatrix(A, j + 1, 0, kn, kn);
+          double ajj = gsl_matrix_get(A, j, 0);
+          size_t kn;
 
-          gsl_blas_dscal(1.0 / ajj, &v.vector);
+          if (ajj <= 0.0)
+            {
+              GSL_ERROR("matrix is not positive definite", GSL_EDOM);
+            }
 
-          m.matrix.tda = kld;
-          gsl_blas_dsyr(CblasUpper, -1.0, &v.vector, &m.matrix);
+          ajj = sqrt(ajj);
+          gsl_matrix_set(A, j, 0, ajj);
+
+          /* number of elements in v, which will normally be p, unless we
+           * are in lower right corner of matrix */
+          kn = GSL_MIN(p, N - j - 1);
+
+          if (kn > 0)
+            {
+              gsl_vector_view v = gsl_matrix_subrow(A, j, 1, kn);
+              gsl_matrix_view m = gsl_matrix_submatrix(A, j + 1, 0, kn, kn);
+
+              gsl_blas_dscal(1.0 / ajj, &v.vector);
+
+              m.matrix.tda = kld;
+              gsl_blas_dsyr(CblasUpper, -1.0, &v.vector, &m.matrix);
+            }
         }
-    }
 
-  return GSL_SUCCESS;
+      return GSL_SUCCESS;
+    }
 }
 
 int

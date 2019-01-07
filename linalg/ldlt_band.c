@@ -28,177 +28,96 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
-static _gsl_vector_view symband_row_before_diag(gsl_matrix * AB, const size_t i);
-
-#define NULL_VECTOR {0, 0, 0, 0, 0}
-#define NULL_VECTOR_VIEW {{0, 0, 0, 0, 0}}
-
-/*
-symband_row_before_diag()
-  Returns a vector view of the non-zero elements of row i not
-including the diagonal element for a matrix in symmetric banded format.
-The row structure looks like this:
-
-AB = [  *      *      *   a_{i1} * ... * ]
-     [             a_{i2}    *   * ... * ]
-     [  *   a_{i3}    *      *   * ... * ]
-     [ ...     *      *      *   * ... * ]
-*/
-
-static _gsl_vector_view
-symband_row_before_diag(gsl_matrix * AB, const size_t i)
-{
-  _gsl_vector_view view = NULL_VECTOR_VIEW;
-
-  if (i >= AB->size1)
-    {
-      GSL_ERROR_VAL ("row index is out of range", GSL_EINVAL, view);
-    }
-  else
-    {
-      const size_t p = AB->size2 - 1;         /* lower bandwidth */
-      const size_t nz = (i <= p) ? 0 : i - p; /* number of zero entries at beginning of row i */
-      gsl_vector v = NULL_VECTOR;
-
-      v.data = AB->data + (nz * p + i);
-      v.size = i - nz;
-      v.stride = p;
-      v.block = AB->block;
-      v.owner = 0;
-
-      view.vector = v;
-      return view;
-    }
-}
+static double symband_norm1(const gsl_matrix * A);
+static int ldlt_band_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 
 /*
 gsl_linalg_ldlt_band_decomp()
-  Perform L D L^T decomposition of a symmetric banded positive
-semi-definite matrix using lower triangle
+  L D L^T decomposition of a square symmetric positive semi-definite banded
+matrix
 
-Inputs: A    - (input) symmetric banded, positive semi-definite matrix
-               (output) column 1 contains diagonal matrix D
-                        columns 2:end contain lower triangle L factor
-        work - workspace, size N
-
-Return: success/error
+Inputs: A - matrix in symmetric banded format, N-by-ndiag where N is the size of
+            the matrix and ndiag is the number of nonzero diagonals.
 
 Notes:
-1) Based on algorithm 4.1.1 of Golub and Van Loan, Matrix Computations (4th ed).
+1) The matrix D is stored in the first column of A;
+the first subdiagonal of L in the second column and so on.
+
+2) If ndiag > 1, the 1-norm of A is stored in A(N,ndiag) on output
+
+3) At each diagonal element, the matrix is factored as
+
+A(j:end,j:end) = [ A11 A21^T ] = [ 1 0 ] [ alpha 0 ] [ 1 v^T ]
+                 [ A21 A22   ]   [ v L ] [   0   D ] [ 0 L^T ]
+
+where:
+
+alpha = A(j,j)
+v = A(j+1:end, j) / alpha
+A22 = L D L^T + alpha v v^T
+
+So we start at A(1,1) and work right. Pseudo-code is:
+
+loop j = 1, ..., N
+  alpha = A(j,j)
+  A(j+1:end, j) := A(j+1:end, j) / alpha     (DSCAL)
+  A(j+1:end, j+1:end) -= alpha v v^T         (DSYR)
+
+Due to the banded structure, v has at most p non-zero elements, where
+p is the lower bandwidth
 */
 
 int
-gsl_linalg_ldlt_band_decomp (gsl_matrix * A, gsl_vector * work)
+gsl_linalg_ldlt_band_decomp(gsl_matrix * A)
 {
-  const size_t N = A->size1;
-  const size_t ndiag = A->size2;
+  const size_t N = A->size1;     /* size of matrix */
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
 
   if (ndiag > N)
     {
       GSL_ERROR ("invalid matrix dimensions", GSL_EBADLEN);
     }
-  else if (work->size != N)
-    {
-      GSL_ERROR ("workspace does not match matrix", GSL_EBADLEN);
-    }
   else
     {
       const size_t p = ndiag - 1; /* lower bandwidth */
-      size_t i, j;
-      double a00;
-      gsl_vector_view v;
+      const int kld = (int) GSL_MAX(1, p);
+      size_t j;
 
-      /* check for quick return */
-      if (N == 1 || ndiag == 1)
-        return GSL_SUCCESS;
-
-      /* special case first column */
-      a00 = gsl_matrix_get(A, 0, 0);
-      if (a00 == 0.0)
+      if (ndiag > 1)
         {
-          GSL_ERROR ("matrix is singular", GSL_EDOM);
+          /*
+           * calculate 1-norm of A and store in lower right of matrix, which is not accessed
+           * by rest of routine. gsl_linalg_ldlt_band_rcond() will use this later. If
+           * A is diagonal, there is no empty slot to store the 1-norm, so the rcond routine
+           * will have to compute it.
+           */
+          double Anorm = symband_norm1(A);
+          gsl_matrix_set(A, N - 1, p, Anorm);
         }
 
-      v = gsl_matrix_subrow(A, 0, 1, p);
-      gsl_blas_dscal(1.0 / a00, &v.vector);
-
-      for (j = 1; j < N; ++j)
+      for (j = 0; j < N - 1; ++j)
         {
-          const size_t nz = (j <= p) ? 0 : j - p; /* number of zero entries at beginning of row j */
-          double ajj = gsl_matrix_get(A, j, 0);   /* A(j,j) */
-          double dval;
-          gsl_vector_view w;
-
-          v = symband_row_before_diag(A, j);
-          w = gsl_vector_subvector(work, 0, v.vector.size);
-
-          for (i = 0; i < v.vector.size; ++i)
-            {
-              double aii = gsl_matrix_get(A, i + nz, 0); /* A(i+nz,i+nz) */
-              double aji = gsl_vector_get(&v.vector, i); /* A(j,i+nz) */
-              gsl_vector_set(&w.vector, i, aji * aii);
-            }
-
-          gsl_blas_ddot(&v.vector, &w.vector, &dval);
-          ajj -= dval;
+          double ajj = gsl_matrix_get(A, j, 0);
+          size_t lenv;
 
           if (ajj == 0.0)
             {
-              GSL_ERROR ("matrix is singular", GSL_EDOM);
+              GSL_ERROR("matrix is singular", GSL_EDOM);
             }
 
-          gsl_matrix_set(A, j, 0, ajj);
+          /* number of elements in v, which will normally be p, unless we
+           * are in lower right corner of matrix */
+          lenv = GSL_MIN(p, N - j - 1);
 
-          if (j < N - 1)
+          if (lenv > 0)
             {
-              const size_t nleft = GSL_MIN(p, N - j - 1); /* number of non-zero entries beneath diagonal of column j */
-              const double ajjinv = 1.0 / ajj;
-              size_t idx;
+              gsl_vector_view v = gsl_matrix_subrow(A, j, 1, lenv);
+              gsl_matrix_view m = gsl_matrix_submatrix(A, j + 1, 0, lenv, lenv);
 
-              /* A(j+1:end, j) */
-              v = gsl_matrix_subrow(A, j, 1, nleft);
+              gsl_blas_dscal(1.0 / ajj, &v.vector);
 
-              /* the following loop updates the subcolumn A(j+1:end,j),
-               * represented by the block vector v below.
-               *
-               * [ already_updated |   0    |       0         ]
-               * [ already_updated | A(j,j) |       0         ]
-               * [        M        |   v    | not_yet_updated ]
-               *
-               * The vector v is updated as follows:
-               *
-               * v := 1/A(j,j) * (v - M*work)
-               *
-               * where:
-               *
-               * M    = A(j+1:N, 1:j-1)
-               * work = A(j,1:j-1) .* diag(1:j-1)  ( computed above )
-               *
-               * We don't use a DGEMV operation due to the sparse structure
-               * of M and work, so we loop through the rows of M and compute
-               * dot products of the non-zero elements of M with the non-zero
-               * elements of work
-               */
-
-              for (idx = 0; idx < nleft; ++idx)
-                {
-                  size_t k = idx + j + 1;                              /* current row index */
-                  size_t nzk = (k <= p) ? 0 : k - p;                   /* number of zero entries at beginning of row k */
-                  double * ptr = gsl_matrix_ptr(A, j, k - j);          /* pointer to A(k,j) entry */
-                  gsl_vector_view mk0 = symband_row_before_diag(A, k); /* non-zero entries in row k not including diagonal */
-                  gsl_vector_view mk = gsl_vector_subvector(&mk0.vector, 0, mk0.vector.size - idx - 1);
-
-                  if (mk.vector.size > 0)
-                    {
-                      w = gsl_vector_subvector(work, nzk - nz, mk.vector.size);
-                      gsl_blas_ddot(&mk.vector, &w.vector, &dval);
-                      *ptr = ajjinv * (*ptr - dval);
-                    }
-                  else
-                    {
-                      *ptr *= ajjinv;
-                    }
-                }
+              m.matrix.tda = kld;
+              gsl_blas_dsyr(CblasUpper, -ajj, &v.vector, &m.matrix);
             }
         }
 
@@ -313,4 +232,117 @@ gsl_linalg_ldlt_band_unpack (const gsl_matrix * LDLT, gsl_matrix * L, gsl_vector
 
       return GSL_SUCCESS;
     }
+}
+
+int
+gsl_linalg_ldlt_band_rcond (const gsl_matrix * LDLT, double * rcond, gsl_vector * work)
+{
+  const size_t N = LDLT->size1;
+
+  if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      const size_t ndiag = LDLT->size2;
+      double Anorm;    /* ||A||_1 */
+      double Ainvnorm; /* ||A^{-1}||_1 */
+
+      if (ndiag == 1)
+        {
+          /* diagonal matrix, compute 1-norm since it has not been stored */
+          Anorm = symband_norm1(LDLT);
+        }
+      else
+        {
+          /* 1-norm is stored in A(N, ndiag) by gsl_linalg_ldlt_band_decomp() */
+          Anorm = gsl_matrix_get(LDLT, N - 1, ndiag - 1);
+        }
+
+      *rcond = 0.0;
+
+      /* return if matrix is singular */
+      if (Anorm == 0.0)
+        return GSL_SUCCESS;
+
+      status = gsl_linalg_invnorm1(N, ldlt_band_Ainv, (void *) LDLT, &Ainvnorm, work);
+      if (status)
+        return status;
+
+      if (Ainvnorm != 0.0)
+        *rcond = (1.0 / Anorm) / Ainvnorm;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* compute 1-norm of symmetric banded matrix */
+static double
+symband_norm1(const gsl_matrix * A)
+{
+  const size_t N = A->size1;
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
+  double value;
+
+  if (ndiag == 1)
+    {
+      /* diagonal matrix */
+      gsl_vector_const_view v = gsl_matrix_const_column(A, 0);
+      CBLAS_INDEX_t idx = gsl_blas_idamax(&v.vector);
+      value = gsl_vector_get(&v.vector, idx);
+    }
+  else
+    {
+      size_t j;
+
+      value = 0.0;
+      for (j = 0; j < N; ++j)
+        {
+          size_t ncol = GSL_MIN(ndiag, N - j); /* number of elements in column j below and including main diagonal */
+          gsl_vector_const_view v = gsl_matrix_const_subrow(A, j, 0, ncol);
+          double sum = gsl_blas_dasum(&v.vector);
+          size_t k, l;
+
+          /* sum now contains the absolute sum of elements below and including main diagonal for column j; we
+           * have to add the symmetric elements above the diagonal */
+          k = j;
+          l = 1;
+          while (k > 0 && l < ndiag)
+            {
+              double Akl = gsl_matrix_get(A, --k, l++);
+              sum += fabs(Akl);
+            }
+
+          value = GSL_MAX(value, sum);
+        }
+    }
+
+  return value;
+}
+
+/* x := A^{-1} x = A^{-t} x, A = L D L^T */
+static int
+ldlt_band_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
+{
+  gsl_matrix * LDLT = (gsl_matrix * ) params;
+  gsl_vector_const_view diag = gsl_matrix_const_column(LDLT, 0);
+
+  (void) TransA; /* unused parameter warning */
+
+  /* compute x := L^{-1} x */
+  cblas_dtbsv(CblasColMajor, CblasLower, CblasNoTrans, CblasUnit,
+              (int) LDLT->size1, (int) (LDLT->size2 - 1), LDLT->data, LDLT->tda,
+              x->data, x->stride);
+
+  /* compute x := D^{-1} x */
+  gsl_vector_div(x, &diag.vector);
+
+  /* compute x := L^{-T} x */
+  cblas_dtbsv(CblasColMajor, CblasLower, CblasTrans, CblasUnit,
+              (int) LDLT->size1, (int) (LDLT->size2 - 1), LDLT->data, LDLT->tda,
+              x->data, x->stride);
+
+  return GSL_SUCCESS;
 }

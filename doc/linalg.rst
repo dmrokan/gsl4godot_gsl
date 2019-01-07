@@ -1115,6 +1115,8 @@ but is not guaranteed to be stable for indefinite matrices.
    is used as temporary workspace.  On output
    the diagonal of :data:`A` contains the matrix :math:`D` and the lower
    triangle of :data:`A` contains the unit lower triangular matrix :math:`L`.
+   The matrix 1-norm, :math:`||A||_1` is stored in the upper right corner
+   on output, for later use by :func:`gsl_linalg_ldlt_rcond`.
 
    If the matrix is detected to be singular, the function returns
    the error code :macro:`GSL_EDOM`.
@@ -1133,6 +1135,13 @@ but is not guaranteed to be stable for indefinite matrices.
    :func:`gsl_linalg_ldlt_decomp`.  On input :data:`x` should
    contain the right-hand side :math:`b`, which is replaced by the
    solution on output.
+
+.. function:: int gsl_linalg_ldlt_rcond (const gsl_matrix * LDLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric
+   nonsingular matrix :math:`A`, using its :math:`L D L^T` decomposition provided in :data:`LDLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
+   in :data:`rcond`.  Additional workspace of size :math:`3 N` is required in :data:`work`.
 
 .. index:: tridiagonal decomposition
 
@@ -1805,7 +1814,7 @@ banded structure as the matrix :math:`A`, enabling an efficient
 algorithm which overwrites the original matrix with the
 :math:`L` and :math:`D` factors.
 
-.. function:: int gsl_linalg_ldlt_band_decomp (gsl_matrix * A, gsl_vector * work)
+.. function:: int gsl_linalg_ldlt_band_decomp (gsl_matrix * A)
 
    This function factorizes the symmetric, non-singular square matrix
    :data:`A` into the decomposition :math:`A = L D L^T`. The input matrix
@@ -1837,6 +1846,13 @@ algorithm which overwrites the original matrix with the
    it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
    upper triangular portion of :data:`L` is not referenced. The diagonal matrix
    :math:`D` is stored in the vector :data:`D`.
+
+.. function:: int gsl_linalg_ldlt_band_rcond (const gsl_matrix * LDLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric banded
+   nonsingular matrix :math:`A`, using its :math:`L D L^T` decomposition provided in :data:`LDLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
+   in :data:`rcond`. Additional workspace of size :math:`3 N` is required in :data:`work`.
 
 .. index:: balancing matrices
 

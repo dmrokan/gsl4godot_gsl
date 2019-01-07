@@ -28,6 +28,9 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 
+static double ldlt_norm1(const gsl_matrix * A);
+static int ldlt_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
+
 /*
 gsl_linalg_ldlt_decomp()
   Perform L D L^T decomposition of a symmetric positive
@@ -42,6 +45,7 @@ Return: success/error
 Notes:
 1) Based on algorithm 4.1.1 of Golub and Van Loan, Matrix Computations (4th ed).
 2) The first subrow A(1, 2:end) is used as temporary workspace
+3) The 1-norm ||A||_1 of the original matrix is stored in the upper right corner on output
 */
 
 int
@@ -57,15 +61,23 @@ gsl_linalg_ldlt_decomp (gsl_matrix * A)
   else
     {
       size_t i, j;
-      double a00;
+      double a00, anorm;
       gsl_vector_view work, v;
 
       /* check for quick return */
       if (N == 1)
         return GSL_SUCCESS;
 
+      /* compute ||A||_1 */
+      anorm = ldlt_norm1(A);
+
       /* special case first column */
       a00 = gsl_matrix_get(A, 0, 0);
+      if (a00 == 0.0)
+        {
+          GSL_ERROR ("matrix is singular", GSL_EDOM);
+        }
+
       v = gsl_matrix_subcolumn(A, 0, 1, N - 1);
       gsl_vector_scale(&v.vector, 1.0 / a00);
 
@@ -104,6 +116,9 @@ gsl_linalg_ldlt_decomp (gsl_matrix * A)
               gsl_blas_dgemv(CblasNoTrans, -ajjinv, &m.matrix, &w.vector, ajjinv, &v.vector);
             }
         }
+
+      /* save ||A||_1 in upper right corner */
+      gsl_matrix_set(A, 0, N - 1, anorm);
 
       return GSL_SUCCESS;
     }
@@ -166,4 +181,102 @@ gsl_linalg_ldlt_svx (const gsl_matrix * LDLT,
 
       return GSL_SUCCESS;
     }
+}
+
+int
+gsl_linalg_ldlt_rcond (const gsl_matrix * LDLT, double * rcond,
+                       gsl_vector * work)
+{
+  const size_t M = LDLT->size1;
+  const size_t N = LDLT->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR ("LDLT matrix must be square", GSL_ENOTSQR);
+    }
+  else if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      double Anorm;    /* ||A||_1 */
+      double Ainvnorm; /* ||A^{-1}||_1 */
+
+      if (N == 1)
+        Anorm = fabs(gsl_matrix_get(LDLT, 0, 0));
+      else
+        Anorm = gsl_matrix_get(LDLT, 0, N - 1);
+
+      *rcond = 0.0;
+
+      /* don't continue if matrix is singular */
+      if (Anorm == 0.0)
+        return GSL_SUCCESS;
+
+      /* estimate ||A^{-1}||_1 */
+      status = gsl_linalg_invnorm1(N, ldlt_Ainv, (void *) LDLT, &Ainvnorm, work);
+
+      if (status)
+        return status;
+
+      if (Ainvnorm != 0.0)
+        *rcond = (1.0 / Anorm) / Ainvnorm;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* compute 1-norm of symmetric matrix stored in lower triangle */
+static double
+ldlt_norm1(const gsl_matrix * A)
+{
+  const size_t N = A->size1;
+  double max = 0.0;
+  size_t i, j;
+
+  for (j = 0; j < N; ++j)
+    {
+      gsl_vector_const_view v = gsl_matrix_const_subcolumn(A, j, j, N - j);
+      double sum = gsl_blas_dasum(&v.vector);
+
+      /* now add symmetric elements from above diagonal */
+      for (i = 0; i < j; ++i)
+        {
+          double Aij = gsl_matrix_get(A, i, j);
+          sum += fabs(Aij);
+        }
+
+      if (sum > max)
+        max = sum;
+    }
+
+  return max;
+}
+
+/* x := A^{-1} x = A^{-t} x, A = L D L^T */
+static int
+ldlt_Ainv(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
+{
+  int status;
+  gsl_matrix * A = (gsl_matrix * ) params;
+  gsl_vector_const_view diag = gsl_matrix_const_diagonal(A);
+
+  (void) TransA; /* unused parameter warning */
+
+  /* compute L^{-1} x */
+  status = gsl_blas_dtrsv(CblasLower, CblasNoTrans, CblasUnit, A, x);
+  if (status)
+    return status;
+
+  /* compute D^{-1} x */
+  gsl_vector_div(x, &diag.vector);
+
+  /* compute L^{-t} x */
+  status = gsl_blas_dtrsv(CblasLower, CblasTrans, CblasUnit, A, x);
+  if (status)
+    return status;
+
+  return GSL_SUCCESS;
 }
