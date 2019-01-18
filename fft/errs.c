@@ -31,6 +31,10 @@
 #include <gsl/gsl_fft_halfcomplex.h>
 
 #include <gsl/gsl_test.h>
+
+#define BASE_DOUBLE
+#include "../templates_on.h"
+
 #include "compare.h"
 #include "complex_internal.h"
 

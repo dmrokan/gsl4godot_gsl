@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#include <stdlib.h>
+
 static double norm_companion (const double *m, size_t nc);
 
 static double

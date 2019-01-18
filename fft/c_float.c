@@ -12,6 +12,7 @@
 #define BASE_FLOAT
 #include "templates_on.h"
 #include "c_pass.h"
+#include "complex_internal.h"
 #include "c_init.c"
 #include "c_main.c"
 #include "c_pass_2.c"

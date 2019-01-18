@@ -36,6 +36,7 @@
 /* roots headers */
 #include "roots.h"
 
+#define GSL_ROOT_MIN_MAX_DELTAY 1e-17
 
 /* Validate arguments common to gsl_root_bisection and gsl_root_falsepos.
    Return GSL_SUCCESS if all arguments are okay, complain appropriately (i.e.
