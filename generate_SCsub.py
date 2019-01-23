@@ -58,6 +58,8 @@ def scons_sources(fh, dirs):
         fh.write('and not os.path.basename(str(x)).startswith(\'test_\')]\n')
 
     fh.write('    , \'godot_gsl.cpp\'\n')
+    fh.write('    , \'godot_gsl_matrix.cpp\'\n')
+    fh.write('    , \'godot_gsl_function.cpp\'\n')
     fh.write('    , \'register_types.cpp\'\n')
     fh.write(']\n\n')
 

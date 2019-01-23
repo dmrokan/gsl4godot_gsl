@@ -2,7 +2,8 @@
 
 #include "godot_gsl.h"
 
-void GodotGSL::_bind_methods() {
+void GodotGSL::_bind_methods()
+{
     ClassDB::bind_method(D_METHOD("matrix_new", "vn", "row_count", "col_count"), &GodotGSL::matrix_new);
     ClassDB::bind_method(D_METHOD("matrix_new_from_array", "vn", "a"), &GodotGSL::matrix_new_from_array);
     ClassDB::bind_method(D_METHOD("add", "vn1", "vn2"), &GodotGSL::add);
@@ -11,21 +12,34 @@ void GodotGSL::_bind_methods() {
     ClassDB::bind_method(D_METHOD("prod", "vn1", "vn2", "to"), &GodotGSL::prod);
     ClassDB::bind_method(D_METHOD("vector_new", "vn", "size", "is_row_vector"), &GodotGSL::vector_new, NULL, NULL, false);
     ClassDB::bind_method(D_METHOD("vector_new_from_array", "vn", "a", "is_row_vector"), &GodotGSL::vector_new_from_array, NULL, NULL, false);
+    ClassDB::bind_method(D_METHOD("fx", "fn", "a", "to"), &GodotGSL::fx, "=", "", "");
+    ClassDB::bind_method(D_METHOD("function", "fn", "args"), &GodotGSL::function, "", Array());
+    ClassDB::bind_method(D_METHOD("instruction", "ins_name", "args"), &GodotGSL::instruction, "", Array());
+    ClassDB::bind_method(D_METHOD("callf", "fn"), &GodotGSL::callf);
 }
 
-GodotGSL::GodotGSL() {
+GodotGSL::GodotGSL()
+{
     return;
+}
+
+GodotGSL::~GodotGSL()
+{
+    variables.clear();
+    functions.clear();
 }
 
 void GodotGSL::_add_variable(String vn, GodotGSLMatrix* mtx)
 {
     if (variables.has(vn))
     {
-        memdelete(variables[vn]);
+        variables.erase(vn);
         variables[vn] = mtx;
     }
-
-    variables.insert(vn, mtx);
+    else
+    {
+        variables.insert(vn, mtx);
+    }
 }
 
 void GodotGSL::matrix_new(String vn, const size_t row_count, const size_t col_count)
@@ -136,337 +150,124 @@ void GodotGSL::vector_new_from_array(String vn, const Array a, bool is_row_vecto
     _add_variable(vn, mtx);
 }
 
-/*
-*********** Matrix class
-*/
-
-#define DTYPE gsl_matrix_float
-#define VTYPE gsl_vector_float
-#define BTYPE gsl_block_float
-#define STYPE float
-#define STRIDE 1
-
-#if DTYPE == gsl_matrix_float
-#define BLOCK_SIZE FLOAT_BLOCK_SIZE
-#define MATRIX_SIZE FLOAT_MATRIX_SIZE
-#define MULTIPLICITY 1
-#define ATOMIC_SIZE (sizeof(float))
-#define MATRIX_DATAPTR_SKIP FLOAT_MATRIX_DATAPTR_SKIP
-#define MATRIX_BLOCKPTR_SKIP FLOAT_MATRIX_BLOCKPTR_SKIP
-#define MATRIX_DATAPTR2_SKIP FLOAT_MATRIX_DATAPTR2_SKIP
-#endif
-
-void GodotGSLMatrix::init(const size_t row_count, const size_t col_count)
+void GodotGSL::fx(const String fn, const String a, String to)
 {
-    gsl_mtx = _alloc(row_count, col_count);
+    GodotGSLMatrix *mtx_a;
+    GodotGSLMatrix *mtx_to;
 
-    // gsl_mtx = gsl_matrix_float_alloc(row_count, col_count);
-
-    size[0] = row_count;
-    size[1] = col_count;
-
-    if ((size[0] == 1 || size[1] == 1) && !(size[0] == 1 && size[1] == 1))
+    if (fn == FN_EQ)
     {
-        type = GSL_VECTOR;
-
-        if (size[0] == 1)
+        if (to.empty())
         {
-            is_row_vector = true;
+            return;
+        }
+    }
+    else if (fn == FN_SIN)
+    {
+        if (!variables.has(a))
+        {
+            GGSL_MESSAGE("GodotGSL::fx: !variables.has(a)");
+            return;
         }
 
-        _vector_alloc((size[0] == 1 ? size[1] : size[0]));
-    }
-}
-
-void GodotGSLMatrix::init(const Array a)
-{
-    size_t row_count = a.size();
-    if (row_count == 0)
-    {
-        ERR_FAIL_COND("GodotGSLMatrix::GodotGSLMatrix: row_count == 0");
-    }
-
-    Array b = (Array) a.get(0);
-    size_t col_count = b.size();
-    if (col_count == 0)
-    {
-        ERR_FAIL_COND("GodotGSLMatrix::GodotGSLMatrix: col_count == 0");
-    }
-
-    gsl_mtx = _alloc(row_count, col_count);
-
-    for (int k = 0; k < row_count; k++)
-    {
-        for (int l = 0; l < col_count; l++)
+        if (to.empty())
         {
-            Array row = (Array) a.get(k);
-            if (row.size() <= l)
+            to = a;
+        }
+        else
+        {
+            if (!variables.has(to))
             {
-                ERR_FAIL_COND("GodotGSLMatrix::GodotGSLMatrix: row->size() <= l");
+                GGSL_MESSAGE("GodotGSL::fx: !variables.has(to)");
+                return;
             }
-
-            STYPE val = row.get(l);
-
-            gsl_matrix_float_set(gsl_mtx, k, l, val);
-        }
-    }
-
-    size[0] = row_count;
-    size[1] = col_count;
-
-    if ((size[0] == 1 || size[1] == 1) && !(size[0] == 1 && size[1] == 1))
-    {
-        type = GSL_VECTOR;
-
-        if (size[0] == 1)
-        {
-            is_row_vector = true;
         }
 
-        _vector_alloc((size[0] == 1 ? size[1] : size[0]));
+        mtx_a = variables[a];
+        mtx_to = variables[to];
+        mtx_a->fx(fn, mtx_to);
     }
-}
-
-GodotGSLMatrix::~GodotGSLMatrix()
-{
-    memdelete_arr((uint8_t*) gsl_mtx);
-    memdelete(gsl_vec);
-}
-
-
-DTYPE *GodotGSLMatrix::_alloc(const size_t row_count, const size_t col_count)
-{
-    size_t data_size = row_count * col_count;
-    size_t total_bytes = MATRIX_SIZE;
-    total_bytes += BLOCK_SIZE;
-    total_bytes += MULTIPLICITY * data_size * ATOMIC_SIZE;
-    uint8_t *mtx_raw = memnew_arr(uint8_t, total_bytes);
-
-    BTYPE block;
-    DTYPE mtx;
-    memcpy(mtx_raw, &mtx, sizeof(mtx));
-    memcpy(mtx_raw + FLOAT_MATRIX_BLOCK_ADDR_SKIP, &block, sizeof(block));
-
-    BTYPE *block_ptr = (BTYPE*) (mtx_raw + FLOAT_MATRIX_BLOCK_ADDR_SKIP);
-    DTYPE *mtx_ptr = (DTYPE*) mtx_raw;
-
-    mtx_ptr->data = (STYPE*) (mtx_raw + FLOAT_MATRIX_DATA_ADDR_SKIP);
-    mtx_ptr->block = block_ptr;
-    block_ptr->data = ((DTYPE*) mtx_raw)->data;
-    block_ptr->size = data_size;
-
-    mtx_ptr->size1 = row_count;
-    mtx_ptr->size2 = col_count;
-    mtx_ptr->tda = col_count;
-    mtx_ptr->owner = 1;
 
     /*
-    DTYPE *mtx = gsl_matrix_float_alloc(row_count, col_count);
+     * TODO: If there is no 'to' variable
+     * It may be added automaticall
+     * SOON
+
+    _add_variable(to, mtx_to);
+
     */
-
-    return mtx_ptr;
 }
 
-void GodotGSLMatrix::_vector_alloc(size_t s)
+void GodotGSL::_add_function(const String fn, GodotGSLFunction *fnc)
 {
-    gsl_vec = (VTYPE*) memnew(VTYPE);
-    gsl_vec->size = s;
-    gsl_vec->stride = STRIDE;
-    gsl_vec->data = gsl_mtx->data;
-    gsl_vec->block = gsl_mtx->block;
-    gsl_vec->owner = gsl_mtx->owner;
-}
-
-void GodotGSLMatrix::set_zero()
-{
-    if (gsl_mtx == NULL)
+    if (functions.has(fn))
     {
-        ERR_FAIL_COND("GodotGSLMatrix::set_zero: gsl_mtx == NULL");
-    }
-
-    gsl_matrix_float_set_zero(gsl_mtx);
-}
-
-void GodotGSLMatrix::set_identity()
-{
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND("GodotGSLMatrix::set_identity: gsl_mtx == NULL");
-    }
-
-    gsl_matrix_float_set_identity(gsl_mtx);
-}
-
-int GodotGSLMatrix::add(const GodotGSLMatrix &a)
-{
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::add: gsl_mtx == NULL", ERR_NULL_VALUE);
-    }
-
-    if (size[0] != a.size[0] || size[1] != a.size[1])
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::add: size[0] != a.size[0] || size[1] != a.size[1]", ERR_DIMENSION_MISMATCH);
-    }
-
-    int ret = gsl_matrix_float_add(gsl_mtx, a.get_ptr());
-
-    return ret;
-}
-
-STYPE GodotGSLMatrix::get(const size_t row, const size_t col)
-{
-    if (row >= size[0] || col >= size[1])
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::get: row >= size[0] || col >= size[1]", 0.0);
-    }
-
-    STYPE ret = gsl_matrix_float_get(gsl_mtx, row, col);
-
-    return ret;
-}
-
-void GodotGSLMatrix::set(const size_t row, const size_t col, const STYPE a)
-{
-    if (row >= size[0] || col >= size[1])
-    {
-        ERR_FAIL_COND("GodotGSLMatrix::set: row >= size[0] || col >= size[1]");
-    }
-
-    gsl_matrix_float_set(gsl_mtx, row, col, a);
-}
-
-DTYPE *GodotGSLMatrix::get_ptr() const
-{
-    return gsl_mtx;
-}
-
-VTYPE *GodotGSLMatrix::get_vec_ptr() const
-{
-    return gsl_vec;
-}
-
-int GodotGSLMatrix::sub(const GodotGSLMatrix &a)
-{
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::sub: gsl_mtx == NULL", ERR_NULL_VALUE);
-    }
-
-    if (size[0] != a.size[0] || size[1] != a.size[1])
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::sub: size[0] != a.size[0] || size[1] != a.size[1]", ERR_DIMENSION_MISMATCH);
-    }
-
-    int ret = gsl_matrix_float_add(gsl_mtx, a.get_ptr());
-
-    return ret;
-}
-
-int GodotGSLMatrix::mul_elements(const GodotGSLMatrix &a)
-{
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::mul: gsl_mtx == NULL", ERR_NULL_VALUE);
-    }
-
-    if (size[0] != a.size[0] || size[1] != a.size[1])
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::mul: size[0] != a.size[0] || size[1] != a.size[1]", ERR_DIMENSION_MISMATCH);
-    }
-
-    int ret = gsl_matrix_float_mul_elements(gsl_mtx, a.get_ptr());
-
-    return ret;
-}
-
-int GodotGSLMatrix::scale(const STYPE a)
-{
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::mul: gsl_mtx == NULL", ERR_NULL_VALUE);
-    }
-
-    int ret = gsl_matrix_float_scale(gsl_mtx, a);
-
-    return ret;
-}
-
-
-GodotGSLMatrix *GodotGSLMatrix::prod(const GodotGSLMatrix &a)
-{
-    int prod_type = -1;
-
-    if ((type == GSL_MATRIX && a.type == GSL_MATRIX)
-        || (type == GSL_VECTOR && a.type == GSL_VECTOR))
-    {
-        prod_type = MATRIX_MATRIX_PROD;
+        functions.erase(fn);
+        functions[fn] = fnc;
     }
     else
     {
-        prod_type = MATRIX_VECTOR_PROD;
+        functions.insert(fn, fnc);
     }
+}
 
-    if (gsl_mtx == NULL)
-    {
-        ERR_FAIL_COND_V("GodotGSLMatrix::prod: gsl_mtx == NULL", NULLMTX);
-    }
+void GodotGSL::function(const String fn, const Array args)
+{
+    GodotGSLFunction *fnc = memnew(GodotGSLFunction(fn));
+    _add_function(fn, fnc);
 
-    if (prod_type == MATRIX_VECTOR_PROD)
+    int size = args.size();
+    if (size > 0)
     {
-        if (size[0] != a.size[1])
+        GodotGSLMatrix **argv;
+        GGSL_ALLOC(argv, size);
+
+        for (int k = 0; k < size; k++)
         {
-            ERR_FAIL_COND_V("GodotGSLMatrix::prod: size[0] != a.size[1]", NULLMTX);
-        }
-    }
-    else
-    {
-        if (size[0] != a.size[1] || size[1] != a.size[0])
-        {
-            ERR_FAIL_COND_V("GodotGSLMatrix::prod: size[0] != a.size[1] || size[1] != a.size[0]", NULLMTX);
-        }
-    }
-
-    GodotGSLMatrix *b = memnew(GodotGSLMatrix);
-
-    if (prod_type == MATRIX_VECTOR_PROD)
-    {
-        if (type == GSL_VECTOR)
-        {
-            if (!is_row_vector)
+            String vn = args[k];
+            if (variables.has(vn))
             {
-                b->init(size[1], a.size[0]);
-                gsl_blas_sgemv(CblasNoTrans, 1.0, a.get_ptr(), gsl_vec, 0.0, b->get_vec_ptr());
+                argv[k] = variables[vn];
+                GGSL_DEBUG_MSG(vn.ascii(), 1);
             }
             else
             {
-                b->init(size[0], a.size[1]);
-                gsl_blas_sgemv(CblasTrans, 1.0, a.get_ptr(), gsl_vec, 0.0, b->get_vec_ptr());
+                GGSL_MESSAGE("GodotGSL::function: !variables.has(vn)");
+                GGSL_MESSAGE_I(vn.ascii(), 1);
+                return;
             }
         }
-        else if (a.type == GSL_VECTOR)
-        {
-            if (!a.is_row_vector)
-            {
-                b->init(a.size[1], size[0]);
-                gsl_blas_sgemv(CblasNoTrans, 1.0, gsl_mtx, a.get_vec_ptr(), 0.0, b->get_vec_ptr());
-            }
-            else
-            {
-                b->init(a.size[0], size[1]);
-                gsl_blas_sgemv(CblasTrans, 1.0, gsl_mtx, a.get_vec_ptr(), 0.0, b->get_vec_ptr());
-            }
-        }
-    }
-    else
-    {
-        b->init(a.size[0], size[1]);
-        gsl_blas_sgemm(CblasNoTrans, CblasNoTrans, 1.0, a.get_ptr(), gsl_mtx, 0.0, b->get_ptr());
+
+        fnc->add_arguments(args, argv);
+        GGSL_DEBUG_MSG("GodotGSL::function: args are added", 0);
     }
 
-    return b;
+    current = fnc;
+    GGSL_DEBUG_MSG("GodotGSL::function: procedure ends", 0);
 }
 
-#undef DTYPE
-#undef BTYPE
-#undef STYPE
+void GodotGSL::instruction(const String in, const Array args)
+{
+    if (current == NULL)
+    {
+        GGSL_MESSAGE("GodotGSL::instruction: current == NULL");
+        return;
+    }
+
+    current->add_instruction(in, args);
+    GGSL_DEBUG_MSG("GodotGSL::instruction: procedure ends", 0);
+}
+
+void GodotGSL::callf(const String fn)
+{
+    GGSL_DEBUG_MSG("GodotGSL::callf: procedure starts", 0);
+    if (!functions.has(fn))
+    {
+        GGSL_MESSAGE("GodotGSL::call: !functions.has(fn)");
+        return;
+    }
+
+    GodotGSLFunction *fnc = functions[fn];
+    fnc->execute();
+    GGSL_DEBUG_MSG("GodotGSL::callf: procedure ends", 0);
+}
