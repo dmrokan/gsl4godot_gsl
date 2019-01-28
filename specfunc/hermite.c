@@ -460,61 +460,127 @@ gsl_sf_hermite_phys_der(const int m, const int n, const double x)
   EVAL_RESULT(gsl_sf_hermite_phys_der_e(m, n, x, &result));
 }
 
+#if 0
+
+int
+gsl_sf_hermite_func_e(const int n, const double x, gsl_sf_result * result)
+{
+  if (n < 0)
+    {
+      DOMAIN_ERROR(result);
+    }
+  else if (x == 0.0)
+    {
+      if (GSL_IS_ODD(n))
+        {
+          result->val = 0.;
+          result->err = 0.;
+          return GSL_SUCCESS;
+        }
+      else
+        {
+          double f = (GSL_IS_ODD(n / 2) ? -1.0 : 1.0);
+          int j;
+
+          for(j = 1; j < n; j += 2)
+            f *= sqrt(j / (j + 1.0));
+
+          result->val = f / sqrt(M_SQRTPI);
+          result->err = GSL_DBL_EPSILON * fabs(result->val);
+          return GSL_SUCCESS;
+        }
+    }
+  else if (n == 0)
+    {
+      result->val = exp(-0.5 * x * x) / sqrt(M_SQRTPI);
+      result->err = GSL_DBL_EPSILON * fabs(result->val);
+      return GSL_SUCCESS;
+    }
+  else if (n == 1)
+    {
+      result->val = M_SQRT2 * x * exp(-0.5 * x * x) / sqrt(M_SQRTPI);
+      result->err = GSL_DBL_EPSILON * fabs(result->val);
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      double hi2 = 1.0 / sqrt(M_SQRTPI);
+      double hi1 = M_SQRT2 * x * hi2;
+      double hi = 0.0;
+      double sum_log_scale = 0.0;
+      double log_scale, scale, abshi;
+      int i;
+
+      for (i = 2; i <= n; ++i)
+        {
+          hi = sqrt(2.0 / i) * x * hi1 - sqrt((i - 1.0) / i) * hi2;
+          hi2 = hi1;
+          hi1 = hi;
+
+          abshi = fabs(hi);
+          if (abshi > 1.0)
+            log_scale = round(log(abshi));
+          else
+            log_scale = 0.0;
+
+          scale = exp(-log_scale);
+          hi *= scale;
+          hi1 *= scale;
+          hi2 *= scale;
+          sum_log_scale += log_scale;
+        }
+
+      result->val = hi * exp(-0.5 * x * x + sum_log_scale);
+      result->err = GSL_DBL_EPSILON * fabs(result->val);
+
+      return GSL_SUCCESS;
+    }
+}
+
+#else
+
 /* Evaluates the Hermite function of order n at position x.
  * For large n an approximation depending on the x-range (see Szego, Gabor (1939, 1958, 1967), Orthogonal Polynomials, American Mathematical Society) is used, while for small n the direct formula via the probabilists' Hermite polynomial is applied. */
 int
 gsl_sf_hermite_func_e(const int n, const double x, gsl_sf_result * result)
 {
-  /*
-  if (x*x < 2.0*n && n > 100000){
-    // asymptotic formula
-    double f = 1.0;
-    int j;
-    // return f*exp(x*x/4)*cos(x*sqrt(n)-n*M_PI_2)/sqrt(sqrt(1-x*x/4.0/n));
-    return cos(x*sqrt(2.0*n)-(n%4)*M_PI_2)/sqrt(sqrt(0.5*n/M_PI*(1-0.5*x*x/n)))/M_PI;
-  }
-  */
-  if (n < 0){
-    DOMAIN_ERROR(result);
-  }
-  else if(n == 0 && x != 0.) {
-    result->val = exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result->err = GSL_DBL_EPSILON*fabs(result->val);
-    return GSL_SUCCESS;
-  }
-  else if(n == 1 && x != 0.) {
-    result->val = M_SQRT2*x*exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result->err = GSL_DBL_EPSILON*fabs(result->val);
-    return GSL_SUCCESS;
-  }
-  else if (x == 0.){
-    if (GSL_IS_ODD(n)){
-      result->val = 0.;
-      result->err = 0.;
-      return GSL_SUCCESS;
+  if (n < 0)
+    {
+      DOMAIN_ERROR(result);
     }
-    else{
-      double f;
-      int j;
-      f = (GSL_IS_ODD(n/2)?-1.:1.);
-      for(j=1; j < n; j+=2) {
-	f*=sqrt(j/(j+1.));
-      }
-      result->val = f/sqrt(M_SQRTPI);
+  else if (n == 0 && x != 0.0)
+    {
+      result->val = exp(-0.5*x*x)/sqrt(M_SQRTPI);
       result->err = GSL_DBL_EPSILON*fabs(result->val);
       return GSL_SUCCESS;
     }
-  }
-  else if (n <= 100000){
-    double f = exp(-0.5*x*x)/sqrt(M_SQRTPI*gsl_sf_fact(n));
-    gsl_sf_result He;
-    gsl_sf_hermite_prob_iter_e(n,M_SQRT2*x,&He);
-    result->val = He.val*f;
-    result->err = He.err*f + GSL_DBL_EPSILON*fabs(result->val);
-    if (gsl_isnan(result->val) != 1 && f > GSL_DBL_MIN && gsl_finite(He.val) == 1){
+  else if (n == 1 && x != 0.0)
+    {
+      result->val = M_SQRT2*x*exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      result->err = GSL_DBL_EPSILON*fabs(result->val);
       return GSL_SUCCESS;
     }
-  }
+  else if (x == 0.0)
+    {
+      if (GSL_IS_ODD(n))
+        {
+          result->val = 0.;
+          result->err = 0.;
+          return GSL_SUCCESS;
+        }
+      else
+        {
+          double f = (GSL_IS_ODD(n / 2) ? -1.0 : 1.0);
+          int j;
+
+          for(j = 1; j < n; j += 2)
+            f *= sqrt(j / (j + 1.0));
+
+          result->val = f / sqrt(M_SQRTPI);
+          result->err = GSL_DBL_EPSILON * fabs(result->val);
+          return GSL_SUCCESS;
+        }
+    }
 
   /* upward recurrence: Psi_{n+1} = sqrt(2/(n+1))*x Psi_n - sqrt(n/(n+1)) Psi_{n-1} */
 
@@ -533,7 +599,7 @@ gsl_sf_hermite_func_e(const int n, const double x, gsl_sf_result * result)
     for (j=1;j<n;j++)
       {
         if (gsl_isnan(p_n) == 1){
-	  break;
+          break;
         }
         p_n=tw*(M_SQRT2*x*p_n1-sqrt(j)*p_n0)/sqrt(j+1.);
         p_n0=tw*p_n1;
@@ -544,23 +610,23 @@ gsl_sf_hermite_func_e(const int n, const double x, gsl_sf_result * result)
         e_n1=e_n;
 
         while(( GSL_MIN(fabs(p_n0),fabs(p_n1)) > 2.0*GSL_SQRT_DBL_MIN ) && ( GSL_MAX(fabs(p_n0),fabs(p_n1)) > GSL_SQRT_DBL_MAX )){
-  	p_n0 *= 0.5;
-  	p_n1 *= 0.5;
-	p_n = p_n1;
-	e_n0 *= 0.5;
-	e_n1 *= 0.5;
-	e_n = e_n1;
-	c++;
+          p_n0 *= 0.5;
+          p_n1 *= 0.5;
+          p_n = p_n1;
+          e_n0 *= 0.5;
+          e_n1 *= 0.5;
+          e_n = e_n1;
+          c++;
       }
 
-	while(( ( ( fabs(p_n0) < GSL_SQRT_DBL_MIN ) && ( p_n0 != 0) ) || ( ( fabs(p_n1) < GSL_SQRT_DBL_MIN ) && ( p_n1 != 0) ) ) && ( GSL_MAX(fabs(p_n0),fabs(p_n1)) < 0.5*GSL_SQRT_DBL_MAX )){
-	p_n0 = p_n0*2;
-	p_n1 = p_n1*2;
-	p_n = p_n1;
-	e_n0 = e_n0*2;
-	e_n1 = e_n1*2;
-	e_n = e_n1;
-	c--;
+        while(( ( ( fabs(p_n0) < GSL_SQRT_DBL_MIN ) && ( p_n0 != 0) ) || ( ( fabs(p_n1) < GSL_SQRT_DBL_MIN ) && ( p_n1 != 0) ) ) && ( GSL_MAX(fabs(p_n0),fabs(p_n1)) < 0.5*GSL_SQRT_DBL_MAX )){
+          p_n0 = p_n0*2;
+          p_n1 = p_n1*2;
+          p_n = p_n1;
+          e_n0 = e_n0*2;
+          e_n1 = e_n1*2;
+          e_n = e_n1;
+          c--;
       }
     }
 
@@ -598,6 +664,8 @@ gsl_sf_hermite_func_e(const int n, const double x, gsl_sf_result * result)
   }
   }
 }
+
+#endif
 
 double
 gsl_sf_hermite_func(const int n, const double x)
