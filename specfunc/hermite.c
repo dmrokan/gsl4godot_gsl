@@ -1,7 +1,7 @@
 /* specfunc/hermite.c
  * 
- * Copyright (C) 2011, 2012, 2013, 2014 Konrad Griessinger
- * (konradg(at)gmx.net)
+ * Copyright (C) 2011, 2012, 2013, 2014 Konrad Griessinger (konradg(at)gmx.net)
+ * Copyright (C) 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1109,54 +1109,59 @@ gsl_sf_hermite_phys_series(const int n, const double x, const double * a)
 int
 gsl_sf_hermite_func_array(const int nmax, const double x, double * result_array)
 {
-  if(nmax < 0) {
-    GSL_ERROR ("domain error", GSL_EDOM);
-  }
-  else if(nmax == 0) {
-    result_array[0] = exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    return GSL_SUCCESS;
-  }
-  else if(nmax == 1) {
-    result_array[0] = exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result_array[1] = result_array[0]*M_SQRT2*x;
-    return GSL_SUCCESS;
-  }
-  else {
-    /* upward recurrence: Psi_{n+1} = sqrt(2/(n+1))*x Psi_n - sqrt(n/(n+1)) Psi_{n-1} */
-
-    double p_n0 = exp(-0.5*x*x)/sqrt(M_SQRTPI);   /* Psi_0(x) */
-    double p_n1 = p_n0*M_SQRT2*x;                 /* Psi_1(x) */
-    double p_n = p_n1;
-    int j=0, c=0;
-
-    result_array[0] = p_n0;
-    result_array[1] = p_n1;
-
-  for (j=1;j<=nmax-1;j++)
+  if (nmax < 0)
     {
-      p_n=(M_SQRT2*x*p_n1-sqrt(j)*p_n0)/sqrt(j+1.);
-      p_n0=p_n1;
-      p_n1=p_n;
-
-      while(( GSL_MIN(fabs(p_n0),fabs(p_n1)) > 2.0*GSL_SQRT_DBL_MIN ) && ( GSL_MAX(fabs(p_n0),fabs(p_n1)) > GSL_SQRT_DBL_MAX )){
-	p_n0 *= 0.5;
-	p_n1 *= 0.5;
-	p_n = p_n1;
-	c++;
-      }
-
-      while(( ( ( fabs(p_n0) < GSL_SQRT_DBL_MIN ) && ( p_n0 != 0) ) || ( ( fabs(p_n1) < GSL_SQRT_DBL_MIN ) && ( p_n1 != 0) ) ) && ( GSL_MAX(fabs(p_n0),fabs(p_n1)) < 0.5*GSL_SQRT_DBL_MAX )){
-	p_n0 *= 2.0;
-	p_n1 *= 2.0;
-	p_n = p_n1;
-	c--;
-      }
-
-      result_array[j+1] = pow2(c)*p_n;
+      GSL_ERROR ("domain error", GSL_EDOM);
     }
+  else if (nmax == 0)
+    {
+      result_array[0] = exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      return GSL_SUCCESS;
+    }
+  else if (nmax == 1)
+    {
+      result_array[0] = exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      result_array[1] = result_array[0]*M_SQRT2*x;
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      /* upward recurrence: Psi_{n+1} = sqrt(2/(n+1))*x Psi_n - sqrt(n/(n+1)) Psi_{n-1} */
 
-    return GSL_SUCCESS;
-  }
+      const double arg = -0.5 * x * x;
+      double hi2 = 1.0 / sqrt(M_SQRTPI);
+      double hi1 = M_SQRT2 * x * hi2;
+      double hi = 0.0;
+      double sum_log_scale = 0.0;
+      double abshi;
+      int i;
+
+      result_array[0] = exp(arg) * hi2;
+      result_array[1] = result_array[0] * M_SQRT2 * x;
+
+      for (i = 2; i <= nmax; ++i)
+        {
+          hi = sqrt(2.0 / i) * x * hi1 - sqrt((i - 1.0) / i) * hi2;
+          hi2 = hi1;
+          hi1 = hi;
+
+          abshi = fabs(hi);
+          if (abshi > 1.0)
+            {
+              double log_scale = round(log(abshi));
+              double scale = exp(-log_scale);
+
+              hi *= scale;
+              hi1 *= scale;
+              hi2 *= scale;
+              sum_log_scale += log_scale;
+            }
+
+          result_array[i] = hi * exp(arg + sum_log_scale);
+        }
+
+      return GSL_SUCCESS;
+    }
 }
 
 /* Evaluates the series sum_{j=0}^n a_j*Psi_j(x) with Psi_j being the j-th Hermite function.
@@ -1165,46 +1170,52 @@ gsl_sf_hermite_func_array(const int nmax, const double x, double * result_array)
 int
 gsl_sf_hermite_func_series_e(const int n, const double x, const double * a, gsl_sf_result * result)
 {
-  if(n < 0) {
-    DOMAIN_ERROR(result);
-  }
-  else if(n == 0) {
-    result->val = a[0]*exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result->err = GSL_DBL_EPSILON*fabs(result->val);
-    return GSL_SUCCESS;
-  }
-  else if(n == 1) {
-    result->val = (a[0]+a[1]*M_SQRT2*x)*exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result->err = 2.*GSL_DBL_EPSILON*(fabs(a[0])+fabs(a[1]*M_SQRT2*x))*exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    return GSL_SUCCESS;
-  }
-  else {
-    /* downward recurrence: b_n = a_n + sqrt(2/(n+1))*x b_{n+1} - sqrt((n+1)/(n+2)) b_{n+2} */
-
-    double b0 = 0.;
-    double b1 = 0.;
-    double btmp = 0.;
-
-    double e0 = 0.;
-    double e1 = 0.;
-    double etmp = e1;
-
-    int j;
-
-    for(j=n; j >= 0; j--){
-      btmp = b0;
-      b0  = a[j]+sqrt(2./(j+1))*x*b0-sqrt((j+1.)/(j+2.))*b1;
-      b1 = btmp;
-
-      etmp = e0;
-      e0  = (GSL_DBL_EPSILON*fabs(a[j])+sqrt(2./(j+1))*fabs(x)*e0+sqrt((j+1.)/(j+2.))*e1);
-      e1 = etmp;
+  if (n < 0)
+    {
+      DOMAIN_ERROR(result);
     }
+  else if (n == 0)
+    {
+      result->val = a[0]*exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      result->err = GSL_DBL_EPSILON*fabs(result->val);
+      return GSL_SUCCESS;
+    }
+  else if (n == 1)
+    {
+      result->val = (a[0]+a[1]*M_SQRT2*x)*exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      result->err = 2.*GSL_DBL_EPSILON*(fabs(a[0])+fabs(a[1]*M_SQRT2*x))*exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      /* downward recurrence: b_n = a_n + sqrt(2/(n+1))*x b_{n+1} - sqrt((n+1)/(n+2)) b_{n+2} */
 
-    result->val = b0*exp(-0.5*x*x)/sqrt(M_SQRTPI);
-    result->err = e0 + fabs(result->val)*GSL_DBL_EPSILON;
-    return GSL_SUCCESS;
-  }
+      double b0 = 0.;
+      double b1 = 0.;
+      double btmp = 0.;
+
+      double e0 = 0.;
+      double e1 = 0.;
+      double etmp = e1;
+
+      int j;
+
+      for (j = n; j >= 0; j--)
+        {
+          btmp = b0;
+          b0  = a[j]+sqrt(2./(j+1))*x*b0-sqrt((j+1.)/(j+2.))*b1;
+          b1 = btmp;
+
+          etmp = e0;
+          e0  = (GSL_DBL_EPSILON*fabs(a[j])+sqrt(2./(j+1))*fabs(x)*e0+sqrt((j+1.)/(j+2.))*e1);
+          e1 = etmp;
+        }
+
+      result->val = b0*exp(-0.5*x*x)/sqrt(M_SQRTPI);
+      result->err = e0 + fabs(result->val)*GSL_DBL_EPSILON;
+
+      return GSL_SUCCESS;
+    }
 }
 
 double

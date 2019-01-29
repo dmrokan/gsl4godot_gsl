@@ -1,30 +1,32 @@
 .. Version 1: Konrad Griessinger (konradg(at)gmx.net), 12/2013
 
+Hermite polynomials and functions are discussed in Abramowitz & Stegun, Chapter 22 and
+Szego, Gabor (1939, 1958, 1967), Orthogonal Polynomials, American Mathematical Society.
+The Hermite polynomials and functions are defined in the header file :file:`gsl_sf_hermite.h`.
+
 .. index::
    single: Hermite polynomials
-   single: Hermite functions
 
-.. :math:`He_n(x)`
-.. @math{H_n(x)}
-.. how can you get greek characters in the index in Texinfo?!?
-.. @cindex @math{psi_n(x)}
+Hermite Polynomials
+-------------------
 
-The Hermite polynomials exist in two variants: the probabilists' version :math:`He_n(x)`
-and the physicists'version :math:`H_n(x)`. The are defined by the derivatives
+The Hermite polynomials exist in two variants: the physicists'version
+:math:`H_n(x)` and the probabilists' version :math:`He_n(x)`.
+They are defined by the derivatives
 
 .. only:: not texinfo
 
    .. math::
 
-      He_n(x) & = (-1)^n e^{x^2/2} \left({d \over dx}\right)^n e^{-x^2/2} \\
-      H_n(x) & = (-1)^n e^{x^2} \left({d \over dx}\right)^n e^{-x^2}
+      H_n(x) & = (-1)^n e^{x^2} \left({d \over dx}\right)^n e^{-x^2} \\
+      He_n(x) & = (-1)^n e^{x^2/2} \left({d \over dx}\right)^n e^{-x^2/2}
 
 .. only:: texinfo
 
    ::
 
-      He_n(x) = (-1)^n e^{x^2/2} (d / dx)^n e^{-x^2/2} 
       H_n(x) = (-1)^n e^{x^2} (d / dx)^n e^{-x^2} 
+      He_n(x) = (-1)^n e^{x^2/2} (d / dx)^n e^{-x^2/2} 
 
 They are connected via 
 
@@ -32,15 +34,15 @@ They are connected via
 
    .. math::
 
-      He_n(x) & = 2^{-n/2} H_n \left( {x \over \sqrt{2}} \right) \\
-      H_n(x) & = 2^{n/2} He_n \left( \sqrt{2} x \right)
+      H_n(x) & = 2^{n/2} He_n \left( \sqrt{2} x \right) \\
+      He_n(x) & = 2^{-n/2} H_n \left( {x \over \sqrt{2}} \right)
 
 .. only:: texinfo
 
    ::
 
-      He_n(x) = 2^{-n/2} H_n(x / \sqrt{2})
       H_n(x) = 2^{n/2} He_n(\sqrt{2} x)
+      He_n(x) = 2^{-n/2} H_n(x / \sqrt{2})
 
 and satisfy the ordinary differential equations
 
@@ -48,47 +50,15 @@ and satisfy the ordinary differential equations
 
    .. math::
 
-      He_n^{\prime\prime}(x) - x He_n^{\prime}(x) + n He_n(x) & = 0 \\
-      H_n^{\prime\prime}(x) - 2x H_n^{\prime}(x) + 2n H_n(x) & = 0
+      H_n^{\prime\prime}(x) - 2x H_n^{\prime}(x) + 2n H_n(x) & = 0 \\
+      He_n^{\prime\prime}(x) - x He_n^{\prime}(x) + n He_n(x) & = 0
 
 .. only:: texinfo
 
    ::
 
-      He_n^{''}(x) - x He_n^{'}(x) + n He_n(x) = 0
       H_n^{''}(x) - 2x H_n^{'}(x) + 2n H_n(x) = 0
-
-The closely related Hermite functions are defined by 
-
-.. only:: not texinfo
-
-   .. math:: \psi_n(x) = \left( n! \sqrt{\pi} \right)^{-1/2} e^{-x^2/2} He_n \left( {\sqrt{2} x} \right)
-
-.. only:: texinfo
-
-   ::
-
-      psi_n = (n! sqrt(\pi))^{-1/2} e^{-x^2/2} He_n({sqrt(2) x})
-
-and satisfy the Schrödinger equation for a quantum mechanical harmonic oscillator
-
-.. only:: not texinfo
-
-   .. math:: \psi_n^{\prime\prime}(x) + (2n + 1 - x^2) \psi_n(x) = 0
-
-.. only:: texinfo
-
-   ::
-
-      psi_n^{''}(x) + (2n + 1 - x^2) psi_n(x) = 0
-
-Maybe most importantly, the Hermite functions :math:`\psi_n` are eigenfunctions of the (continuous) Fourier transform.
-
-For further information see Abramowitz & Stegun, Chapter 22 and Szego, Gabor (1939, 1958, 1967), Orthogonal Polynomials,
-American Mathematical Society. The Hermite polynomials and functions are defined in the header file :file:`gsl_sf_hermite.h`.
-
-Hermite Polynomials
--------------------
+      He_n^{''}(x) - x He_n^{'}(x) + n He_n(x) = 0
 
 .. function:: double gsl_sf_hermite_prob (const int n, const double x)
               int gsl_sf_hermite_prob_e (const int n, const double x, gsl_sf_result * result)
@@ -122,8 +92,43 @@ Hermite Polynomials
    These routines evaluate the series :math:`\sum_{j=0}^n a_j H_j(x)` with :math:`H_j` being
    the :math:`j`-th physicists' Hermite polynomial using the Clenshaw algorithm.
 
+.. index::
+   single: Hermite functions
+
 Hermite Functions
 -----------------
+
+The Hermite functions are defined by
+
+.. only:: not texinfo
+
+   .. math:: \psi_n(x) = \left( 2^n n! \sqrt{\pi} \right)^{-1/2} e^{-x^2/2} H_n \left( x \right)
+
+.. only:: texinfo
+
+   ::
+
+      \psi_n(x) = ( 2^n n! \sqrt{\pi} )^{-1/2} e^{-x^2/2} H_n(x)
+
+and satisfy the Schrödinger equation for a quantum mechanical harmonic oscillator
+
+.. only:: not texinfo
+
+   .. math:: \psi_n^{\prime\prime}(x) + (2n + 1 - x^2) \psi_n(x) = 0
+
+.. only:: texinfo
+
+   ::
+
+      psi''_n(x) + (2n + 1 - x^2) psi_n(x) = 0
+
+They are orthonormal,
+
+.. math:: \int_{-\infty}^{\infty} \psi_m(x) \psi_n(x) dx = \delta_{mn}
+
+and form an orthonormal basis of :math:`L^2(\mathbb{R})`. The Hermite functions
+are also eigenfunctions of the continuous Fourier transform. GSL evaluates the Hermite
+functions using the contour integration method of Bunck (2009).
 
 .. function:: double gsl_sf_hermite_func (const int n, const double x)
               int gsl_sf_hermite_func_e (const int n, const double x, gsl_sf_result * result)
@@ -132,8 +137,8 @@ Hermite Functions
 
 .. function:: int gsl_sf_hermite_func_array (const int nmax, const double x, double * result_array)
 
-   This routine evaluates all Hermite functions :math:`\psi_n(x)` up to order :data:`nmax` at position :data:`x`.
-   The results are stored in :data:`result_array`.
+   This routine evaluates all Hermite functions :math:`\psi_n(x)` for orders :math:`n = 0, \dots, \textrm{nmax}`
+   at position :data:`x`. The results are stored in :data:`result_array` which has length at least :code:`nmax + 1`.
 
 .. function:: double gsl_sf_hermite_func_series (const int n, const double x, const double * a)
               int gsl_sf_hermite_func_series_e (const int n, const double x, const double * a, gsl_sf_result * result)
