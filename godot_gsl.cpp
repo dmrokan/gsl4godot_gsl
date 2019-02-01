@@ -358,7 +358,7 @@ void GodotGSL::ode_run(const String on, const Array x0, const Array time_interva
     ode->run(start_time, end_time, dt);
 }
 
-void GodotGSL::ode_set_node_path(const String on, Node obj, const String subpath, const int index)
+void GodotGSL::ode_set_node_path(const String on, Node &obj, const String subpath, const int index)
 {
     if (!odes.has(on))
     {

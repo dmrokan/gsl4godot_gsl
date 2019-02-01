@@ -31,7 +31,7 @@ public:
     void ode(const String on, const size_t dim);
     void ode_set_fx(const String on, const String fn);
     void ode_run(const String on, const Array x0, const Array time_interval, const double dt);
-    void ode_set_node_path(const String on, Node obj, const String subpath, const int index);
+    void ode_set_node_path(const String on, Node &obj, const String subpath, const int index);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);
