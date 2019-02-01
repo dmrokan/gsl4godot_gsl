@@ -298,6 +298,7 @@ int GodotGSLMatrix::add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds)
 
 STYPE GodotGSLMatrix::get(const size_t row, const size_t col)
 {
+    // printf("cndjdjdjdjd %lu %lu %lu %lu\n", size[0], size[1], row, col);
     if (row >= size[0] || col >= size[1])
     {
         ERR_FAIL_COND_V("GodotGSLMatrix::get: row >= size[0] || col >= size[1]", 0.0);

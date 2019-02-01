@@ -58,27 +58,29 @@ void GodotGSLODE::run(double t0, double t1, double _dt)
 
     for (size_t k = 0; k < step_count; k++)
     {
-        step(dt * (k+1) + t0);
-
-        update_node_properties();
+        step(dt);
     }
 }
 
-int GodotGSLODE::step(double tt)
+int GodotGSLODE::step(double dt)
 {
+    double tt = t + dt;
     double *y = x->get_data();
     int status = gsl_odeiv2_driver_apply(driver, &t, tt, y);
-
 
     if (status != GSL_SUCCESS)
     {
         GGSL_MESSAGE("GodotGSLODE::step: status != GSL_SUCCESS");
     }
+    else
+    {
+        update_node_properties();
+    }
 
     return status;
 }
 
-void GodotGSLODE::set_node_path(Node *obj, const String subpath, const int index)
+void GodotGSLODE::set_node_path(Object *obj, const String subpath, const int index)
 {
     NodePath property = NodePath(subpath).get_as_property_path();
     Vector<StringName> key = property.get_subnames();
@@ -87,15 +89,15 @@ void GodotGSLODE::set_node_path(Node *obj, const String subpath, const int index
 
     if (objects != NULL)
     {
-        Node **tmp;
+        Object **tmp;
         tmp = objects;
-        GGSL_ALLOC_G(objects, ++object_count, Node);
-        memcpy(objects, tmp, (object_count - 1) * sizeof(Node*));
+        GGSL_ALLOC_G(objects, ++object_count, Object);
+        memcpy(objects, tmp, (object_count - 1) * sizeof(Object*));
         GGSL_FREE(tmp);
     }
     else
     {
-        GGSL_ALLOC_G(objects, ++object_count, Node);
+        GGSL_ALLOC_G(objects, ++object_count, Object);
     }
 
     objects[object_count - 1] = obj;
@@ -113,12 +115,19 @@ void GodotGSLODE::update_node_properties()
     for (int k = 0; k < indices.size(); k++)
     {
         int index = indices[k];
+        // printf("lklskdlkfs %d %lu %lu\n", index, x->size[0], x->size[1]);
         Vector<StringName> key = keys[k];
-        Node *obj = objects[k];
-        double value = x->get(index, 1);
+        Object *obj = objects[k];
+        double value = x->get(index, 0);
         bool valid = false;
         obj->set_indexed(key, value, &valid);
     }
+}
+
+void GodotGSLODE::set_initial_conditions(const Array &x0_arr, const double t0)
+{
+    x->copy_vector_from_array(x0_arr);
+    t = t0;
 }
 
 int __function(double t, const double y[], double f[], void *params)
@@ -130,7 +139,6 @@ int __function(double t, const double y[], double f[], void *params)
 
     size_t size_in_bytes = ode->dimension * sizeof(double);
     memcpy(f, ode->xdot->get_data(), size_in_bytes);
-    double val = ode->xdot->get_data()[0];
 
     return GSL_SUCCESS;
 }

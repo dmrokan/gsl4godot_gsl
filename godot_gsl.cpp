@@ -19,7 +19,9 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("ode", "on", "dim"), &GodotGSL::ode);
     ClassDB::bind_method(D_METHOD("ode_set_fx", "on", "fn"), &GodotGSL::ode_set_fx);
     ClassDB::bind_method(D_METHOD("ode_run", "on", "x0", "time_interval", "dt"), &GodotGSL::ode_run);
-    ClassDB::bind_method(D_METHOD("ode_run", "on", "object", "property", "index"), &GodotGSL::ode_set_node_path);
+    ClassDB::bind_method(D_METHOD("ode_set_node_path", "on", "object", "property", "index"), &GodotGSL::ode_set_node_path);
+    ClassDB::bind_method(D_METHOD("ode_set_init_cond", "on", "x0", "t0"), &GodotGSL::ode_set_init_cond);
+    ClassDB::bind_method(D_METHOD("ode_run_delta", "on", "dt"), &GodotGSL::ode_run_delta);
 }
 
 GodotGSL::GodotGSL()
@@ -358,7 +360,32 @@ void GodotGSL::ode_run(const String on, const Array x0, const Array time_interva
     ode->run(start_time, end_time, dt);
 }
 
-void GodotGSL::ode_set_node_path(const String on, Node &obj, const String subpath, const int index)
+void GodotGSL::ode_set_init_cond(const String on, const Array x0, const double t0)
+{
+    if (!odes.has(on))
+    {
+        GGSL_MESSAGE("GodotGSL::ode_run: !odes.has(on)");
+        return;
+    }
+
+    GodotGSLODE *ode = odes[on];
+    ode->set_initial_conditions(x0, t0);
+}
+
+void GodotGSL::ode_run_delta(const String on, const double delta)
+{
+    if (!odes.has(on))
+    {
+        GGSL_MESSAGE("GodotGSL::ode_run: !odes.has(on)");
+        return;
+    }
+
+    GodotGSLODE *ode = odes[on];
+
+    ode->step(delta);
+}
+
+void GodotGSL::ode_set_node_path(const String on, Variant obj_var, const String subpath, const int index)
 {
     if (!odes.has(on))
     {
@@ -366,7 +393,9 @@ void GodotGSL::ode_set_node_path(const String on, Node &obj, const String subpat
         return;
     }
 
+    Object *obj = (Object*) obj_var;
+
     GodotGSLODE *ode = odes[on];
     /* TODO: Use weak ptr */
-    ode->set_node_path(&obj, subpath, index);
+    ode->set_node_path(obj, subpath, index);
 }
