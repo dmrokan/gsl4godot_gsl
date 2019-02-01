@@ -1,5 +1,94 @@
 #include "godot_gsl_function.h"
 
+#define ARGV_BOUND_DATA_COUNT 4
+#define GGSL_ARGV_BOUNDS_ALLOC(__var, size)                           \
+    {                                                                 \
+    size_t byte_size = size * sizeof(size_t) * ARGV_BOUND_DATA_COUNT; \
+    uint8_t *mem_tmp = memnew_arr(uint8_t, byte_size);                \
+    __var = (size_t**) mem_tmp;                                       \
+    }                                                                 \
+
+
+#define GGSL_ARGV_BOUNDS_SET(__var, __bounds, k)                        \
+    {                                                                   \
+        memcpy(&__var[k], __bounds,                                     \
+               sizeof(size_t) * ARGV_BOUND_DATA_COUNT);                 \
+    }                                                                   \
+
+
+typedef enum GGSL_PARSER_STATE {
+    S_IDLE,
+    S_NUMBER,
+    S_SEP,
+} GGSL_PARSER_STATE;
+
+size_t *argv_bounds_parse(const String vn, size_t *size)
+{
+    static GGSL_PARSER_STATE state = S_IDLE;
+    static size_t bounds[ARGV_BOUND_DATA_COUNT];
+    bounds[0] = bounds[2] = 0;
+    bounds[1] = size[0];
+    bounds[3] = size[1];
+
+    int l = 0;
+    String sub = "";
+    for (int k = 0; k < vn.size(); k++)
+    {
+        char c = (vn[k]);
+
+        if (state == S_IDLE)
+        {
+            if (c == '[')
+            {
+                state = S_NUMBER;
+                continue;
+            }
+        }
+        else if (state == S_NUMBER)
+        {
+            if (c >= '0' && c <= '9')
+            {
+                sub += c;
+                continue;
+            }
+            else if (c == ':' || c == ',')
+            {
+                bounds[l] = sub.to_int();
+                l++;
+                state = S_SEP;
+                continue;
+            }
+            else if (c == ']')
+            {
+                bounds[l] = sub.to_int();
+                state = S_IDLE;
+                break;
+            }
+        }
+        else if (state == S_SEP)
+        {
+            sub.clear();
+            k--;
+            state = S_NUMBER;
+            continue;
+        }
+    }
+
+    return &bounds[0];
+}
+
+String remove_whitespace(const String str)
+{
+    String result = str;
+    result.replace(" ", "");
+    result.replace("\t", "");
+    result.replace("\n", "");
+    result.replace("\r", "");
+
+    return result;
+}
+
+
 /***** GodotGSLFunction methods *****/
 
 GodotGSLFunction::GodotGSLFunction(const String fn)
@@ -48,6 +137,19 @@ void GodotGSLFunction::add_arguments(const Array args, GodotGSLMatrix **a)
     argc = args.size();
 }
 
+void GodotGSLFunction::add_argument(const String vn, GodotGSLMatrix *a)
+{
+    GodotGSLMatrix **_argv;
+    GGSL_ALLOC(_argv, argc + 1);
+
+    memcpy(_argv, argv, argc * sizeof(GodotGSLMatrix*));
+
+    argv[argc] = a;
+    arg_names.append(vn);
+
+    argc++;
+}
+
 void GodotGSLFunction::add_instruction(const String in, const Array args)
 {
     GodotGSLInstruction **backup = NULL;
@@ -75,11 +177,18 @@ void GodotGSLFunction::add_instruction(const String in, const Array args)
     {
         set_instruction_arguments(ins, args);
     }
-
-    GGSL_MESSAGE_I(String("GodotGSLFunction::add_instruction: Count is {_}").format(instruction_count).ascii(), 1);
-    printf("aaaaaaaaaaaaaaaaa %d\n", instruction_count);
+    
     instructions[instruction_count - 1] = ins;
-    current = ins;
+
+    if (current == NULL)
+    {
+        current = ins;
+    }
+    else
+    {
+        current->nxt = ins;
+        current = ins;
+    }
 }
 
 void GodotGSLFunction::set_instruction_arguments(Array args)
@@ -111,19 +220,31 @@ void GodotGSLFunction::set_instruction_arguments(GodotGSLInstruction *ins, Array
     if (ins->argv != NULL)
     {
         GGSL_FREE(ins->argv);
+        memdelete_arr(ins->argv_bounds);
     }
 
-    GodotGSLMatrix **argv;
     GGSL_ALLOC(ins->argv, size);
+    ins->argv_bounds = memnew_arr(GGSL_BOUNDS, size);
 
     for (int k = 0; k < size; k++)
     {
-        String vn = args[k];
+        String arg = remove_whitespace(args[k]);
+        int sindex = arg.find_char('[');
+        if (sindex < 0)
+        {
+            sindex = arg.size();
+        }
+
+        String vn = arg.substr(0, sindex);
         int index = arg_names.find(vn);
 
         if (index > -1)
         {
             ins->argv[k] = argv[index];
+            GodotGSLMatrix *argv_mtx = (GodotGSLMatrix*) argv[index];
+            size_t *bounds = argv_bounds_parse(arg, argv_mtx->size);
+            /* TODO: memcpy may no be the right wway to do this */
+            GGSL_ARGV_BOUNDS_SET(ins->argv_bounds, bounds, k);
         }
         else
         {

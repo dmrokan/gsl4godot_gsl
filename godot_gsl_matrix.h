@@ -115,9 +115,14 @@ typedef enum cond_type {
 #define gsl_blas_gemm gsl_blas_dgemm
 #endif
 
+typedef struct GGSL_BOUNDS {
+    size_t r1, r2, c1, c2;
+} GGSL_BOUNDS;
+
 class GodotGSLMatrix {
 public:
     GodotGSLMatrix(const size_t row_count, const size_t col_count) { init(row_count, col_count); }
+    GodotGSLMatrix(const size_t row_count) { init(row_count, 1); }
     GodotGSLMatrix(const Array a) { init(a); }
     GodotGSLMatrix() { }
     ~GodotGSLMatrix();
@@ -125,22 +130,24 @@ public:
     void init(const Array a);
     void set_zero();
     void set_identity();
-    int add(const GodotGSLMatrix &a);
+    int add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds);
     int sub(const GodotGSLMatrix &a);
     int mul_elements(const GodotGSLMatrix &a);
     int scale(const STYPE a);
     STYPE get(const size_t row, const size_t col);
     DTYPE *get_ptr() const;
+    STYPE *get_data() const;
     VTYPE *get_vec_ptr() const;
     void set(const size_t row, const size_t col, const STYPE a);
-    GodotGSLMatrix *prod(const GodotGSLMatrix &a);
-    void fx(const String fn, const GodotGSLMatrix *a, GodotGSLMatrix *to);
-    void fx(const String fn, GodotGSLMatrix *to);
-    void fx(const String fn, const GodotGSLMatrix *a);
-    void fx(const String fn);
+    void prod(GodotGSLMatrix &a, GodotGSLMatrix *to, GGSL_BOUNDS *bounds);
+    void fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, GGSL_BOUNDS *bounds);
+    void fx(const String fn, GodotGSLMatrix *a, GGSL_BOUNDS *bounds);
+    void fx(const String fn, GGSL_BOUNDS *bounds);
     void copy(GodotGSLMatrix* to);
+    void copy_vector_from_array(const Array a);
 
     size_t size[2];
+    GGSL_BOUNDS bounds;
 
 private:
     DTYPE *gsl_mtx;

@@ -5,6 +5,7 @@
 #include "core/reference.h"
 #include "godot_gsl_matrix.h"
 #include "godot_gsl_function.h"
+#include "godot_gsl_ode.h"
 
 class GodotGSL : public Reference {
     GDCLASS(GodotGSL, Reference);
@@ -27,12 +28,17 @@ public:
     void function(const String fn, const Array args);
     void instruction(const String in, const Array args);
     void callf(const String fn);
+    void ode(const String on, const size_t dim);
+    void ode_set_fx(const String on, const String fn);
+    void ode_run(const String on, const Array x0, const Array time_interval, const double dt);
+    void ode_set_node_path(const String on, Node obj, const String subpath, const int index);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);
     void _add_function(String fn, GodotGSLFunction* fnc);
     Map<String, GodotGSLMatrix*> variables;
     Map<String, GodotGSLFunction*> functions;
+    Map<String, GodotGSLODE*> odes;
     GodotGSLFunction* current;
 };
 

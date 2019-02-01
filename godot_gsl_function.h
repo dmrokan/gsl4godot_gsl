@@ -51,14 +51,14 @@ public:
             {
                 GodotGSLMatrix *mtx_a = argv[0];
                 GodotGSLMatrix *mtx_to = argv[1];
-                mtx_a->fx(name, mtx_to);
+                mtx_a->fx(name, mtx_to, argv_bounds);
             }
             else if (argc == 3)
             {
                 GodotGSLMatrix *mtx_a = argv[0];
                 GodotGSLMatrix *mtx_b = argv[1];
                 GodotGSLMatrix *mtx_to = argv[2];
-                mtx_a->fx(name, mtx_b, mtx_to);
+                mtx_a->fx(name, mtx_b, mtx_to, argv_bounds);
             }
             else
             {
@@ -73,6 +73,7 @@ public:
         String name;
         size_t argc;
         GodotGSLMatrix **argv = NULL;
+        GGSL_BOUNDS *argv_bounds;
     };
 
     GodotGSLFunction() { }
@@ -80,6 +81,7 @@ public:
     ~GodotGSLFunction();
     void execute();
     void add_arguments(const Array args, GodotGSLMatrix **a);
+    void add_argument(const String vn, GodotGSLMatrix *a);
     void add_instruction(const String in);
     void add_instruction(const String in, const Array args);
     void set_instruction_arguments(const Array args);

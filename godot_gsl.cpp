@@ -16,6 +16,10 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("function", "fn", "args"), &GodotGSL::function, "", Array());
     ClassDB::bind_method(D_METHOD("instruction", "ins_name", "args"), &GodotGSL::instruction, "", Array());
     ClassDB::bind_method(D_METHOD("callf", "fn"), &GodotGSL::callf);
+    ClassDB::bind_method(D_METHOD("ode", "on", "dim"), &GodotGSL::ode);
+    ClassDB::bind_method(D_METHOD("ode_set_fx", "on", "fn"), &GodotGSL::ode_set_fx);
+    ClassDB::bind_method(D_METHOD("ode_run", "on", "x0", "time_interval", "dt"), &GodotGSL::ode_run);
+    ClassDB::bind_method(D_METHOD("ode_run", "on", "object", "property", "index"), &GodotGSL::ode_set_node_path);
 }
 
 GodotGSL::GodotGSL()
@@ -27,6 +31,7 @@ GodotGSL::~GodotGSL()
 {
     variables.clear();
     functions.clear();
+    odes.clear();
 }
 
 void GodotGSL::_add_variable(String vn, GodotGSLMatrix* mtx)
@@ -63,7 +68,7 @@ void GodotGSL::add(String vn1, String vn2)
     GodotGSLMatrix *mtx1 = variables[vn1];
     GodotGSLMatrix *mtx2 = variables[vn2];
 
-    mtx1->add(*mtx2);
+    mtx1->add(*mtx2, NULL);
 }
 
 void GodotGSL::set_zero(String vn)
@@ -100,7 +105,9 @@ void GodotGSL::prod(String vn1, String vn2, String to)
     GodotGSLMatrix *mtx1 = variables[vn1];
     GodotGSLMatrix *mtx2 = variables[vn2];
 
-    GodotGSLMatrix *result = mtx2->prod(*mtx1);
+    GodotGSLMatrix *result = NULL;
+    mtx2->prod(*mtx1, result, NULL);
+
     _add_variable(to, result);
 }
 
@@ -185,7 +192,11 @@ void GodotGSL::fx(const String fn, const String a, String to)
 
         mtx_a = variables[a];
         mtx_to = variables[to];
-        mtx_a->fx(fn, mtx_to);
+        /* TODO: find a way to supply default bounds
+         * Possibly you are going to put this in fx
+         * Cause you have all bound informations of matrices
+         */
+        mtx_a->fx(fn, mtx_to, NULL);
     }
 
     /*
@@ -225,15 +236,22 @@ void GodotGSL::function(const String fn, const Array args)
         for (int k = 0; k < size; k++)
         {
             String vn = args[k];
+            // int sindex = vn.find_char('[');
+            // if (sindex < 0)
+            // {
+            //     sindex = vn.size();
+            // }
+
+            // vn = vn.substr(0, sindex);
             if (variables.has(vn))
             {
                 argv[k] = variables[vn];
-                GGSL_DEBUG_MSG(vn.ascii(), 1);
+                GGSL_DEBUG_MSG(vn.utf8().get_data(), 1);
             }
             else
             {
                 GGSL_MESSAGE("GodotGSL::function: !variables.has(vn)");
-                GGSL_MESSAGE_I(vn.ascii(), 1);
+                GGSL_MESSAGE_I(vn.utf8().get_data(), 1);
                 return;
             }
         }
@@ -270,4 +288,85 @@ void GodotGSL::callf(const String fn)
     GodotGSLFunction *fnc = functions[fn];
     fnc->execute();
     GGSL_DEBUG_MSG("GodotGSL::callf: procedure ends", 0);
+}
+
+void GodotGSL::ode(const String on, const size_t dim)
+{
+    if (odes.has(on))
+    {
+        GodotGSLODE *to_rm = odes[on];
+        odes[on] = memnew(GodotGSLODE(dim));
+        delete to_rm;
+    }
+    else
+    {
+        odes[on] = memnew(GodotGSLODE(dim));
+    }
+}
+
+void GodotGSL::ode_set_fx(const String on, const String fn)
+{
+    GodotGSLODE *ode;
+    GodotGSLFunction *fnc;
+
+    if (odes.has(on))
+    {
+        ode = odes[on];
+    }
+    else
+    {
+        GGSL_MESSAGE("GodotGSL::ode_set_fx: !odes.has(on)");
+        return;
+    }
+
+    if (functions.has(fn))
+    {
+        fnc = functions[fn];
+    }
+    else
+    {
+        GGSL_MESSAGE("GodotGSL::ode_set_fx: !functions.has(on)");
+        return;
+    }
+
+    ode->set_function(fnc);
+}
+
+void GodotGSL::ode_run(const String on, const Array x0, const Array time_interval, const double dt)
+{
+    if (!odes.has(on))
+    {
+        GGSL_MESSAGE("GodotGSL::ode_run: !odes.has(on)");
+        return;
+    }
+
+    GodotGSLODE *ode = odes[on];
+    ode->x->copy_vector_from_array(x0);
+
+    double start_time, end_time;
+    if (time_interval.size() == 1)
+    {
+        start_time = 0.0;
+        end_time = time_interval[0];
+    }
+    else if (time_interval.size() == 2)
+    {
+        start_time = time_interval[0];
+        end_time = time_interval[1];
+    }
+
+    ode->run(start_time, end_time, dt);
+}
+
+void GodotGSL::ode_set_node_path(const String on, Node obj, const String subpath, const int index)
+{
+    if (!odes.has(on))
+    {
+        GGSL_MESSAGE("GodotGSL::ode_set_node_path: !odes.has(on)");
+        return;
+    }
+
+    GodotGSLODE *ode = odes[on];
+    /* TODO: Use weak ptr */
+    ode->set_node_path(&obj, subpath, index);
 }

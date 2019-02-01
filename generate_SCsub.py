@@ -60,6 +60,7 @@ def scons_sources(fh, dirs):
     fh.write('    , \'godot_gsl.cpp\'\n')
     fh.write('    , \'godot_gsl_matrix.cpp\'\n')
     fh.write('    , \'godot_gsl_function.cpp\'\n')
+    fh.write('    , \'godot_gsl_ode.cpp\'\n')
     fh.write('    , \'register_types.cpp\'\n')
     fh.write(']\n\n')
 
@@ -159,6 +160,7 @@ def SCsub(root_dir):
         scons_sources(sc, dir_list)
 
         sc.write('env_godot_gsl = env\n')
+        sc.write('env_godot_gsl.Append(CXXFLAGS=[\'-g\'])\n')
         sc.write('env_godot_gsl.Append(CPPPATH=scons_paths)\n')
         sc.write('env_godot_gsl.add_source_files(env.modules_sources, scons_sources)')
 
