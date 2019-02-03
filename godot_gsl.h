@@ -34,6 +34,7 @@ public:
     void ode_set_node_path(const String on, Variant obj_var, const String subpath, const int index);
     void ode_set_init_cond(const String on, const Array x0, const double t0);
     void ode_run_delta(const String on, const double delta);
+    void matrix_set_identity(const String vn);
 
 private:
     void _add_variable(String vn, GodotGSLMatrix* mtx);

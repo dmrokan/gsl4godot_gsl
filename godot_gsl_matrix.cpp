@@ -518,21 +518,17 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
     }
     else if (fn == FN_MUL)
     {
-        // if (_condition(EQUAL_SIZE, a))
-        // {
-        //     if (this != to)
-        //     {
-        //         this->copy(to);
-        //     }
-        //     else if (!_condition(EQUAL_SIZE, to))
-        //     {
-        //         return;
-        //     }
-
-        // }
-
         prod(*a, to, bounds);
         return;
+    }
+    else if (fn == FN_EQ)
+    {
+        if (_condition(EQUAL_SIZE, to))
+        {
+            math_func1 = ggsl_math_eq;
+            _fx_elements1(to);
+            return;
+        }
     }
 }
 

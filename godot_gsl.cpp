@@ -22,6 +22,7 @@ void GodotGSL::_bind_methods()
     ClassDB::bind_method(D_METHOD("ode_set_node_path", "on", "object", "property", "index"), &GodotGSL::ode_set_node_path);
     ClassDB::bind_method(D_METHOD("ode_set_init_cond", "on", "x0", "t0"), &GodotGSL::ode_set_init_cond);
     ClassDB::bind_method(D_METHOD("ode_run_delta", "on", "dt"), &GodotGSL::ode_run_delta);
+    ClassDB::bind_method(D_METHOD("matrix_set_identity", "vn"), &GodotGSL::matrix_set_identity);
 }
 
 GodotGSL::GodotGSL()
@@ -398,4 +399,12 @@ void GodotGSL::ode_set_node_path(const String on, Variant obj_var, const String 
     GodotGSLODE *ode = odes[on];
     /* TODO: Use weak ptr */
     ode->set_node_path(obj, subpath, index);
+}
+
+void GodotGSL::matrix_set_identity(const String vn)
+{
+    GodotGSLMatrix *mtx;
+    GGSL_HAS(variables, vn, mtx);
+
+    mtx->set_identity();
 }

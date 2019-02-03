@@ -10,6 +10,7 @@
 #include <gsl_blas.h>
 #include <math.h>
 #include "godot_gsl_macros.h"
+#include "godot_gsl_scalar_math.h"
 
 #define ERR_DIMENSION_MISMATCH -1
 #define ERR_NULL_VALUE -2

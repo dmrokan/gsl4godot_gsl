@@ -48,4 +48,14 @@
 #define GGSL_DEBUG_MSG(msg, lvl) 0
 #endif
 
+#define GGSL_HAS(map, el, to)                      \
+    {                                              \
+        if (!map.has(el))                          \
+        {                                          \
+        GGSL_MESSAGE("GGSL_HAS: !map.has(el)");    \
+        return;                                    \
+        }                                          \
+        to = map[el];                              \
+    }                                              \
+
 #endif
