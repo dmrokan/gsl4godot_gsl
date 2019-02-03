@@ -676,3 +676,7 @@ of randomness (but not yet the new DVDROM) is at
 
 
  George Marsaglia
+
+Hermite module:
+1. hermite_func_der function needs fixing
+2. hermite_phys_array and _series - rename and fix

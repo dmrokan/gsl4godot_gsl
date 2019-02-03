@@ -64,6 +64,7 @@ and satisfy the ordinary differential equations
               int gsl_sf_hermite_prob_e (const int n, const double x, gsl_sf_result * result)
 
    These routines evaluate the probabilists' Hermite polynomial :math:`He_n(x)` of order :data:`n` at position :data:`x`.
+   If an overflow is detected, :macro:`GSL_EOVRFLW` is returned without calling the error handler.
 
 .. function:: int gsl_sf_hermite_prob_array (const int nmax, const double x, double * result_array)
 
@@ -76,10 +77,11 @@ and satisfy the ordinary differential equations
    These routines evaluate the series :math:`\sum_{j=0}^n a_j He_j(x)` with :math:`He_j` being the
    :math:`j`-th probabilists' Hermite polynomial using the Clenshaw algorithm.
 
-.. function:: double gsl_sf_hermite_phys (const int n, const double x)
-              int gsl_sf_hermite_phys_e (const int n, const double x, gsl_sf_result * result)
+.. function:: double gsl_sf_hermite (const int n, const double x)
+              int gsl_sf_hermite_e (const int n, const double x, gsl_sf_result * result)
 
    These routines evaluate the physicists' Hermite polynomial :math:`H_n(x)` of order :data:`n` at position :data:`x`.
+   If an overflow is detected, :macro:`GSL_EOVRFLW` is returned without calling the error handler.
 
 .. function:: int gsl_sf_hermite_phys_array (const int nmax, const double x, double * result_array)
 
