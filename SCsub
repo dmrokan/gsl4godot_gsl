@@ -1,0 +1,222 @@
+#!/usr/bin/env python
+# SCsub
+import re
+import os
+Import('env')
+
+excluded_files = [
+    'common.c'
+    , 'apply_givens.c'
+    , 'cholesky_common.c'
+    , 'svdstep.c'
+    , 'lmiterate.c'
+    , 'lmmisc.c'
+    , 'lmpar.c'
+    , 'lmset.c'
+    , 'linear_common.c'
+    , 'qrsolv.c'
+    , 'hypot.c'
+    , 'tests.c'
+    , 'urand.c'
+    , 'c_init.c'
+    , 'c_main.c'
+    , 'bitreverse.c'
+    , 'c_radix2.c'
+    , 'bitreverse.c'
+    , 'factorize.c'
+    , 'hc_init.c'
+    , 'hc_main.c'
+    , 'hc_radix2.c'
+    , 'hc_unpack.c'
+    , 'real_init.c'
+    , 'real_main.c'
+    , 'real_radix2.c'
+    , 'real_unpack.c'
+    , 'linear_minimize.c'
+    , 'linear_wrapper.c'
+    , 'directional_minimize.c'
+    , 'find.c'
+    , 'find2d.c'
+    , 'qrstep.c'
+    , 'beta_inc.c'
+    , 'testint.c'
+    , 'ringbuf.c'
+    , 'deque.c'
+    , 'cquad_const.c'
+    , 'initialise.c'
+    , 'append.c'
+    , 'set_initial.c'
+    , 'qpsrt.c'
+    , 'util.c'
+    , 'qc25s.c'
+    , 'qc25c.c'
+    , 'qelg.c'
+    , 'err.c'
+    , 'reset.c'
+    , 'qpsrt2.c'
+    , 'positivity.c'
+    , 'qc25f.c'
+    , 'ptsort.c'
+    , 'companion.c'
+    , 'balance.c'
+    , 'qr.c'
+    , 'demof.c'
+    , 'nielsen.c'
+    , 'step_utils.c'
+    , 'control_utils.c'
+    , 'rksubs.c'
+    , 'modnewton1.c'
+    , 'cheb_eval.c'
+    , 'cheb_eval_mode.c'
+    , 'enorm.c'
+    , 'dogleg.c'
+    , 'test.c'
+    , 'endian.c'
+    , 'standardize.c'
+    , 'lmutil.c'
+    , 'hess.c'
+    , 'wigner.c'
+    , 'benchmark.c'
+    , 'errs.c'
+    , 'poly.c'
+    , 'testgen.c'
+    , 'norm.c'
+]
+
+scons_paths = [
+    '.'
+    , 'build/'
+    , './multilarge_nlinear/'
+    , './err/'
+    , './spblas/'
+    , './dht/'
+    , './splinalg/'
+    , './linalg/'
+    , './multifit/'
+    , './interpolation/'
+    , './siman/'
+    , './diff/'
+    , './spmatrix/'
+    , './contrib/'
+    , './utils/'
+    , './cheb/'
+    , './vector/'
+    , './filter/'
+    , './cblas/'
+    , './fit/'
+    , './bst/'
+    , './fft/'
+    , './multimin/'
+    , './sort/'
+    , './multiset/'
+    , './complex/'
+    , './wavelet/'
+    , './gsl/'
+    , './rng/'
+    , './permutation/'
+    , './qrng/'
+    , './sum/'
+    , './histogram/'
+    , './eigen/'
+    , './cdf/'
+    , './min/'
+    , './movstat/'
+    , './integration/'
+    , './poly/'
+    , './roots/'
+    , './multifit_nlinear/'
+    , './const/'
+    , './ode-initval2/'
+    , './statistics/'
+    , './specfunc/'
+    , './multiroots/'
+    , './ntuple/'
+    , './matrix/'
+    , './monte/'
+    , './combination/'
+    , './blas/'
+    , './ode-initval/'
+    , './deriv/'
+    , './sys/'
+    , './ieee-utils/'
+    , './randist/'
+    , './scripts/'
+    , './multilarge/'
+    , './rstat/'
+    , './block/'
+    , './bspline/'
+]
+
+scons_sources = [
+    [x for x in Glob('./*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multilarge_nlinear/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./err/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./spblas/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./dht/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./splinalg/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./linalg/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multifit/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./interpolation/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./siman/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./diff/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./spmatrix/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./contrib/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./utils/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./cheb/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./vector/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./filter/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./cblas/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./fit/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./bst/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./fft/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multimin/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./sort/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multiset/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./complex/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./wavelet/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./gsl/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./rng/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./permutation/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./qrng/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./sum/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./histogram/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./eigen/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./cdf/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./min/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./movstat/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./integration/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./poly/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./roots/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multifit_nlinear/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./const/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./ode-initval2/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./statistics/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./specfunc/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multiroots/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./ntuple/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./matrix/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./monte/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./combination/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./blas/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./ode-initval/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./deriv/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./sys/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./ieee-utils/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./randist/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./scripts/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./multilarge/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./rstat/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./block/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , [x for x in Glob('./bspline/*.c')  if not os.path.basename(str(x)).endswith('_source.c') and os.path.basename(str(x)) not in excluded_files and not os.path.basename(str(x)).startswith('demo') and not os.path.basename(str(x)).startswith('c_pass_') and not os.path.basename(str(x)).startswith('hc_pass_') and not os.path.basename(str(x)).startswith('fp-') and not os.path.basename(str(x)).startswith('real_pass_') and not os.path.basename(str(x)).startswith('test_')]
+    , 'godot_gsl.cpp'
+    , 'godot_gsl_matrix.cpp'
+    , 'godot_gsl_function.cpp'
+    , 'godot_gsl_ode.cpp'
+    , 'godot_gsl_scalar_math.cpp'
+    , 'register_types.cpp'
+]
+
+env_godot_gsl = env
+env_godot_gsl.Append(CXXFLAGS=['-g'])
+env_godot_gsl.Append(CPPPATH=scons_paths)
+env_godot_gsl.add_source_files(env.modules_sources, scons_sources)
