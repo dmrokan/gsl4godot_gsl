@@ -8,6 +8,7 @@
 #include <gsl_vector_double.h>
 #include <gsl_matrix_double.h>
 #include <gsl_blas.h>
+#include <gsl_linalg.h>
 #include <math.h>
 #include "godot_gsl_macros.h"
 #include "godot_gsl_scalar_math.h"
@@ -36,6 +37,8 @@ typedef enum cond_type {
 #define FN_SUB "-"
 #define FN_MUL "*"
 #define FN_SIN "sin"
+#define FN_COS "cos"
+#define FN_INV "inv"
 
 /* Float size definitions */
 #define FLOAT_BLOCK_SIZE (sizeof(gsl_block_float))
@@ -146,6 +149,7 @@ public:
     void fx(const String fn, GGSL_BOUNDS *bounds);
     void copy(GodotGSLMatrix* to);
     void copy_vector_from_array(const Array a);
+    void invert(GodotGSLMatrix *to);
 
     size_t size[2];
     GGSL_BOUNDS bounds;
@@ -157,13 +161,16 @@ private:
     val_type type = GSL_MATRIX;
     bool is_row_vector = false;
     DTYPE *_alloc(const size_t row_count, const size_t col_count);
+    void _alloc_matrix_inv();
     void _vector_alloc(size_t s);
     STYPE (*math_func1)(STYPE a);
     STYPE (*math_func2)(STYPE a, STYPE b);
     bool _condition(const cond_type cond, const GodotGSLMatrix *a);
     bool _condition(const cond_type cond);
     void _fx_elements1(GodotGSLMatrix *out);
-    void _fx_elements2(GodotGSLMatrix *out, const GodotGSLMatrix *a);
+    void _fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out);
+    gsl_permutation *perm = NULL;
+    DTYPE *lu_fact = NULL;
 };
 static GodotGSLMatrix NULLMTX;
 

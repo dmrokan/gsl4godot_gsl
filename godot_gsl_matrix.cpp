@@ -197,6 +197,9 @@ void GodotGSLMatrix::init(const Array a)
 GodotGSLMatrix::~GodotGSLMatrix()
 {
     memdelete_arr((uint8_t*) gsl_mtx);
+    GGSL_FREE(gsl_mtx);
+    GGSL_FREE(lu_fact);
+    GGSL_FREE(perm);
     memdelete(gsl_vec);
 }
 
@@ -298,7 +301,6 @@ int GodotGSLMatrix::add(const GodotGSLMatrix &a, GGSL_BOUNDS *bounds)
 
 STYPE GodotGSLMatrix::get(const size_t row, const size_t col)
 {
-    // printf("cndjdjdjdjd %lu %lu %lu %lu\n", size[0], size[1], row, col);
     if (row >= size[0] || col >= size[1])
     {
         ERR_FAIL_COND_V("GodotGSLMatrix::get: row >= size[0] || col >= size[1]", 0.0);
@@ -499,6 +501,15 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
             return;
         }
     }
+    else if (fn == FN_COS)
+    {
+        if (_condition(EQUAL_SIZE, to))
+        {
+            math_func1 = cos;
+            _fx_elements1(to);
+            return;
+        }
+    }
     else if (fn == FN_ADD)
     {
         if (_condition(EQUAL_SIZE, a))
@@ -516,6 +527,15 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
             return;
         }
     }
+    else if (fn == FN_SUB)
+    {
+        if (_condition(EQUAL_SIZE, a) && _condition(EQUAL_SIZE, to))
+        {
+            math_func2 = ggsl_math_sub;
+            _fx_elements2(a, to);
+            return;
+        }
+    }
     else if (fn == FN_MUL)
     {
         prod(*a, to, bounds);
@@ -527,6 +547,14 @@ void GodotGSLMatrix::fx(const String fn, GodotGSLMatrix *a, GodotGSLMatrix *to, 
         {
             math_func1 = ggsl_math_eq;
             _fx_elements1(to);
+            return;
+        }
+    }
+    else if (fn == FN_INV)
+    {
+        if (_condition(EQUAL_SIZE, a))
+        {
+            invert(a);
             return;
         }
     }
@@ -556,6 +584,27 @@ void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out)
             STYPE val = get(k + bounds.r1, l + bounds.c1);
             val = math_func1(val);
             out->set(k + out->bounds.r1, l + out->bounds.c1, val);
+        }
+    }
+
+    math_func1 = NULL;
+}
+
+void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out)
+{
+    if (math_func1 == NULL)
+    {
+        ERR_FAIL_COND("GodotGSLMatrix::_fx_elements1: math_func1 == NULL");
+    }
+
+    for (size_t k = 0; k < size[0]; k++)
+    {
+        for (size_t l = 0; l < size[1]; l++)
+        {
+            STYPE val1 = get(k + bounds.r1, l + bounds.c1);
+            STYPE val2 = a->get(k + a->bounds.r1, l + a->bounds.c1);
+            val1 = math_func2(val1, val2);
+            out->set(k + out->bounds.r1, l + out->bounds.c1, val1);
         }
     }
 
@@ -626,5 +675,42 @@ void GodotGSLMatrix::copy_vector_from_array(const Array a)
         {
             set(0, k, a[k]);
         }
+    }
+}
+
+void GodotGSLMatrix::invert(GodotGSLMatrix *to)
+{
+    if (size[0] != size[1])
+    {
+        GGSL_MESSAGE("GodotGSLMatrix::invert: size[0] != size[1]");
+        return;
+    }
+
+    _alloc_matrix_inv();
+
+    gsl_matrix_memcpy(lu_fact, gsl_mtx);
+
+    int s;
+
+    gsl_linalg_LU_decomp(lu_fact, perm, &s);
+    gsl_linalg_LU_invert(lu_fact, perm, to->get_ptr());
+}
+
+void GodotGSLMatrix::_alloc_matrix_inv()
+{
+    if (perm == NULL)
+    {
+        size_t size_in_bytes = sizeof(gsl_permutation);
+        size_in_bytes += size[0] * sizeof(size_t);
+        uint8_t *perm_ptr = memnew_arr(uint8_t, size_in_bytes);
+        perm = (gsl_permutation*) perm_ptr;
+        perm_ptr += sizeof(gsl_permutation);
+        perm->data = perm_ptr;
+        perm->size = size[0];
+    }
+
+    if (lu_fact == NULL)
+    {
+        lu_fact = _alloc(size[0], size[1]);
     }
 }

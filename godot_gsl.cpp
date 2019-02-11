@@ -164,6 +164,8 @@ void GodotGSL::fx(const String fn, const String a, String to)
 {
     GodotGSLMatrix *mtx_a;
     GodotGSLMatrix *mtx_to;
+    // GGSL_HAS(variables, a, mtx_a);
+    // GGSL_HAS(variables, to, mtx_to);
 
     if (fn == FN_EQ)
     {
@@ -199,6 +201,13 @@ void GodotGSL::fx(const String fn, const String a, String to)
          * Possibly you are going to put this in fx
          * Cause you have all bound informations of matrices
          */
+        mtx_a->fx(fn, mtx_to, NULL);
+    }
+    else if (fn == FN_INV)
+    {
+        mtx_a = variables[a];
+        mtx_to = variables[to];
+        printf("srsrwsreersew %s\n", fn.utf8().get_data());
         mtx_a->fx(fn, mtx_to, NULL);
     }
 
