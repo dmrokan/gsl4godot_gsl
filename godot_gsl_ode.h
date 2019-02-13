@@ -24,6 +24,8 @@ public:
     void func_execute() { function->execute(); }
     void jac_execute() { jacobian->execute(); }
     void set_node_path(Object *obj, const String subpath, const int index);
+    void set_node_path_as_input(Object *obj, const String subpath, const String vn, const int index);
+    void set_node_path_as_output(Object *obj, const String subpath, const String vn, const int index);
     void update_node_properties();
     void set_initial_conditions(const Array &x0_arr, const double t0);
     GodotGSLMatrix *x = NULL;
@@ -31,10 +33,6 @@ public:
     size_t dimension = 0;
 
 private:
-    Object **objects = NULL;
-    size_t object_count = 0;
-    Array keys;
-    Array indices;
     GodotGSLFunction *function = NULL;
     GodotGSLFunction *jacobian = NULL;
     gsl_odeiv2_system sys;

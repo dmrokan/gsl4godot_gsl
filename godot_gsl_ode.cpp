@@ -19,7 +19,6 @@ GodotGSLODE::~GodotGSLODE()
         memdelete(jacobian);
     }
 
-    GGSL_FREE(objects);
     gsl_odeiv2_driver_free(driver);
 }
 
@@ -84,23 +83,36 @@ void GodotGSLODE::set_node_path(Object *obj, const String subpath, const int ind
 {
     NodePath property = NodePath(subpath).get_as_property_path();
     Vector<StringName> key = property.get_subnames();
-    indices.append(index);
-    keys.append(key);
 
-    if (objects != NULL)
+    x->add_node_path(obj, key, index, NODE_P_OUTPUT);
+}
+
+void GodotGSLODE::set_node_path_as_input(Object *obj, const String subpath, const String vn, const int index)
+{
+    NodePath property = NodePath(subpath).get_as_property_path();
+    Vector<StringName> key = property.get_subnames();
+
+    GodotGSLMatrix *mtx = function->get_arg(vn);
+    if (mtx != NULL)
     {
-        Object **tmp;
-        tmp = objects;
-        GGSL_ALLOC_G(objects, ++object_count, Object);
-        memcpy(objects, tmp, (object_count - 1) * sizeof(Object*));
-        GGSL_FREE(tmp);
+        mtx->add_node_path(obj, key, index, NODE_P_INPUT);
     }
     else
     {
-        GGSL_ALLOC_G(objects, ++object_count, Object);
+        GGSL_ERR_MESSAGE("GodotGSLODE::set_node_path_as_input: mtx == NULL");
     }
+}
 
-    objects[object_count - 1] = obj;
+void GodotGSLODE::set_node_path_as_output(Object *obj, const String subpath, const String vn, const int index)
+{
+    NodePath property = NodePath(subpath).get_as_property_path();
+    Vector<StringName> key = property.get_subnames();
+
+    GodotGSLMatrix *mtx = function->get_arg(vn);
+    if (mtx != NULL)
+    {
+        x->add_node_path(obj, key, index, NODE_P_OUTPUT);
+    }
 }
 
 void GodotGSLODE::update_node_properties()
@@ -112,16 +124,13 @@ void GodotGSLODE::update_node_properties()
         return;
     }
 
-    for (int k = 0; k < indices.size(); k++)
+    for (size_t k = 0; k < function->get_argc(); k++)
     {
-        int index = indices[k];
-        // printf("lklskdlkfs %d %lu %lu\n", index, x->size[0], x->size[1]);
-        Vector<StringName> key = keys[k];
-        Object *obj = objects[k];
-        double value = x->get(index, 0);
-        bool valid = false;
-        obj->set_indexed(key, value, &valid);
+        GodotGSLMatrix *mtx = function->get_arg(k);
+        mtx->update_node_properties();
     }
+
+    x->update_node_properties();
 }
 
 void GodotGSLODE::set_initial_conditions(const Array &x0_arr, const double t0)

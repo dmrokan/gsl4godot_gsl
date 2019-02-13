@@ -270,3 +270,27 @@ void GodotGSLFunction::execute()
         first->execute();
     } while ((first = first->next()));
 }
+
+GodotGSLMatrix *GodotGSLFunction::get_arg(const String vn)
+{
+    int index = arg_names.find(vn);
+
+    if (index < 0)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLFunction::get_arg: index < 0");
+        return NULL;
+    }
+
+    return argv[index];
+}
+
+GodotGSLMatrix *GodotGSLFunction::get_arg(const size_t index)
+{
+    if (index >= argc)
+    {
+        GGSL_ERR_MESSAGE("GodotGSLFunction::get_arg: index >= argc");
+        return NULL;
+    }
+
+    return argv[index];
+}

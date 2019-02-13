@@ -163,7 +163,7 @@ void GodotGSLMatrix::init(const Array a)
                 ERR_FAIL_COND("GodotGSLMatrix::GodotGSLMatrix: row->size() <= l");
             }
 
-            STYPE val = row.get(l);
+            STYPE val = (STYPE) row.get(l);
 
             gsl_matrix_set(gsl_mtx, k, l, val);
         }
@@ -201,6 +201,7 @@ GodotGSLMatrix::~GodotGSLMatrix()
     GGSL_FREE(lu_fact);
     GGSL_FREE(perm);
     memdelete(gsl_vec);
+    GGSL_FREE(objects);
 }
 
 
@@ -592,7 +593,7 @@ void GodotGSLMatrix::_fx_elements1(GodotGSLMatrix *out)
 
 void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out)
 {
-    if (math_func1 == NULL)
+    if (math_func2 == NULL)
     {
         ERR_FAIL_COND("GodotGSLMatrix::_fx_elements1: math_func1 == NULL");
     }
@@ -608,7 +609,7 @@ void GodotGSLMatrix::_fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out)
         }
     }
 
-    math_func1 = NULL;
+    math_func2 = NULL;
 }
 
 bool GodotGSLMatrix::_condition(const cond_type cond)
@@ -705,12 +706,58 @@ void GodotGSLMatrix::_alloc_matrix_inv()
         uint8_t *perm_ptr = memnew_arr(uint8_t, size_in_bytes);
         perm = (gsl_permutation*) perm_ptr;
         perm_ptr += sizeof(gsl_permutation);
-        perm->data = perm_ptr;
+        perm->data = (size_t*) perm_ptr;
         perm->size = size[0];
     }
 
     if (lu_fact == NULL)
     {
         lu_fact = _alloc(size[0], size[1]);
+    }
+}
+
+void GodotGSLMatrix::add_node_path(Object *obj, const Vector<StringName> key, const int index, const int dir)
+{
+    if (objects != NULL)
+    {
+        Object **tmp;
+        tmp = objects;
+        GGSL_ALLOC_G(objects, ++object_count, Object);
+        memcpy(objects, tmp, (object_count - 1) * sizeof(Object*));
+        GGSL_FREE(tmp);
+    }
+    else
+    {
+        GGSL_ALLOC_G(objects, ++object_count, Object);
+    }
+
+    objects[object_count - 1] = obj;
+
+    keys.append(key);
+    indices.append(index);
+    directions.append(dir);
+}
+
+void GodotGSLMatrix::update_node_properties()
+{
+    for (int k = 0; k < indices.size(); k++)
+    {
+        int index = indices[k];
+        Vector<StringName> key = keys[k];
+        Object *obj = objects[k];
+        int dir = directions[k];
+
+        if (dir == NODE_P_OUTPUT)
+        {
+            double value = get(index, 0);
+            bool valid = false;
+            obj->set_indexed(key, value, &valid);
+        }
+        else if (dir == NODE_P_INPUT)
+        {
+            bool valid = false;
+            double value = obj->get_indexed(key, &valid);
+            set(index, 0, value);
+        }
     }
 }

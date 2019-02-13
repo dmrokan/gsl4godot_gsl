@@ -49,7 +49,17 @@
         WARN_PRINT(msg);         \
     }                            \
 
-#define GGSL_ERROR_MSG(msg, lvl) GGSL_DEBUG_MSG(msg, lvl)
+
+#define GGSL_ERR_MSG(msg, lvl)                \
+    {                                           \
+        int k = 0;                              \
+        do {                                    \
+            printf(" ");                        \
+        } while(lvl > k++);                     \
+        printf("DBG: ");                        \
+        ERR_PRINT(msg);                        \
+    }                                           \
+
 #else
 #define GGSL_DEBUG_MSG(msg, lvl) 0
 #endif

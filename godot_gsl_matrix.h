@@ -40,6 +40,10 @@ typedef enum cond_type {
 #define FN_COS "cos"
 #define FN_INV "inv"
 
+/* Node property directions */
+#define NODE_P_OUTPUT 1
+#define NODE_P_INPUT 2
+
 /* Float size definitions */
 #define FLOAT_BLOCK_SIZE (sizeof(gsl_block_float))
 #define FLOAT_MATRIX_SIZE (sizeof(gsl_matrix_float))
@@ -150,6 +154,8 @@ public:
     void copy(GodotGSLMatrix* to);
     void copy_vector_from_array(const Array a);
     void invert(GodotGSLMatrix *to);
+    void add_node_path(Object *obj, const Vector<StringName> key, const int index, const int dir);
+    void update_node_properties();
 
     size_t size[2];
     GGSL_BOUNDS bounds;
@@ -171,6 +177,11 @@ private:
     void _fx_elements2(GodotGSLMatrix *a, GodotGSLMatrix *out);
     gsl_permutation *perm = NULL;
     DTYPE *lu_fact = NULL;
+    Object **objects = NULL;
+    size_t object_count = 0;
+    Array keys;
+    Array indices;
+    Array directions;
 };
 static GodotGSLMatrix NULLMTX;
 

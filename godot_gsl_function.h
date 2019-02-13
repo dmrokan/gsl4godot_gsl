@@ -86,6 +86,9 @@ public:
     void add_instruction(const String in, const Array args);
     void set_instruction_arguments(const Array args);
     void set_instruction_arguments(GodotGSLInstruction *ins, const Array args);
+    GodotGSLMatrix *get_arg(const String vn);
+    GodotGSLMatrix *get_arg(const size_t index);
+    size_t get_argc() { return argc; };
 
 private:
     Array arg_names;
