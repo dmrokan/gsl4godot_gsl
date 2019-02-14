@@ -1,5 +1,9 @@
 * What is new in gsl-2.6:
 
+** updated gsl_sf_hermite_func() to use a newer algorithm
+   due to B. Bunck which is faster than the recurrence relation
+   method and more stable for large x
+
 ** add gsl_vector_memcpy_scale()
 
 ** add un-pivoted LDLT decomposition and its banded
