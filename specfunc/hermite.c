@@ -1169,6 +1169,8 @@ gsl_sf_hermite_func_der_e(const int m, const int n, const double x, gsl_sf_resul
   else
     {
     }
+
+  return 0;
 }
 
 #else
