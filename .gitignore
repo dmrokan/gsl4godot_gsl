@@ -23,7 +23,7 @@ gsl-histogram
 gsl.pc
 gsl-randist
 gsl.spec
-gsl_version.h
+# gsl_version.h
 *.gz
 histogram/test.dat
 histogram/test.txt
