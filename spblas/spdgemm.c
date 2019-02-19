@@ -153,7 +153,7 @@ necessarily in order - ie: the row indices C->i may not be in ascending order.
 */
 
 size_t
-gsl_spblas_scatter(const gsl_spmatrix *A, const size_t j, const double alpha,
+gsl_spblas_scatterer(const gsl_spmatrix *A, const size_t j, const double alpha,
                    int *w, double *x, const int mark, gsl_spmatrix *C,
                    size_t nz)
 {
