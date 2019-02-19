@@ -12,6 +12,7 @@
 #define BASE_DOUBLE
 #include "templates_on.h"
 #include "real_pass.h"
+#include "complex_internal.h"
 #include "real_init.c"
 #include "real_main.c"
 #include "real_pass_2.c"
@@ -27,6 +28,7 @@
 #define BASE_FLOAT
 #include "templates_on.h"
 #include "real_pass.h"
+#include "complex_internal.h"
 #include "real_init.c"
 #include "real_main.c"
 #include "real_pass_2.c"

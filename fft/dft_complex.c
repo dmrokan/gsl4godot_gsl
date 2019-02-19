@@ -25,13 +25,14 @@
 #include <gsl/gsl_errno.h>
 
 #include "complex_internal.h"
+#define ATOMIC double
 
 int
 gsl_dft_complex_forward (const double data[], 
                          const size_t stride, const size_t n,
                          double result[])
 {
-  gsl_fft_direction sign = forward;
+  gsl_fft_direction sign = gsl_fft_forward;
   int status = gsl_dft_complex (data, stride, n, result, sign);
   return status;
 }
@@ -41,7 +42,7 @@ gsl_dft_complex_backward (const double data[],
                          const size_t stride, const size_t n,
                          double result[])
 {
-  gsl_fft_direction sign = backward;
+  gsl_fft_direction sign = gsl_fft_backward;
   int status = gsl_dft_complex (data, stride, n, result, sign);
   return status;
 }
@@ -52,7 +53,7 @@ gsl_dft_complex_inverse (const double data[],
                          const size_t stride, const size_t n,
                          double result[])
 {
-  gsl_fft_direction sign = backward;
+  gsl_fft_direction sign = gsl_fft_backward;
   int status = gsl_dft_complex (data, stride, n, result, sign);
 
   /* normalize inverse fft with 1/n */
